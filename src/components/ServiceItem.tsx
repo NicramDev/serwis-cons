@@ -26,7 +26,7 @@ const ServiceItem = ({ name, type, date, model, delay = 0 }: ServiceItemProps) =
         <div className="flex items-center justify-between">
           <div>
             <span className="text-sm text-primary inline-block px-2 py-0.5 bg-primary/10 rounded-full mb-1">
-              {type === 'vehicle' ? 'Vehicle' : 'Device'}
+              {type === 'vehicle' ? 'Pojazd' : 'Urządzenie'}
             </span>
             <h4 className="font-medium">{name}</h4>
             <p className="text-sm text-muted-foreground">{model}</p>
@@ -35,7 +35,7 @@ const ServiceItem = ({ name, type, date, model, delay = 0 }: ServiceItemProps) =
             <div className={`text-sm font-medium ${
               daysRemaining <= 7 ? 'text-red-500' : 'text-orange-500'
             }`}>
-              {daysRemaining} days remaining
+              {daysRemaining} dni pozostało
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(date)}</p>
           </div>

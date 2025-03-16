@@ -18,8 +18,8 @@ const Vehicles = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Vehicles</h1>
-            <p className="text-muted-foreground">Manage and track all your vehicles</p>
+            <h1 className="text-3xl font-bold mb-2">Pojazdy</h1>
+            <p className="text-muted-foreground">Zarządzaj i śledź wszystkie swoje pojazdy</p>
           </div>
           
           <div className="mt-4 md:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
@@ -29,7 +29,7 @@ const Vehicles = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search vehicles..."
+                placeholder="Szukaj pojazdów..."
                 className="pl-10 pr-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -38,7 +38,7 @@ const Vehicles = () => {
             
             <button className="flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-colors">
               <PlusCircle className="h-5 w-5" />
-              <span>Add Vehicle</span>
+              <span>Dodaj Pojazd</span>
             </button>
           </div>
         </div>
@@ -54,9 +54,9 @@ const Vehicles = () => {
             <div className="icon-container mx-auto mb-4">
               <Search className="h-5 w-5" />
             </div>
-            <h3 className="text-lg font-medium mb-2">No vehicles found</h3>
+            <h3 className="text-lg font-medium mb-2">Nie znaleziono pojazdów</h3>
             <p className="text-muted-foreground">
-              No vehicles match your search criteria. Please try a different search or add a new vehicle.
+              Żadne pojazdy nie pasują do kryteriów wyszukiwania. Spróbuj innego zapytania lub dodaj nowy pojazd.
             </p>
           </div>
         )}

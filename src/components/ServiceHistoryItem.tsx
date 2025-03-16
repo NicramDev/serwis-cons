@@ -23,11 +23,11 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
   
   const getTypeLabel = () => {
     if (record.vehicleId) {
-      return "Vehicle";
+      return "Pojazd";
     } else if (record.deviceId) {
-      return "Device";
+      return "Urządzenie";
     } else {
-      return "Other";
+      return "Inne";
     }
   };
   
@@ -44,6 +44,19 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
     }
   };
   
+  const getTypeText = () => {
+    switch (record.type) {
+      case 'repair':
+        return 'Naprawa';
+      case 'maintenance':
+        return 'Konserwacja';
+      case 'inspection':
+        return 'Inspekcja';
+      default:
+        return record.type.charAt(0).toUpperCase() + record.type.slice(1);
+    }
+  };
+  
   return (
     <div className={`glass-card rounded-xl p-6 mb-4 opacity-0 animate-fade-in ${delayClass}`}>
       <div className="flex justify-between items-start">
@@ -55,15 +68,15 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-primary">{getTypeLabel()}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor()}`}>
-                {record.type.charAt(0).toUpperCase() + record.type.slice(1)}
+                {getTypeText()}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(record.date)}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-lg font-semibold">${record.cost.toFixed(2)}</p>
-          <p className="text-sm text-muted-foreground">Technician: {record.technician}</p>
+          <p className="text-lg font-semibold">{record.cost.toFixed(2)} zł</p>
+          <p className="text-sm text-muted-foreground">Technik: {record.technician}</p>
         </div>
       </div>
       <div className="mt-4">

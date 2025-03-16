@@ -20,35 +20,35 @@ const Index = () => {
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-muted-foreground mb-8">Vehicle Service Management System</p>
+        <h1 className="text-3xl font-bold mb-2">Pulpit</h1>
+        <p className="text-muted-foreground mb-8">System Zarządzania Serwisem Pojazdów</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <DashboardCard 
-            title="Total Vehicles" 
+            title="Wszystkie Pojazdy" 
             icon={<Car className="h-5 w-5" />} 
             value={vehicles.length}
-            trend={{ value: 25, label: 'vs last month' }}
+            trend={{ value: 25, label: 'vs poprzedni miesiąc' }}
             delay={1}
           />
           <DashboardCard 
-            title="Total Devices" 
+            title="Wszystkie Urządzenia" 
             icon={<Smartphone className="h-5 w-5" />} 
             value={devices.length}
             delay={2}
           />
           <DashboardCard 
-            title="Service Records" 
+            title="Historia Serwisu" 
             icon={<Wrench className="h-5 w-5" />} 
             value={serviceRecords.length}
-            trend={{ value: 12, label: 'vs last month' }}
+            trend={{ value: 12, label: 'vs poprzedni miesiąc' }}
             delay={3}
           />
           <DashboardCard 
-            title="Needs Attention" 
+            title="Wymaga Uwagi" 
             icon={<AlertTriangle className="h-5 w-5" />} 
             value={needsAttention}
-            trend={{ value: -5, label: 'vs last month' }}
+            trend={{ value: -5, label: 'vs poprzedni miesiąc' }}
             delay={4}
           />
         </div>
@@ -56,7 +56,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="glass-card rounded-xl overflow-hidden opacity-0 animate-fade-in staggered-delay-5">
             <div className="px-6 py-4 border-b border-border">
-              <h2 className="text-xl font-semibold">Upcoming Services</h2>
+              <h2 className="text-xl font-semibold">Nadchodzące Serwisy</h2>
             </div>
             <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
               {upcomingServices.length > 0 ? (
@@ -73,7 +73,7 @@ const Index = () => {
                 ))
               ) : (
                 <div className="p-6 text-center text-muted-foreground">
-                  No upcoming services in the next 30 days
+                  Brak nadchodzących serwisów w ciągu najbliższych 30 dni
                 </div>
               )}
             </div>
@@ -81,7 +81,7 @@ const Index = () => {
           
           <div className="glass-card rounded-xl overflow-hidden opacity-0 animate-fade-in staggered-delay-5">
             <div className="px-6 py-4 border-b border-border">
-              <h2 className="text-xl font-semibold">Recent Activity</h2>
+              <h2 className="text-xl font-semibold">Ostatnia Aktywność</h2>
             </div>
             <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto">
               {serviceRecords.slice(0, 5).map((record, index) => (
@@ -91,7 +91,7 @@ const Index = () => {
                   </div>
                   <div>
                     <p className="font-medium">
-                      {record.vehicleId ? 'Vehicle' : 'Device'} service - {record.type}
+                      Serwis {record.vehicleId ? 'pojazdu' : 'urządzenia'} - {record.type === 'repair' ? 'naprawa' : record.type === 'maintenance' ? 'konserwacja' : 'inspekcja'}
                     </p>
                     <p className="text-sm text-muted-foreground">{new Date(record.date).toLocaleDateString()}</p>
                     <p className="text-sm mt-1">{record.description.substring(0, 60)}...</p>

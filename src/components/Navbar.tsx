@@ -24,10 +24,10 @@ const Navbar = () => {
   }, []);
 
   const navItems = [
-    { path: '/', name: 'Dashboard', icon: Home },
-    { path: '/vehicles', name: 'Vehicles', icon: Car },
-    { path: '/devices', name: 'Devices', icon: Smartphone },
-    { path: '/history', name: 'Service History', icon: Clock },
+    { path: '/', name: 'Pulpit', icon: Home },
+    { path: '/vehicles', name: 'Pojazdy', icon: Car },
+    { path: '/devices', name: 'Urządzenia', icon: Smartphone },
+    { path: '/history', name: 'Historia Serwisu', icon: Clock },
   ];
   
   return (
@@ -41,7 +41,7 @@ const Navbar = () => {
           <div className="icon-container">
             <Car className="h-5 w-5" />
           </div>
-          <span className="text-xl font-semibold">VehicleService</span>
+          <span className="text-xl font-semibold">SerwisPojazdów</span>
         </Link>
         
         <div className="hidden md:flex space-x-1">
@@ -67,7 +67,7 @@ const Navbar = () => {
         <div className="md:hidden flex">
           {/* Mobile menu button would go here */}
           <button className="p-2 rounded-md hover:bg-secondary">
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Otwórz menu</span>
             <div className="w-5 h-0.5 bg-foreground mb-1"></div>
             <div className="w-5 h-0.5 bg-foreground mb-1"></div>
             <div className="w-5 h-0.5 bg-foreground"></div>

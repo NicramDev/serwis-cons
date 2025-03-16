@@ -21,8 +21,8 @@ const History = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Service History</h1>
-            <p className="text-muted-foreground">Review all past service records</p>
+            <h1 className="text-3xl font-bold mb-2">Historia Serwisu</h1>
+            <p className="text-muted-foreground">Przeglądaj wszystkie poprzednie zapisy serwisowe</p>
           </div>
           
           <div className="mt-4 md:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
@@ -32,7 +32,7 @@ const History = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search records..."
+                placeholder="Szukaj zapisów..."
                 className="pl-10 pr-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -41,7 +41,7 @@ const History = () => {
             
             <button className="flex items-center justify-center space-x-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-md transition-colors">
               <Filter className="h-5 w-5" />
-              <span>Filter</span>
+              <span>Filtruj</span>
             </button>
           </div>
         </div>
@@ -61,9 +61,9 @@ const History = () => {
             <div className="icon-container mx-auto mb-4">
               <Search className="h-5 w-5" />
             </div>
-            <h3 className="text-lg font-medium mb-2">No records found</h3>
+            <h3 className="text-lg font-medium mb-2">Nie znaleziono zapisów</h3>
             <p className="text-muted-foreground">
-              No service records match your search criteria. Please try a different search.
+              Żadne zapisy serwisowe nie pasują do kryteriów wyszukiwania. Spróbuj innego zapytania.
             </p>
           </div>
         )}

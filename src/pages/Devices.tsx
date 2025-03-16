@@ -19,8 +19,8 @@ const Devices = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Devices</h1>
-            <p className="text-muted-foreground">Manage and track all service devices</p>
+            <h1 className="text-3xl font-bold mb-2">Urządzenia</h1>
+            <p className="text-muted-foreground">Zarządzaj i śledź wszystkie urządzenia serwisowe</p>
           </div>
           
           <div className="mt-4 md:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
@@ -30,7 +30,7 @@ const Devices = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search devices..."
+                placeholder="Szukaj urządzeń..."
                 className="pl-10 pr-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -39,7 +39,7 @@ const Devices = () => {
             
             <button className="flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-colors">
               <PlusCircle className="h-5 w-5" />
-              <span>Add Device</span>
+              <span>Dodaj Urządzenie</span>
             </button>
           </div>
         </div>
@@ -55,9 +55,9 @@ const Devices = () => {
             <div className="icon-container mx-auto mb-4">
               <Search className="h-5 w-5" />
             </div>
-            <h3 className="text-lg font-medium mb-2">No devices found</h3>
+            <h3 className="text-lg font-medium mb-2">Nie znaleziono urządzeń</h3>
             <p className="text-muted-foreground">
-              No devices match your search criteria. Please try a different search or add a new device.
+              Żadne urządzenia nie pasują do kryteriów wyszukiwania. Spróbuj innego zapytania lub dodaj nowe urządzenie.
             </p>
           </div>
         )}
