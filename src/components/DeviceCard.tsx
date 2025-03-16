@@ -1,5 +1,5 @@
 
-import { Smartphone, Check, Clock, AlertTriangle } from 'lucide-react';
+import { Smartphone, Check, Clock, AlertTriangle, Car } from 'lucide-react';
 import { Device } from '../utils/types';
 import { formatDate } from '../utils/data';
 
