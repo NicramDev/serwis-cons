@@ -53,7 +53,7 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
       case 'inspection':
         return 'Inspekcja';
       default:
-        return record.type.charAt(0).toUpperCase() + record.type.slice(1);
+        return record.type ? record.type.charAt(0).toUpperCase() + record.type.slice(1) : 'Inne';
     }
   };
   

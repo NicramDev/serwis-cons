@@ -30,8 +30,8 @@ const VehicleCard = ({ vehicle, delay = 0 }: VehicleCardProps) => {
         <span className="inline-block px-2 py-1 text-xs font-medium bg-secondary text-foreground/70 rounded-full">
           {vehicle.type === 'car' ? 'Samochód' : 
            vehicle.type === 'truck' ? 'Ciężarówka' : 
-           vehicle.type === 'van' ? 'Van' : 
-           vehicle.type.charAt(0).toUpperCase() + vehicle.type.slice(1)}
+           vehicle.type === 'motorcycle' ? 'Motocykl' : 
+           'Inny'}
         </span>
         {getStatusIcon()}
       </div>
