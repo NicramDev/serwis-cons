@@ -16,7 +16,11 @@ const Vehicles = () => {
   const filteredVehicles = allVehicles.filter(vehicle => 
     vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vehicle.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase())
+    vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+    (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+    (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+    (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
   );
   
   const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
@@ -82,7 +86,7 @@ const Vehicles = () => {
       </div>
       
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Dodaj nowy pojazd</DialogTitle>
           </DialogHeader>
