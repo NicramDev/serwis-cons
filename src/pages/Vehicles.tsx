@@ -3,15 +3,31 @@ import { useState } from 'react';
 import { vehicles } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
 import { PlusCircle, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Vehicle } from '../utils/types';
+import AddVehicleForm from '../components/AddVehicleForm';
+import { v4 as uuidv4 } from 'uuid';
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(vehicles);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
-  const filteredVehicles = vehicles.filter(vehicle => 
+  const filteredVehicles = allVehicles.filter(vehicle => 
     vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vehicle.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
+    const newVehicle = {
+      ...vehicleData,
+      id: uuidv4(),
+    } as Vehicle;
+    
+    setAllVehicles([...allVehicles, newVehicle]);
+    setIsAddDialogOpen(false);
+  };
   
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -36,7 +52,10 @@ const Vehicles = () => {
               />
             </div>
             
-            <button className="flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-colors">
+            <button 
+              className="flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-colors"
+              onClick={() => setIsAddDialogOpen(true)}
+            >
               <PlusCircle className="h-5 w-5" />
               <span>Dodaj Pojazd</span>
             </button>
@@ -61,6 +80,18 @@ const Vehicles = () => {
           </div>
         )}
       </div>
+      
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Dodaj nowy pojazd</DialogTitle>
+          </DialogHeader>
+          <AddVehicleForm 
+            onSubmit={handleAddVehicle} 
+            onCancel={() => setIsAddDialogOpen(false)} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
