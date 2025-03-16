@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,6 +64,9 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			fontFamily: {
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
@@ -84,12 +88,52 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'slide-in-right': {
+					from: {
+						transform: 'translateX(100%)',
+						opacity: '0'
+					},
+					to: {
+						transform: 'translateX(0)',
+						opacity: '1'
+					}
+				},
+				'pulse-subtle': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.8'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out forwards',
+				'slide-in': 'slide-in-right 0.4s ease-out forwards',
+				'pulse-subtle': 'pulse-subtle 3s infinite'
+			},
+			backdropFilter: {
+				'none': 'none',
+				'blur': 'blur(8px)',
+			},
+			boxShadow: {
+				'subtle': '0 2px 10px rgba(0, 0, 0, 0.05)',
+				'glass': '0 4px 20px rgba(0, 0, 0, 0.03)',
+				'elevated': '0 10px 30px rgba(0, 0, 0, 0.08)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
