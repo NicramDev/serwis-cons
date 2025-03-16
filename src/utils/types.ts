@@ -3,7 +3,6 @@ export interface Vehicle {
   id: string;
   name: string;
   brand?: string;
-  type: 'car' | 'truck' | 'motorcycle' | 'other';
   model: string;
   year: number;
   vin?: string;
@@ -16,6 +15,7 @@ export interface Vehicle {
   fuelCardNumber?: string;
   gpsSystemNumber?: string;
   driverName?: string;
+  insuranceExpiryDate?: Date;
   tags?: string;
   notes?: string;
   status: 'ok' | 'needs-service' | 'in-service';

@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { vehicles } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
 import { PlusCircle, Search } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Vehicle } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'sonner';
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,13 +25,25 @@ const Vehicles = () => {
   );
   
   const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
-    const newVehicle = {
+    const now = new Date();
+    const nextServiceDate = new Date();
+    nextServiceDate.setMonth(now.getMonth() + 6);
+    
+    const newVehicle: Vehicle = {
       ...vehicleData,
       id: uuidv4(),
+      lastService: vehicleData.lastServiceDate || now,
+      nextService: nextServiceDate,
+      status: 'ok',
+      model: vehicleData.model || '',
+      registrationNumber: vehicleData.registrationNumber || '',
+      year: vehicleData.year || 0,
     } as Vehicle;
     
-    setAllVehicles([...allVehicles, newVehicle]);
+    const updatedVehicles = [...allVehicles, newVehicle];
+    setAllVehicles(updatedVehicles);
     setIsAddDialogOpen(false);
+    toast.success("Pojazd został dodany pomyślnie");
   };
   
   return (
@@ -89,6 +102,9 @@ const Vehicles = () => {
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Dodaj nowy pojazd</DialogTitle>
+            <DialogDescription>
+              Wypełnij formularz, aby dodać nowy pojazd do floty
+            </DialogDescription>
           </DialogHeader>
           <AddVehicleForm 
             onSubmit={handleAddVehicle} 

@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Vehicle } from "../utils/types";
@@ -20,7 +19,6 @@ import { pl } from "date-fns/locale";
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
-  type: z.enum(["car", "truck", "motorcycle", "other"]),
   model: z.string().min(1, "Model jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   vin: z.string().min(1, "Numer VIN jest wymagany"),
@@ -28,6 +26,7 @@ const vehicleSchema = z.object({
   purchaseDate: z.date().optional(),
   lastInspectionDate: z.date().optional(),
   lastServiceDate: z.date().optional(),
+  insuranceExpiryDate: z.date().optional(),
   fuelCardNumber: z.string().optional(),
   gpsSystemNumber: z.string().optional(),
   driverName: z.string().optional(),
@@ -51,7 +50,6 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
     defaultValues: {
       name: "",
       brand: "",
-      type: "car",
       model: "",
       year: new Date().getFullYear(),
       vin: "",
@@ -65,15 +63,8 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
   });
 
   const handleSubmit = (values: VehicleFormValues) => {
-    const now = new Date();
-    const nextServiceDate = new Date();
-    nextServiceDate.setMonth(now.getMonth() + 6);
-    
     const newVehicle: Partial<Vehicle> = {
       ...values,
-      lastService: values.lastServiceDate || now,
-      nextService: nextServiceDate,
-      status: "ok",
       images: images.map(img => URL.createObjectURL(img)),
       attachments: attachments.map(file => ({
         name: file.name,
@@ -143,30 +134,6 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Typ pojazdu</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Wybierz typ pojazdu" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="car">Samochód</SelectItem>
-                    <SelectItem value="truck">Ciężarówka</SelectItem>
-                    <SelectItem value="motorcycle">Motocykl</SelectItem>
-                    <SelectItem value="other">Inny</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
             name="model"
             render={({ field }) => (
               <FormItem>
@@ -178,9 +145,7 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           <FormField
             control={form.control}
             name="year"
@@ -194,7 +159,9 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
               </FormItem>
             )}
           />
-          
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="vin"
@@ -208,9 +175,7 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           <FormField
             control={form.control}
             name="registrationNumber"
@@ -224,7 +189,9 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
               </FormItem>
             )}
           />
-          
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="purchaseDate"
@@ -257,6 +224,48 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
                       onSelect={field.onChange}
                       disabled={(date) =>
                         date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="insuranceExpiryDate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Ubezpieczenie OC/AC ważne do</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "dd.MM.yyyy", { locale: pl })
+                        ) : (
+                          <span>Wybierz datę</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < new Date("1900-01-01")
                       }
                       initialFocus
                     />
