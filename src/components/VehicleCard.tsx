@@ -2,6 +2,8 @@
 import { Car, Check, Clock, AlertTriangle } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -23,40 +25,71 @@ const VehicleCard = ({ vehicle, delay = 0 }: VehicleCardProps) => {
         return <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-600"><AlertTriangle className="h-5 w-5" /></div>;
     }
   };
+
+  const getStatusText = () => {
+    switch (vehicle.status) {
+      case 'ok':
+        return "Sprawny";
+      case 'needs-service':
+        return "Wymaga serwisu";
+      case 'in-service':
+        return "W serwisie";
+      default:
+        return "Problem";
+    }
+  };
   
   return (
-    <div className={`glass-card rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all`}>
-      <div className="flex justify-between items-start">
-        <span className="inline-block px-2 py-1 text-xs font-medium bg-secondary text-foreground/70 rounded-full">
+    <div className={`glass-card rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all border-t-4 ${
+      vehicle.status === 'ok' ? 'border-t-green-500' : 
+      vehicle.status === 'needs-service' ? 'border-t-orange-500' : 
+      vehicle.status === 'in-service' ? 'border-t-blue-500' : 
+      'border-t-red-500'
+    }`}>
+      <div className="flex justify-between items-start mb-3">
+        <Badge variant="secondary" className="text-xs font-medium">
           {vehicle.vehicleType === 'car' ? 'Samochód' : 
            vehicle.vehicleType === 'truck' ? 'Ciężarówka' : 
            vehicle.vehicleType === 'motorcycle' ? 'Motocykl' : 
            'Inny'}
-        </span>
+        </Badge>
+        <Badge variant={
+          vehicle.status === 'ok' ? 'outline' : 
+          vehicle.status === 'needs-service' ? 'secondary' : 
+          vehicle.status === 'in-service' ? 'default' : 
+          'destructive'
+        } className="flex items-center gap-1.5">
+          {getStatusText()}
+        </Badge>
+      </div>
+      
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="text-lg font-semibold">{vehicle.name}</h3>
+          <p className="text-muted-foreground">{vehicle.model} ({vehicle.year})</p>
+        </div>
         {getStatusIcon()}
       </div>
       
-      <h3 className="text-lg font-semibold mt-4">{vehicle.name}</h3>
-      <p className="text-muted-foreground">{vehicle.model} ({vehicle.year})</p>
-      
-      <div className="mt-4 pt-4 border-t border-border">
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-muted-foreground">Nr Rejestracyjny</span>
-          <span className="font-medium">{vehicle.registrationNumber}</span>
+      <div className="mt-5 pt-4 border-t border-border space-y-2.5">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Nr Rejestracyjny</span>
+          <span className="text-sm font-medium bg-secondary/50 px-2 py-0.5 rounded">{vehicle.registrationNumber}</span>
         </div>
-        <div className="flex justify-between items-center text-sm mt-2">
-          <span className="text-muted-foreground">Ostatni Serwis</span>
-          <span>{formatDate(vehicle.lastService)}</span>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Ostatni Serwis</span>
+          <span className="text-sm">{formatDate(vehicle.lastService)}</span>
         </div>
-        <div className="flex justify-between items-center text-sm mt-2">
-          <span className="text-muted-foreground">Następny Serwis</span>
-          <span className="font-medium">{formatDate(vehicle.nextService)}</span>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Następny Serwis</span>
+          <span className="text-sm font-medium">{formatDate(vehicle.nextService)}</span>
         </div>
       </div>
       
-      <button className="w-full mt-4 px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
+      <Button className="w-full mt-5 gap-2" size="sm">
+        <Car className="h-4 w-4" />
         Zobacz Szczegóły
-      </button>
+      </Button>
     </div>
   );
 };
