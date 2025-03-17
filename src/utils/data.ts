@@ -1,4 +1,3 @@
-
 import { Device, ServiceRecord, Vehicle } from './types';
 
 // Sample data for our application
@@ -6,7 +5,7 @@ export const vehicles: Vehicle[] = [
   {
     id: '1',
     name: 'Company Car 1',
-    type: 'car',
+    vehicleType: 'car',
     model: 'Tesla Model 3',
     year: 2022,
     registrationNumber: 'ABC123',
@@ -17,7 +16,7 @@ export const vehicles: Vehicle[] = [
   {
     id: '2',
     name: 'Delivery Truck',
-    type: 'truck',
+    vehicleType: 'truck',
     model: 'Mercedes Actros',
     year: 2021,
     registrationNumber: 'XYZ789',
@@ -28,7 +27,7 @@ export const vehicles: Vehicle[] = [
   {
     id: '3',
     name: 'Service Van',
-    type: 'car',
+    vehicleType: 'car',
     model: 'Ford Transit',
     year: 2020,
     registrationNumber: 'DEF456',
@@ -39,7 +38,7 @@ export const vehicles: Vehicle[] = [
   {
     id: '4',
     name: 'Executive Car',
-    type: 'car',
+    vehicleType: 'car',
     model: 'BMW 7 Series',
     year: 2023,
     registrationNumber: 'GHI789',

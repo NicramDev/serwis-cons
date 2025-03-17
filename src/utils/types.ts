@@ -20,6 +20,7 @@ export interface Vehicle {
   notes?: string;
   status: 'ok' | 'needs-service' | 'in-service';
   images?: string[];
+  vehicleType?: 'car' | 'truck' | 'motorcycle' | 'other'; // Adding vehicle type as optional
   attachments?: {
     name: string;
     type: string;

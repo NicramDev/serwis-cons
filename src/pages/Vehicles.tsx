@@ -38,10 +38,10 @@ const Vehicles = () => {
       model: vehicleData.model || '',
       registrationNumber: vehicleData.registrationNumber || '',
       year: vehicleData.year || 0,
+      vehicleType: 'car', // Default type
     } as Vehicle;
     
-    const updatedVehicles = [...allVehicles, newVehicle];
-    setAllVehicles(updatedVehicles);
+    setAllVehicles(prevVehicles => [...prevVehicles, newVehicle]);
     setIsAddDialogOpen(false);
     toast.success("Pojazd został dodany pomyślnie");
   };

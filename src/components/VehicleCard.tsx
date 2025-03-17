@@ -28,9 +28,9 @@ const VehicleCard = ({ vehicle, delay = 0 }: VehicleCardProps) => {
     <div className={`glass-card rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all`}>
       <div className="flex justify-between items-start">
         <span className="inline-block px-2 py-1 text-xs font-medium bg-secondary text-foreground/70 rounded-full">
-          {vehicle.type === 'car' ? 'Samochód' : 
-           vehicle.type === 'truck' ? 'Ciężarówka' : 
-           vehicle.type === 'motorcycle' ? 'Motocykl' : 
+          {vehicle.vehicleType === 'car' ? 'Samochód' : 
+           vehicle.vehicleType === 'truck' ? 'Ciężarówka' : 
+           vehicle.vehicleType === 'motorcycle' ? 'Motocykl' : 
            'Inny'}
         </span>
         {getStatusIcon()}
