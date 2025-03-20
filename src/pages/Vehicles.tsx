@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
@@ -6,6 +5,7 @@ import { PlusCircle, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Vehicle } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
+import VehicleDetails from '../components/VehicleDetails';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
