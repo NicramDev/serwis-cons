@@ -8,9 +8,10 @@ import { Badge } from './ui/badge';
 interface VehicleCardProps {
   vehicle: Vehicle;
   delay?: number;
+  onViewDetails: () => void;
 }
 
-const VehicleCard = ({ vehicle, delay = 0 }: VehicleCardProps) => {
+const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
   const getStatusIcon = () => {
@@ -86,7 +87,7 @@ const VehicleCard = ({ vehicle, delay = 0 }: VehicleCardProps) => {
         </div>
       </div>
       
-      <Button className="w-full mt-5 gap-2" size="sm">
+      <Button className="w-full mt-5 gap-2" size="sm" onClick={onViewDetails}>
         <Car className="h-4 w-4" />
         Zobacz Szczegóły
       </Button>

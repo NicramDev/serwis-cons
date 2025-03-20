@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { vehicles } from '../utils/data';
+import { useEffect, useState } from 'react';
+import { vehicles as initialVehicles } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
 import { PlusCircle, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -11,12 +11,22 @@ import { toast } from 'sonner';
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(vehicles);
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
+    // Try to get vehicles from localStorage first
+    const savedVehicles = localStorage.getItem('vehicles');
+    return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
+  });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  
+  // Save vehicles to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('vehicles', JSON.stringify(allVehicles));
+  }, [allVehicles]);
   
   const filteredVehicles = allVehicles.filter(vehicle => 
     vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    vehicle.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
     (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
@@ -46,6 +56,11 @@ const Vehicles = () => {
     setAllVehicles(prevVehicles => [...prevVehicles, newVehicle]);
     setIsAddDialogOpen(false);
     toast.success("Pojazd został dodany pomyślnie");
+  };
+  
+  const handleViewDetails = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setIsDetailsDialogOpen(true);
   };
   
   return (
@@ -84,7 +99,12 @@ const Vehicles = () => {
         {filteredVehicles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVehicles.map((vehicle, index) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} delay={index % 5 + 1} />
+              <VehicleCard 
+                key={vehicle.id} 
+                vehicle={vehicle} 
+                delay={index % 5 + 1}
+                onViewDetails={() => handleViewDetails(vehicle)}
+              />
             ))}
           </div>
         ) : (
@@ -112,6 +132,18 @@ const Vehicles = () => {
             onSubmit={handleAddVehicle} 
             onCancel={() => setIsAddDialogOpen(false)} 
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Szczegóły pojazdu</DialogTitle>
+            <DialogDescription>
+              Pełne informacje o pojeździe
+            </DialogDescription>
+          </DialogHeader>
+          {selectedVehicle && <VehicleDetails vehicle={selectedVehicle} />}
         </DialogContent>
       </Dialog>
     </div>

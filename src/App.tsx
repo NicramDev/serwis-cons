@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Vehicles from "./pages/Vehicles";
 import Devices from "./pages/Devices";
 import History from "./pages/History";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/devices" element={<Devices />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/history" element={<History />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
