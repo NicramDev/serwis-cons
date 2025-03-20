@@ -12,26 +12,31 @@ import { Vehicle } from "../utils/types";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, Info } from "lucide-react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
+import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
-  model: z.string().min(1, "Model jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   vin: z.string().min(1, "Numer VIN jest wymagany"),
   registrationNumber: z.string().min(1, "Numer rejestracyjny jest wymagany"),
   purchaseDate: z.date().optional(),
-  lastInspectionDate: z.date().optional(),
-  lastServiceDate: z.date().optional(),
+  inspectionExpiryDate: z.date().optional(), // Renamed from lastInspectionDate
+  serviceExpiryDate: z.date().optional(), // Renamed from lastServiceDate
   insuranceExpiryDate: z.date().optional(),
   fuelCardNumber: z.string().optional(),
   gpsSystemNumber: z.string().optional(),
   driverName: z.string().optional(),
   tags: z.string().optional(),
   notes: z.string().optional(),
+  // Added reminder settings
+  insuranceReminderDays: z.number().min(0).max(90).default(30),
+  inspectionReminderDays: z.number().min(0).max(90).default(30),
+  serviceReminderDays: z.number().min(0).max(90).default(30),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -50,7 +55,6 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
     defaultValues: {
       name: "",
       brand: "",
-      model: "",
       year: new Date().getFullYear(),
       vin: "",
       registrationNumber: "",
@@ -59,6 +63,9 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
       driverName: "",
       tags: "",
       notes: "",
+      insuranceReminderDays: 30,
+      inspectionReminderDays: 30,
+      serviceReminderDays: 30,
     },
   });
 
@@ -98,6 +105,11 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const formatReminderDays = (days: number) => {
+    if (days === 1) return "1 dzień";
+    return `${days} dni`;
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
@@ -134,20 +146,6 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="model"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Model</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz model pojazdu" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
             name="year"
             render={({ field }) => (
               <FormItem>
@@ -159,9 +157,7 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           <FormField
             control={form.control}
             name="vin"
@@ -175,65 +171,66 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
               </FormItem>
             )}
           />
-          
-          <FormField
-            control={form.control}
-            name="registrationNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Numer rejestracyjny</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz numer rejestracyjny" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="purchaseDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Data zakupu</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy", { locale: pl })
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
+        <FormField
+          control={form.control}
+          name="registrationNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Numer rejestracyjny</FormLabel>
+              <FormControl>
+                <Input placeholder="Wpisz numer rejestracyjny" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="purchaseDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Data zakupu</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "dd.MM.yyyy", { locale: pl })
+                      ) : (
+                        <span>Wybierz datę</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
           <FormField
             control={form.control}
             name="insuranceExpiryDate"
@@ -268,50 +265,7 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
                         date < new Date("1900-01-01")
                       }
                       initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="lastInspectionDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Data ostatniego przeglądu</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy", { locale: pl })
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -322,10 +276,47 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
           
           <FormField
             control={form.control}
-            name="lastServiceDate"
+            name="insuranceReminderDays"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between mb-1">
+                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem</FormLabel>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div><Info className="h-4 w-4 text-muted-foreground cursor-help" /></div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        Ustaw ile dni przed wygaśnięciem ubezpieczenia chcesz otrzymać przypomnienie
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-center gap-4">
+                  <FormControl className="flex-1">
+                    <Slider
+                      value={[field.value]}
+                      min={1}
+                      max={90}
+                      step={1}
+                      onValueChange={(value) => field.onChange(value[0])}
+                    />
+                  </FormControl>
+                  <span className="w-16 text-right text-sm">{formatReminderDays(field.value)}</span>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
+          <FormField
+            control={form.control}
+            name="inspectionExpiryDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Data ostatniego serwisu</FormLabel>
+                <FormLabel>Przegląd ważny do</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -351,12 +342,128 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
                       selected={field.value}
                       onSelect={field.onChange}
                       disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
+                        date < new Date("1900-01-01")
                       }
                       initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="inspectionReminderDays"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between mb-1">
+                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem</FormLabel>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div><Info className="h-4 w-4 text-muted-foreground cursor-help" /></div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        Ustaw ile dni przed wygaśnięciem przeglądu chcesz otrzymać przypomnienie
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-center gap-4">
+                  <FormControl className="flex-1">
+                    <Slider
+                      value={[field.value]}
+                      min={1}
+                      max={90}
+                      step={1}
+                      onValueChange={(value) => field.onChange(value[0])}
+                    />
+                  </FormControl>
+                  <span className="w-16 text-right text-sm">{formatReminderDays(field.value)}</span>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
+          <FormField
+            control={form.control}
+            name="serviceExpiryDate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Serwis ważny do</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "dd.MM.yyyy", { locale: pl })
+                        ) : (
+                          <span>Wybierz datę</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="serviceReminderDays"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between mb-1">
+                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem</FormLabel>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div><Info className="h-4 w-4 text-muted-foreground cursor-help" /></div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        Ustaw ile dni przed terminem serwisu chcesz otrzymać przypomnienie
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-center gap-4">
+                  <FormControl className="flex-1">
+                    <Slider
+                      value={[field.value]}
+                      min={1}
+                      max={90}
+                      step={1}
+                      onValueChange={(value) => field.onChange(value[0])}
+                    />
+                  </FormControl>
+                  <span className="w-16 text-right text-sm">{formatReminderDays(field.value)}</span>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

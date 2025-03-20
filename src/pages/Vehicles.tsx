@@ -26,16 +26,18 @@ const Vehicles = () => {
   
   const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
     const now = new Date();
-    const nextServiceDate = new Date();
-    nextServiceDate.setMonth(now.getMonth() + 6);
+    const nextServiceDate = vehicleData.serviceExpiryDate || new Date(now);
+    if (!vehicleData.serviceExpiryDate) {
+      nextServiceDate.setMonth(now.getMonth() + 6);
+    }
     
     const newVehicle: Vehicle = {
       ...vehicleData,
       id: uuidv4(),
-      lastService: vehicleData.lastServiceDate || now,
-      nextService: nextServiceDate,
+      lastService: now, // Keep for compatibility
+      nextService: nextServiceDate, // Keep for compatibility
       status: 'ok',
-      model: vehicleData.model || '',
+      model: 'Generic', // We need to keep model for compatibility with existing code
       registrationNumber: vehicleData.registrationNumber || '',
       year: vehicleData.year || 0,
       vehicleType: 'car', // Default type

@@ -8,19 +8,22 @@ export interface Vehicle {
   vin?: string;
   registrationNumber: string;
   purchaseDate?: Date;
-  lastInspectionDate?: Date;
-  lastServiceDate?: Date;
+  inspectionExpiryDate?: Date; // Renamed from lastInspectionDate
+  serviceExpiryDate?: Date; // Renamed from lastServiceDate
   lastService: Date;
   nextService: Date;
   fuelCardNumber?: string;
   gpsSystemNumber?: string;
   driverName?: string;
   insuranceExpiryDate?: Date;
+  insuranceReminderDays?: number; // Added for insurance reminder
+  inspectionReminderDays?: number; // Added for inspection reminder
+  serviceReminderDays?: number; // Added for service reminder
   tags?: string;
   notes?: string;
   status: 'ok' | 'needs-service' | 'in-service';
   images?: string[];
-  vehicleType?: 'car' | 'truck' | 'motorcycle' | 'other'; // Adding vehicle type as optional
+  vehicleType?: 'car' | 'truck' | 'motorcycle' | 'other';
   attachments?: {
     name: string;
     type: string;
