@@ -17,13 +17,13 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
   const getStatusIcon = () => {
     switch (vehicle.status) {
       case 'ok':
-        return <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600"><Check className="h-5 w-5" /></div>;
+        return <div className="h-10 w-10 rounded-full bg-green-100/70 flex items-center justify-center text-green-600"><Check className="h-5 w-5" /></div>;
       case 'needs-service':
-        return <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Clock className="h-5 w-5" /></div>;
+        return <div className="h-10 w-10 rounded-full bg-orange-100/70 flex items-center justify-center text-orange-600"><Clock className="h-5 w-5" /></div>;
       case 'in-service':
-        return <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Car className="h-5 w-5" /></div>;
+        return <div className="h-10 w-10 rounded-full bg-blue-100/70 flex items-center justify-center text-blue-600"><Car className="h-5 w-5" /></div>;
       default:
-        return <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-600"><AlertTriangle className="h-5 w-5" /></div>;
+        return <div className="h-10 w-10 rounded-full bg-red-100/70 flex items-center justify-center text-red-600"><AlertTriangle className="h-5 w-5" /></div>;
     }
   };
 
@@ -40,15 +40,23 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
     }
   };
   
+  const getCardClass = () => {
+    switch (vehicle.status) {
+      case 'ok':
+        return 'gradient-card-green border-green-400/30';
+      case 'needs-service':
+        return 'gradient-card-orange border-orange-400/30';
+      case 'in-service':
+        return 'gradient-card-blue border-blue-400/30';
+      default:
+        return 'gradient-card-red border-red-400/30';
+    }
+  };
+  
   return (
-    <div className={`glass-card rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all border-t-4 ${
-      vehicle.status === 'ok' ? 'border-t-green-500' : 
-      vehicle.status === 'needs-service' ? 'border-t-orange-500' : 
-      vehicle.status === 'in-service' ? 'border-t-blue-500' : 
-      'border-t-red-500'
-    }`}>
+    <div className={`rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card`}>
       <div className="flex justify-between items-start mb-3">
-        <Badge variant="secondary" className="text-xs font-medium">
+        <Badge variant="secondary" className="text-xs font-medium shadow-sm">
           {vehicle.vehicleType === 'car' ? 'Samochód' : 
            vehicle.vehicleType === 'truck' ? 'Ciężarówka' : 
            vehicle.vehicleType === 'motorcycle' ? 'Motocykl' : 
@@ -59,7 +67,7 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
           vehicle.status === 'needs-service' ? 'secondary' : 
           vehicle.status === 'in-service' ? 'default' : 
           'destructive'
-        } className="flex items-center gap-1.5">
+        } className="flex items-center gap-1.5 shadow-sm">
           {getStatusText()}
         </Badge>
       </div>
@@ -67,15 +75,15 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-lg font-semibold">{vehicle.name}</h3>
-          <p className="text-muted-foreground">{vehicle.model} ({vehicle.year})</p>
+          <p className="text-muted-foreground">{vehicle.year}</p>
         </div>
         {getStatusIcon()}
       </div>
       
-      <div className="mt-5 pt-4 border-t border-border space-y-2.5">
+      <div className="mt-5 pt-4 border-t border-border/50 space-y-2.5">
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">Nr Rejestracyjny</span>
-          <span className="text-sm font-medium bg-secondary/50 px-2 py-0.5 rounded">{vehicle.registrationNumber}</span>
+          <span className="text-sm font-medium bg-white/50 px-2 py-0.5 rounded shadow-sm">{vehicle.registrationNumber}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">Ostatni Serwis</span>
@@ -87,7 +95,12 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
         </div>
       </div>
       
-      <Button className="w-full mt-5 gap-2" size="sm" onClick={onViewDetails}>
+      <Button 
+        className="w-full mt-5 gap-2 shadow-sm transition-all hover:shadow-md" 
+        size="sm" 
+        onClick={onViewDetails}
+        variant="outline"
+      >
         <Car className="h-4 w-4" />
         Zobacz Szczegóły
       </Button>

@@ -35,7 +35,7 @@
     --input: 214 32% 91%;
     --ring: 222 47% 31%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
@@ -99,7 +99,7 @@
   }
 
   .glass-card {
-    @apply bg-white/90 backdrop-blur-sm border border-border/80 shadow-sm;
+    @apply bg-white/90 backdrop-blur-sm border border-border/80 shadow-md rounded-xl transition-all duration-300;
   }
 
   .icon-container {
@@ -145,5 +145,27 @@
   
   .shadow-glass {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+  }
+  
+  /* Modern gradient cards */
+  .gradient-card-blue {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+  
+  .gradient-card-green {
+    background: linear-gradient(135deg, #f6f9f6 0%, #d4e6d4 100%);
+  }
+  
+  .gradient-card-orange {
+    background: linear-gradient(135deg, #fff9f6 0%, #ffead6 100%);
+  }
+  
+  .gradient-card-red {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffd6d6 100%);
+  }
+  
+  /* Modern blur effects */
+  .backdrop-blur-card {
+    @apply backdrop-blur-md bg-white/60;
   }
 }

@@ -1,13 +1,15 @@
+
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Filter } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Vehicle } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
 import VehicleDetails from '../components/VehicleDetails';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,15 +66,15 @@ const Vehicles = () => {
   };
   
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/30">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Pojazdy</h1>
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Pojazdy</h1>
             <p className="text-muted-foreground">Zarządzaj i śledź wszystkie swoje pojazdy</p>
           </div>
           
-          <div className="mt-4 md:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+          <div className="mt-6 md:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-muted-foreground" />
@@ -80,19 +82,19 @@ const Vehicles = () => {
               <input
                 type="text"
                 placeholder="Szukaj pojazdów..."
-                className="pl-10 pr-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 w-full"
+                className="pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 w-full shadow-sm backdrop-blur-sm bg-white/60"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             
-            <button 
-              className="flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-colors"
+            <Button 
+              className="flex items-center justify-center space-x-2 shadow-sm"
               onClick={() => setIsAddDialogOpen(true)}
             >
               <PlusCircle className="h-5 w-5" />
               <span>Dodaj Pojazd</span>
-            </button>
+            </Button>
           </div>
         </div>
         
@@ -108,7 +110,7 @@ const Vehicles = () => {
             ))}
           </div>
         ) : (
-          <div className="glass-card rounded-xl p-12 text-center">
+          <div className="backdrop-blur-card rounded-xl p-12 text-center shadow-md border border-border/50">
             <div className="icon-container mx-auto mb-4">
               <Search className="h-5 w-5" />
             </div>
