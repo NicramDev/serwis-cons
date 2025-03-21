@@ -1,3 +1,4 @@
+
 import { Device, ServiceRecord, Vehicle } from './types';
 
 // Sample data for our application
@@ -190,10 +191,23 @@ export const getUpcomingServices = () => {
 };
 
 // Helper function to format dates
-export const formatDate = (date: Date): string => {
+export const formatDate = (date: Date | string | undefined | null): string => {
+  // Check if date is undefined or null
+  if (!date) {
+    return 'Nie określono';
+  }
+  
+  // Convert string date to Date object if needed
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // Check if date is valid
+  if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
+    return 'Nieprawidłowa data';
+  }
+  
   return new Intl.DateTimeFormat('en-US', { 
     year: 'numeric', 
     month: 'short', 
     day: 'numeric' 
-  }).format(date);
+  }).format(dateObj);
 };

@@ -53,6 +53,10 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
     }
   };
   
+  // Safely access and format dates
+  const lastServiceFormatted = formatDate(vehicle.lastService);
+  const nextServiceFormatted = formatDate(vehicle.nextService);
+  
   return (
     <div className={`rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card`}>
       <div className="flex justify-between items-start mb-3">
@@ -87,11 +91,11 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">Ostatni Serwis</span>
-          <span className="text-sm">{formatDate(vehicle.lastService)}</span>
+          <span className="text-sm">{lastServiceFormatted}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">Następny Serwis</span>
-          <span className="text-sm font-medium">{formatDate(vehicle.nextService)}</span>
+          <span className="text-sm font-medium">{nextServiceFormatted}</span>
         </div>
       </div>
       
