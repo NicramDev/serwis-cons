@@ -1,5 +1,5 @@
 
-import { Car, Check, Clock, AlertTriangle } from 'lucide-react';
+import { Car, Check, Clock, AlertTriangle, Edit } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Button } from './ui/button';
@@ -9,9 +9,19 @@ interface VehicleCardProps {
   vehicle: Vehicle;
   delay?: number;
   onViewDetails: () => void;
+  onEdit: () => void;
+  isSelected?: boolean;
+  onClick: () => void;
 }
 
-const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) => {
+const VehicleCard = ({ 
+  vehicle, 
+  delay = 0, 
+  onViewDetails, 
+  onEdit,
+  isSelected = false,
+  onClick
+}: VehicleCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
   const getStatusIcon = () => {
@@ -41,16 +51,12 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
   };
   
   const getCardClass = () => {
-    switch (vehicle.status) {
-      case 'ok':
-        return 'gradient-card-green border-green-400/30';
-      case 'needs-service':
-        return 'gradient-card-orange border-orange-400/30';
-      case 'in-service':
-        return 'gradient-card-blue border-blue-400/30';
-      default:
-        return 'gradient-card-red border-red-400/30';
-    }
+    const baseClass = vehicle.status === 'ok' ? 'gradient-card-green border-green-400/30' : 
+                     vehicle.status === 'needs-service' ? 'gradient-card-orange border-orange-400/30' : 
+                     vehicle.status === 'in-service' ? 'gradient-card-blue border-blue-400/30' : 
+                     'gradient-card-red border-red-400/30';
+    
+    return `${baseClass} ${isSelected ? 'ring-2 ring-primary shadow-lg' : ''}`;
   };
   
   // Safely access and format dates
@@ -58,7 +64,10 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
   const nextServiceFormatted = formatDate(vehicle.nextService);
   
   return (
-    <div className={`rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card`}>
+    <div 
+      className={`rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full`}
+      onClick={onClick}
+    >
       <div className="flex justify-between items-start mb-3">
         <Badge variant="secondary" className="text-xs font-medium shadow-sm">
           {vehicle.vehicleType === 'car' ? 'Samochód' : 
@@ -99,15 +108,32 @@ const VehicleCard = ({ vehicle, delay = 0, onViewDetails }: VehicleCardProps) =>
         </div>
       </div>
       
-      <Button 
-        className="w-full mt-5 gap-2 shadow-sm transition-all hover:shadow-md" 
-        size="sm" 
-        onClick={onViewDetails}
-        variant="outline"
-      >
-        <Car className="h-4 w-4" />
-        Zobacz Szczegóły
-      </Button>
+      <div className="flex gap-2 mt-5">
+        <Button 
+          className="flex-1 gap-2 shadow-sm transition-all hover:shadow-md" 
+          size="sm" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails();
+          }}
+          variant="outline"
+        >
+          <Car className="h-4 w-4" />
+          Zobacz Szczegóły
+        </Button>
+        
+        <Button 
+          className="shadow-sm transition-all hover:shadow-md" 
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          variant="secondary"
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

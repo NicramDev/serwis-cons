@@ -1,15 +1,16 @@
 
 import { useEffect, useState } from 'react';
-import { vehicles as initialVehicles } from '../utils/data';
+import { vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
-import { PlusCircle, Search, Filter } from 'lucide-react';
+import { PlusCircle, Search, Filter, Cpu } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Vehicle } from '../utils/types';
+import { Vehicle, Device } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
 import VehicleDetails from '../components/VehicleDetails';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,22 +19,37 @@ const Vehicles = () => {
     const savedVehicles = localStorage.getItem('vehicles');
     return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
   });
+  const [allDevices, setAllDevices] = useState<Device[]>(() => {
+    // Try to get devices from localStorage
+    const savedDevices = localStorage.getItem('devices');
+    return savedDevices ? JSON.parse(savedDevices) : initialDevices;
+  });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   
   // Save vehicles to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('vehicles', JSON.stringify(allVehicles));
   }, [allVehicles]);
   
-  const filteredVehicles = allVehicles.filter(vehicle => 
-    vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-    (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-    (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-    (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+  // Filter and sort vehicles alphabetically by name
+  const filteredVehicles = allVehicles
+    .filter(vehicle => 
+      vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Get devices for the selected vehicle
+  const selectedVehicleDevices = allDevices.filter(
+    device => device.vehicleId === selectedVehicleId
   );
   
   const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
@@ -65,9 +81,24 @@ const Vehicles = () => {
     setIsDetailsDialogOpen(true);
   };
   
+  const handleEditVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setIsEditDialogOpen(true);
+    // Tutaj będzie logika edycji, która zostanie zaimplementowana w przyszłości
+    toast.info("Funkcja edycji pojazdu będzie dostępna wkrótce");
+  };
+  
+  const handleVehicleClick = (vehicleId: string) => {
+    if (selectedVehicleId === vehicleId) {
+      setSelectedVehicleId(null); // Zamknij, jeśli ten sam pojazd jest już wybrany
+    } else {
+      setSelectedVehicleId(vehicleId); // Wybierz nowy pojazd
+    }
+  };
+  
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/30">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Pojazdy</h1>
@@ -99,14 +130,63 @@ const Vehicles = () => {
         </div>
         
         {filteredVehicles.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {filteredVehicles.map((vehicle, index) => (
-              <VehicleCard 
-                key={vehicle.id} 
-                vehicle={vehicle} 
-                delay={index % 5 + 1}
-                onViewDetails={() => handleViewDetails(vehicle)}
-              />
+              <div key={vehicle.id} className="vehicle-container">
+                <VehicleCard 
+                  vehicle={vehicle} 
+                  delay={index % 5 + 1}
+                  onViewDetails={() => handleViewDetails(vehicle)}
+                  onEdit={() => handleEditVehicle(vehicle)}
+                  isSelected={selectedVehicleId === vehicle.id}
+                  onClick={() => handleVehicleClick(vehicle.id)}
+                />
+                
+                {selectedVehicleId === vehicle.id && selectedVehicleDevices.length > 0 && (
+                  <div className="ml-8 mt-2 space-y-2 pl-4 border-l-2 border-primary/30 animate-in fade-in slide-in-from-left-2">
+                    <div className="flex items-center gap-2 mb-2 text-sm font-medium text-primary">
+                      <Cpu className="h-4 w-4" />
+                      <span>Przypisane urządzenia ({selectedVehicleDevices.length})</span>
+                    </div>
+                    {selectedVehicleDevices.map((device) => (
+                      <div 
+                        key={device.id} 
+                        className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className="font-medium">{device.name}</h4>
+                            <p className="text-xs text-muted-foreground">{device.model}</p>
+                          </div>
+                          <Badge variant={
+                            device.status === 'ok' ? 'outline' : 
+                            device.status === 'needs-service' ? 'secondary' : 
+                            device.status === 'in-service' ? 'default' : 
+                            'destructive'
+                          }>
+                            {device.status === 'ok' ? 'Sprawne' : 
+                            device.status === 'needs-service' ? 'Wymaga serwisu' : 
+                            device.status === 'in-service' ? 'W serwisie' : 
+                            'Problem'}
+                          </Badge>
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
+                          <span className="text-xs text-muted-foreground">Nr seryjny: {device.serialNumber}</span>
+                          <span className="text-xs text-muted-foreground">Typ: {device.type}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {selectedVehicleId === vehicle.id && selectedVehicleDevices.length === 0 && (
+                  <div className="ml-8 mt-2 pl-4 border-l-2 border-primary/30 animate-in fade-in slide-in-from-left-2">
+                    <div className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50">
+                      <p className="text-sm text-muted-foreground">Brak przypisanych urządzeń do tego pojazdu.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         ) : (
@@ -146,6 +226,21 @@ const Vehicles = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedVehicle && <VehicleDetails vehicle={selectedVehicle} />}
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edytuj pojazd</DialogTitle>
+            <DialogDescription>
+              Zaktualizuj informacje o pojeździe
+            </DialogDescription>
+          </DialogHeader>
+          {/* W przyszłości zostanie zaimplementowany formularz edycji */}
+          <div className="p-4 text-center">
+            <p className="text-muted-foreground">Funkcja edycji pojazdu będzie dostępna wkrótce.</p>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
