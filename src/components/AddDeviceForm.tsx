@@ -8,17 +8,23 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, Vehicle } from "../utils/types";
-import { X } from "lucide-react";
+import { X, Calendar } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 const deviceSchema = z.object({
+  vehicleId: z.string().optional(),
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
   type: z.string().min(1, "Typ urządzenia jest wymagany"),
   serialNumber: z.string().min(1, "Numer seryjny jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
-  vehicleId: z.string().optional(),
   purchasePrice: z.coerce.number().min(0, "Cena nie może być ujemna").optional(),
+  serviceExpiryDate: z.date().optional(),
+  serviceReminderDays: z.coerce.number().min(0).max(365).optional(),
   notes: z.string().optional(),
 });
 
@@ -37,13 +43,15 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
   const form = useForm<DeviceFormValues>({
     resolver: zodResolver(deviceSchema),
     defaultValues: {
+      vehicleId: undefined,
       name: "",
       brand: "",
       type: "",
       serialNumber: "",
       year: new Date().getFullYear(),
-      vehicleId: undefined,
       purchasePrice: undefined,
+      serviceExpiryDate: undefined,
+      serviceReminderDays: 30,
       notes: "",
     },
   });
@@ -51,7 +59,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
   const handleSubmit = (values: DeviceFormValues) => {
     const newDevice: Partial<Device> = {
       ...values,
-      model: values.type, // For compatibility, use type as model
       images: images.map(img => URL.createObjectURL(img)),
       attachments: attachments.map(file => ({
         name: file.name,
@@ -59,6 +66,9 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
         size: file.size,
         url: URL.createObjectURL(file)
       })),
+      status: 'ok',
+      lastService: new Date(),
+      nextService: values.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6))
     };
     
     onSubmit(newDevice);
@@ -87,6 +97,32 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+        {/* Priority field: Vehicle assignment */}
+        <FormField
+          control={form.control}
+          name="vehicleId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Przypisz do pojazdu</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {vehicles.map(vehicle => (
+                    <SelectItem key={vehicle.id} value={vehicle.id}>
+                      {vehicle.name} ({vehicle.registrationNumber})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -177,30 +213,68 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
           />
         </div>
         
-        <FormField
-          control={form.control}
-          name="vehicleId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Przypisz do pojazdu</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="serviceExpiryDate"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Wymagany serwis data</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "dd.MM.yyyy")
+                        ) : (
+                          <span>Wybierz datę</span>
+                        )}
+                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="serviceReminderDays"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Przypomnienie (dni przed terminem)</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
-                  </SelectTrigger>
+                  <Input 
+                    type="number" 
+                    placeholder="30"
+                    min={0}
+                    max={365}
+                    {...field} 
+                    onChange={e => field.onChange(parseInt(e.target.value))}
+                  />
                 </FormControl>
-                <SelectContent>
-                  {vehicles.map(vehicle => (
-                    <SelectItem key={vehicle.id} value={vehicle.id}>
-                      {vehicle.name} ({vehicle.registrationNumber})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <FormField
           control={form.control}

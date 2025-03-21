@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
-import { PlusCircle, Search, Cpu, Info } from 'lucide-react';
+import { PlusCircle, Search, Cpu, Info, Wrench, X, AlertDialog } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Vehicle, Device } from '../utils/types';
+import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
 import VehicleDetails from '../components/VehicleDetails';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,6 +13,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import EditVehicleForm from '../components/EditVehicleForm';
 import { Card, CardContent } from "@/components/ui/card";
+import ServiceForm from '../components/ServiceForm';
+import ServiceRecordList from '../components/ServiceRecordList';
+import {
+  AlertDialog as AlertDialogComponent,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,11 +38,19 @@ const Vehicles = () => {
     const savedDevices = localStorage.getItem('devices');
     return savedDevices ? JSON.parse(savedDevices) : initialDevices;
   });
+  const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>(() => {
+    const savedRecords = localStorage.getItem('serviceRecords');
+    return savedRecords ? JSON.parse(savedRecords) : [];
+  });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [showingServiceRecords, setShowingServiceRecords] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   
   // Save vehicles to localStorage whenever they change
   useEffect(() => {
@@ -41,6 +61,11 @@ const Vehicles = () => {
   useEffect(() => {
     localStorage.setItem('devices', JSON.stringify(allDevices));
   }, [allDevices]);
+  
+  // Save service records to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('serviceRecords', JSON.stringify(serviceRecords));
+  }, [serviceRecords]);
   
   // Filter and sort vehicles alphabetically by name
   const filteredVehicles = allVehicles
@@ -57,6 +82,11 @@ const Vehicles = () => {
   // Get devices for the selected vehicle
   const selectedVehicleDevices = allDevices.filter(
     device => device.vehicleId === selectedVehicleId
+  );
+  
+  // Get service records for the selected vehicle
+  const selectedVehicleServices = serviceRecords.filter(
+    record => record.vehicleId === selectedVehicleId
   );
   
   const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
@@ -93,6 +123,33 @@ const Vehicles = () => {
     setIsEditDialogOpen(true);
   };
   
+  const handleDeleteVehicle = (vehicle: Vehicle) => {
+    setVehicleToDelete(vehicle);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDeleteVehicle = () => {
+    if (vehicleToDelete) {
+      // Remove all devices associated with this vehicle
+      const updatedDevices = allDevices.filter(device => device.vehicleId !== vehicleToDelete.id);
+      
+      // Remove all service records associated with this vehicle
+      const updatedServiceRecords = serviceRecords.filter(record => record.vehicleId !== vehicleToDelete.id);
+      
+      setAllVehicles(prevVehicles => prevVehicles.filter(v => v.id !== vehicleToDelete.id));
+      setAllDevices(updatedDevices);
+      setServiceRecords(updatedServiceRecords);
+      
+      if (selectedVehicleId === vehicleToDelete.id) {
+        setSelectedVehicleId(null);
+      }
+      
+      toast.success("Pojazd został usunięty pomyślnie");
+    }
+    setIsDeleteDialogOpen(false);
+    setVehicleToDelete(null);
+  };
+  
   const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
     setAllVehicles(prevVehicles => 
       prevVehicles.map(vehicle => 
@@ -108,7 +165,24 @@ const Vehicles = () => {
       setSelectedVehicleId(null); // Zamknij, jeśli ten sam pojazd jest już wybrany
     } else {
       setSelectedVehicleId(vehicleId); // Wybierz nowy pojazd
+      setShowingServiceRecords(false); // Reset view to devices
     }
+  };
+  
+  const handleServiceClick = () => {
+    setShowingServiceRecords(!showingServiceRecords);
+  };
+  
+  const handleAddService = (vehicleId: string) => {
+    setSelectedVehicleId(vehicleId);
+    setIsServiceDialogOpen(true);
+  };
+  
+  const handleSubmitService = (serviceRecord: ServiceRecord) => {
+    setServiceRecords(prev => [...prev, serviceRecord]);
+    setIsServiceDialogOpen(false);
+    setShowingServiceRecords(true); // Switch to service records view
+    toast.success("Serwis/naprawa została dodana pomyślnie");
   };
   
   return (
@@ -155,6 +229,7 @@ const Vehicles = () => {
                   delay={index % 5 + 1}
                   onViewDetails={() => handleViewDetails(vehicle)}
                   onEdit={() => handleEditVehicle(vehicle)}
+                  onDelete={() => handleDeleteVehicle(vehicle)}
                   isSelected={selectedVehicleId === vehicle.id}
                   onClick={() => handleVehicleClick(vehicle.id)}
                   compact={true}
@@ -194,6 +269,14 @@ const Vehicles = () => {
                               >
                                 Edytuj
                               </Button>
+                              <Button 
+                                size="sm" 
+                                variant={showingServiceRecords ? "default" : "outline"}
+                                onClick={handleServiceClick}
+                              >
+                                <Wrench className="h-4 w-4 mr-1" />
+                                Serwis
+                              </Button>
                             </div>
                           </div>
                           
@@ -212,48 +295,71 @@ const Vehicles = () => {
                             </div>
                           </div>
                           
-                          {/* Przypisane urządzenia */}
+                          {/* Toggle between devices and service records */}
                           <div className="pt-4 border-t border-border/50">
-                            <div className="flex items-center gap-2 mb-3 text-sm font-medium text-primary">
-                              <Cpu className="h-4 w-4" />
-                              <span>Przypisane urządzenia ({selectedVehicleDevices.length})</span>
+                            <div className="flex items-center justify-between mb-3">
+                              {!showingServiceRecords ? (
+                                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                                  <Cpu className="h-4 w-4" />
+                                  <span>Przypisane urządzenia ({selectedVehicleDevices.length})</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                                  <Wrench className="h-4 w-4" />
+                                  <span>Historia serwisowa ({selectedVehicleServices.length})</span>
+                                </div>
+                              )}
+                              
+                              <Button 
+                                size="sm" 
+                                onClick={() => showingServiceRecords 
+                                  ? setIsServiceDialogOpen(true) 
+                                  : setShowingServiceRecords(true)
+                                }
+                              >
+                                {showingServiceRecords ? "Dodaj serwis/naprawę" : "Pokaż historię serwisową"}
+                              </Button>
                             </div>
                             
-                            {selectedVehicleDevices.length > 0 ? (
-                              <div className="space-y-3">
-                                {selectedVehicleDevices.map((device) => (
-                                  <div 
-                                    key={device.id} 
-                                    className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
-                                  >
-                                    <div className="flex justify-between items-center">
-                                      <div>
-                                        <h4 className="font-medium">{device.name}</h4>
-                                        <p className="text-xs text-muted-foreground">{device.model}</p>
+                            {!showingServiceRecords ? (
+                              selectedVehicleDevices.length > 0 ? (
+                                <div className="space-y-3">
+                                  {selectedVehicleDevices.map((device) => (
+                                    <div 
+                                      key={device.id} 
+                                      className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
+                                    >
+                                      <div className="flex justify-between items-center">
+                                        <div>
+                                          <h4 className="font-medium">{device.name}</h4>
+                                          <p className="text-xs text-muted-foreground">{device.type}</p>
+                                        </div>
+                                        <Badge variant={
+                                          device.status === 'ok' ? 'outline' : 
+                                          device.status === 'needs-service' ? 'secondary' : 
+                                          device.status === 'in-service' ? 'default' : 
+                                          'destructive'
+                                        }>
+                                          {device.status === 'ok' ? 'Sprawne' : 
+                                          device.status === 'needs-service' ? 'Wymaga serwisu' : 
+                                          device.status === 'in-service' ? 'W serwisie' : 
+                                          'Problem'}
+                                        </Badge>
                                       </div>
-                                      <Badge variant={
-                                        device.status === 'ok' ? 'outline' : 
-                                        device.status === 'needs-service' ? 'secondary' : 
-                                        device.status === 'in-service' ? 'default' : 
-                                        'destructive'
-                                      }>
-                                        {device.status === 'ok' ? 'Sprawne' : 
-                                        device.status === 'needs-service' ? 'Wymaga serwisu' : 
-                                        device.status === 'in-service' ? 'W serwisie' : 
-                                        'Problem'}
-                                      </Badge>
+                                      <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
+                                        <span className="text-xs text-muted-foreground">Nr seryjny: {device.serialNumber}</span>
+                                        <span className="text-xs text-muted-foreground">Typ: {device.type}</span>
+                                      </div>
                                     </div>
-                                    <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
-                                      <span className="text-xs text-muted-foreground">Nr seryjny: {device.serialNumber}</span>
-                                      <span className="text-xs text-muted-foreground">Typ: {device.type}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
+                                  <p className="text-sm text-muted-foreground">Brak przypisanych urządzeń do tego pojazdu.</p>
+                                </div>
+                              )
                             ) : (
-                              <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
-                                <p className="text-sm text-muted-foreground">Brak przypisanych urządzeń do tego pojazdu.</p>
-                              </div>
+                              <ServiceRecordList services={selectedVehicleServices} />
                             )}
                           </div>
                         </div>
@@ -333,6 +439,42 @@ const Vehicles = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Dodaj serwis/naprawę</DialogTitle>
+            <DialogDescription>
+              Dodaj informacje o serwisie lub naprawie urządzenia
+            </DialogDescription>
+          </DialogHeader>
+          {selectedVehicleId && (
+            <ServiceForm
+              vehicleId={selectedVehicleId}
+              devices={selectedVehicleDevices}
+              onSubmit={handleSubmitService}
+              onCancel={() => setIsServiceDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      <AlertDialogComponent open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć ten pojazd?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna. Spowoduje to usunięcie pojazdu oraz wszystkich przypisanych urządzeń i historii serwisowej.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteVehicle} className="bg-destructive text-destructive-foreground">
+              Usuń pojazd
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogComponent>
     </div>
   );
 };

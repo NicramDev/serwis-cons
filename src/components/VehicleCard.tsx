@@ -1,5 +1,5 @@
 
-import { Car, Check, Clock, AlertTriangle, Edit } from 'lucide-react';
+import { Car, Check, Clock, AlertTriangle, Edit, Trash2 } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Button } from './ui/button';
@@ -10,6 +10,7 @@ interface VehicleCardProps {
   delay?: number;
   onViewDetails: () => void;
   onEdit: () => void;
+  onDelete: () => void;
   isSelected?: boolean;
   onClick: () => void;
   compact?: boolean;
@@ -20,6 +21,7 @@ const VehicleCard = ({
   delay = 0, 
   onViewDetails, 
   onEdit,
+  onDelete,
   isSelected = false,
   onClick,
   compact = false
@@ -90,7 +92,7 @@ const VehicleCard = ({
     >
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold">{vehicle.name}</h3>
+          <h3 className="text-xs font-semibold">{vehicle.name}</h3>
           <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
         </div>
         {getStatusIcon()}
@@ -122,6 +124,18 @@ const VehicleCard = ({
             variant="secondary"
           >
             <Edit className="h-3 w-3" />
+          </Button>
+          
+          <Button 
+            className="h-6 w-6 p-0" 
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            variant="destructive"
+          >
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </div>

@@ -45,6 +45,8 @@ export interface Device {
   purchaseDate?: Date;
   lastService: Date;
   nextService: Date;
+  serviceExpiryDate?: Date;
+  serviceReminderDays?: number;
   notes?: string;
   status: 'ok' | 'needs-service' | 'in-service' | 'error';
   images?: string[];
@@ -61,8 +63,11 @@ export interface ServiceRecord {
   date: Date;
   vehicleId?: string;
   deviceId?: string;
+  deviceName?: string;
+  location?: string;
   type: 'repair' | 'maintenance' | 'inspection';
   description: string;
   cost: number;
   technician: string;
+  images?: string[];
 }
