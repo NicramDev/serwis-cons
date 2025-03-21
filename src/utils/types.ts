@@ -37,7 +37,7 @@ export interface Device {
   name: string;
   brand?: string;
   type: string;
-  model: string;
+  model?: string; // Made optional since it's redundant
   serialNumber: string;
   vehicleId?: string; // If attached to a vehicle
   year?: number;

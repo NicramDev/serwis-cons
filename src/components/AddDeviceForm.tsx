@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const deviceSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
-  model: z.string().min(1, "Model jest wymagany"),
   type: z.string().min(1, "Typ urządzenia jest wymagany"),
   serialNumber: z.string().min(1, "Numer seryjny jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
@@ -40,7 +39,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
     defaultValues: {
       name: "",
       brand: "",
-      model: "",
       type: "",
       serialNumber: "",
       year: new Date().getFullYear(),
@@ -53,6 +51,7 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
   const handleSubmit = (values: DeviceFormValues) => {
     const newDevice: Partial<Device> = {
       ...values,
+      model: values.type, // For compatibility, use type as model
       images: images.map(img => URL.createObjectURL(img)),
       attachments: attachments.map(file => ({
         name: file.name,
@@ -121,20 +120,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="model"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Model</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz model urządzenia" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
             name="type"
             render={({ field }) => (
               <FormItem>
@@ -146,9 +131,7 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
               </FormItem>
             )}
           />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
           <FormField
             control={form.control}
             name="serialNumber"
@@ -162,7 +145,9 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
               </FormItem>
             )}
           />
-          
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="year"
@@ -171,6 +156,20 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
                 <FormLabel>Rok produkcji</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="purchasePrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Koszt zakupu (PLN)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -198,20 +197,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="purchasePrice"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Koszt zakupu (PLN)</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}

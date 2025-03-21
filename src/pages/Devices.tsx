@@ -31,7 +31,7 @@ const Devices = () => {
   
   const filteredDevices = allDevices.filter(device => 
     device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    device.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (device.model?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
     device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     device.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -45,13 +45,17 @@ const Devices = () => {
       id: uuidv4(),
       name: deviceData.name || '',
       type: deviceData.type || '',
-      model: deviceData.model || '',
+      model: deviceData.model || deviceData.type || '', // Use type if model is not provided
       serialNumber: deviceData.serialNumber || '',
       vehicleId: deviceData.vehicleId,
+      year: deviceData.year,
+      purchasePrice: deviceData.purchasePrice,
       lastService: now,
       nextService: nextServiceDate,
+      notes: deviceData.notes,
       status: 'ok',
-      ...deviceData
+      images: deviceData.images,
+      attachments: deviceData.attachments
     };
     
     setAllDevices(prevDevices => [...prevDevices, newDevice]);
