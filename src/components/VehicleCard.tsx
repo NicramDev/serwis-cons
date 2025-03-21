@@ -12,6 +12,7 @@ interface VehicleCardProps {
   onEdit: () => void;
   isSelected?: boolean;
   onClick: () => void;
+  compact?: boolean;
 }
 
 const VehicleCard = ({ 
@@ -20,20 +21,21 @@ const VehicleCard = ({
   onViewDetails, 
   onEdit,
   isSelected = false,
-  onClick
+  onClick,
+  compact = false
 }: VehicleCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
   const getStatusIcon = () => {
     switch (vehicle.status) {
       case 'ok':
-        return <div className="h-10 w-10 rounded-full bg-green-100/70 flex items-center justify-center text-green-600"><Check className="h-5 w-5" /></div>;
+        return <div className="h-8 w-8 rounded-full bg-green-100/70 flex items-center justify-center text-green-600"><Check className="h-4 w-4" /></div>;
       case 'needs-service':
-        return <div className="h-10 w-10 rounded-full bg-orange-100/70 flex items-center justify-center text-orange-600"><Clock className="h-5 w-5" /></div>;
+        return <div className="h-8 w-8 rounded-full bg-orange-100/70 flex items-center justify-center text-orange-600"><Clock className="h-4 w-4" /></div>;
       case 'in-service':
-        return <div className="h-10 w-10 rounded-full bg-blue-100/70 flex items-center justify-center text-blue-600"><Car className="h-5 w-5" /></div>;
+        return <div className="h-8 w-8 rounded-full bg-blue-100/70 flex items-center justify-center text-blue-600"><Car className="h-4 w-4" /></div>;
       default:
-        return <div className="h-10 w-10 rounded-full bg-red-100/70 flex items-center justify-center text-red-600"><AlertTriangle className="h-5 w-5" /></div>;
+        return <div className="h-8 w-8 rounded-full bg-red-100/70 flex items-center justify-center text-red-600"><AlertTriangle className="h-4 w-4" /></div>;
     }
   };
 
@@ -59,58 +61,88 @@ const VehicleCard = ({
     return `${baseClass} ${isSelected ? 'ring-2 ring-primary shadow-lg' : ''}`;
   };
   
-  // Safely access and format dates
-  const lastServiceFormatted = formatDate(vehicle.lastService);
-  const nextServiceFormatted = formatDate(vehicle.nextService);
+  // Safely convert to Date objects and format dates
+  const safeFormatDate = (dateValue: any) => {
+    if (!dateValue) return 'Brak danych';
+    
+    try {
+      // Handle if it's already a Date object
+      if (dateValue instanceof Date) {
+        return formatDate(dateValue);
+      }
+      
+      // Handle if it's a string or number
+      return formatDate(new Date(dateValue));
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return 'Nieprawidłowa data';
+    }
+  };
+  
+  const lastServiceFormatted = safeFormatDate(vehicle.lastService);
+  const nextServiceFormatted = safeFormatDate(vehicle.nextService);
   
   return (
     <div 
-      className={`rounded-xl p-6 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full`}
+      className={`rounded-xl p-4 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full`}
       onClick={onClick}
     >
-      <div className="flex justify-between items-start mb-3">
-        <Badge variant="secondary" className="text-xs font-medium shadow-sm">
-          {vehicle.vehicleType === 'car' ? 'Samochód' : 
-           vehicle.vehicleType === 'truck' ? 'Ciężarówka' : 
-           vehicle.vehicleType === 'motorcycle' ? 'Motocykl' : 
-           'Inny'}
-        </Badge>
-        <Badge variant={
-          vehicle.status === 'ok' ? 'outline' : 
-          vehicle.status === 'needs-service' ? 'secondary' : 
-          vehicle.status === 'in-service' ? 'default' : 
-          'destructive'
-        } className="flex items-center gap-1.5 shadow-sm">
-          {getStatusText()}
-        </Badge>
-      </div>
-      
       <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-semibold">{vehicle.name}</h3>
-          <p className="text-muted-foreground">{vehicle.year}</p>
+        <div className="flex-1">
+          <div className="flex justify-between items-start mb-1">
+            <Badge variant="secondary" className="text-xs font-medium shadow-sm mb-1">
+              {vehicle.vehicleType === 'car' ? 'Samochód' : 
+              vehicle.vehicleType === 'truck' ? 'Ciężarówka' : 
+              vehicle.vehicleType === 'motorcycle' ? 'Motocykl' : 
+              'Inny'}
+            </Badge>
+            <Badge variant={
+              vehicle.status === 'ok' ? 'outline' : 
+              vehicle.status === 'needs-service' ? 'secondary' : 
+              vehicle.status === 'in-service' ? 'default' : 
+              'destructive'
+            } className="flex items-center gap-1 shadow-sm">
+              {getStatusText()}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold">{vehicle.name}</h3>
+              <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.year}</p>
+            </div>
+            {getStatusIcon()}
+          </div>
         </div>
-        {getStatusIcon()}
       </div>
       
-      <div className="mt-5 pt-4 border-t border-border/50 space-y-2.5">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-muted-foreground">Nr Rejestracyjny</span>
-          <span className="text-sm font-medium bg-white/50 px-2 py-0.5 rounded shadow-sm">{vehicle.registrationNumber}</span>
+      {!compact && (
+        <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Nr Rejestracyjny</span>
+            <span className="text-sm font-medium bg-white/50 px-2 py-0.5 rounded shadow-sm">{vehicle.registrationNumber}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Ostatni Serwis</span>
+            <span className="text-sm">{lastServiceFormatted}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Następny Serwis</span>
+            <span className="text-sm font-medium">{nextServiceFormatted}</span>
+          </div>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-muted-foreground">Ostatni Serwis</span>
-          <span className="text-sm">{lastServiceFormatted}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-muted-foreground">Następny Serwis</span>
-          <span className="text-sm font-medium">{nextServiceFormatted}</span>
-        </div>
-      </div>
+      )}
       
-      <div className="flex gap-2 mt-5">
+      {compact && (
+        <div className="mt-2 flex justify-between items-center">
+          <span className="text-xs text-muted-foreground">Nr Rej: <span className="font-medium">{vehicle.registrationNumber}</span></span>
+          <span className="text-xs text-muted-foreground">Nast. serwis: <span className="font-medium">{nextServiceFormatted}</span></span>
+        </div>
+      )}
+      
+      <div className="flex gap-2 mt-3">
         <Button 
-          className="flex-1 gap-2 shadow-sm transition-all hover:shadow-md" 
+          className="flex-1 gap-1 shadow-sm transition-all hover:shadow-md text-xs py-1" 
           size="sm" 
           onClick={(e) => {
             e.stopPropagation();
@@ -118,8 +150,8 @@ const VehicleCard = ({
           }}
           variant="outline"
         >
-          <Car className="h-4 w-4" />
-          Zobacz Szczegóły
+          <Car className="h-3 w-3" />
+          Szczegóły
         </Button>
         
         <Button 
@@ -131,7 +163,7 @@ const VehicleCard = ({
           }}
           variant="secondary"
         >
-          <Edit className="h-4 w-4" />
+          <Edit className="h-3 w-3" />
         </Button>
       </div>
     </div>

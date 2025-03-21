@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import EditVehicleForm from '../components/EditVehicleForm';
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +36,11 @@ const Vehicles = () => {
   useEffect(() => {
     localStorage.setItem('vehicles', JSON.stringify(allVehicles));
   }, [allVehicles]);
+  
+  // Save devices to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('devices', JSON.stringify(allDevices));
+  }, [allDevices]);
   
   // Filter and sort vehicles alphabetically by name
   const filteredVehicles = allVehicles
@@ -85,8 +91,16 @@ const Vehicles = () => {
   const handleEditVehicle = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
     setIsEditDialogOpen(true);
-    // Tutaj będzie logika edycji, która zostanie zaimplementowana w przyszłości
-    toast.info("Funkcja edycji pojazdu będzie dostępna wkrótce");
+  };
+  
+  const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
+    setAllVehicles(prevVehicles => 
+      prevVehicles.map(vehicle => 
+        vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle
+      )
+    );
+    setIsEditDialogOpen(false);
+    toast.success("Pojazd został zaktualizowany pomyślnie");
   };
   
   const handleVehicleClick = (vehicleId: string) => {
@@ -131,7 +145,7 @@ const Vehicles = () => {
         </div>
         
         {filteredVehicles.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredVehicles.map((vehicle, index) => (
               <div key={vehicle.id} className="vehicle-container">
                 <VehicleCard 
@@ -141,6 +155,7 @@ const Vehicles = () => {
                   onEdit={() => handleEditVehicle(vehicle)}
                   isSelected={selectedVehicleId === vehicle.id}
                   onClick={() => handleVehicleClick(vehicle.id)}
+                  compact={true}
                 />
                 
                 {selectedVehicleId === vehicle.id && selectedVehicleDevices.length > 0 && (
@@ -231,17 +246,20 @@ const Vehicles = () => {
       </Dialog>
       
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Edytuj pojazd</DialogTitle>
             <DialogDescription>
               Zaktualizuj informacje o pojeździe
             </DialogDescription>
           </DialogHeader>
-          {/* W przyszłości zostanie zaimplementowany formularz edycji */}
-          <div className="p-4 text-center">
-            <p className="text-muted-foreground">Funkcja edycji pojazdu będzie dostępna wkrótce.</p>
-          </div>
+          {selectedVehicle && (
+            <EditVehicleForm
+              vehicle={selectedVehicle}
+              onSubmit={handleUpdateVehicle}
+              onCancel={() => setIsEditDialogOpen(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
