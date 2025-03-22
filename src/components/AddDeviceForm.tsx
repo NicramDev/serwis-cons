@@ -34,44 +34,55 @@ type AddDeviceFormProps = {
   onSubmit: (device: Partial<Device>) => void;
   onCancel: () => void;
   vehicles: Vehicle[];
+  initialDevice?: Device;
+  isEditing?: boolean;
 };
 
-const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => {
+const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing = false }: AddDeviceFormProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(initialDevice?.images || []);
+  const [existingAttachments, setExistingAttachments] = useState(initialDevice?.attachments || []);
 
   const form = useForm<DeviceFormValues>({
     resolver: zodResolver(deviceSchema),
     defaultValues: {
-      vehicleId: undefined,
-      name: "",
-      brand: "",
-      type: "",
-      serialNumber: "",
-      year: new Date().getFullYear(),
-      purchasePrice: undefined,
-      serviceExpiryDate: undefined,
-      serviceReminderDays: 30,
-      notes: "",
+      vehicleId: initialDevice?.vehicleId || undefined,
+      name: initialDevice?.name || "",
+      brand: initialDevice?.brand || "",
+      type: initialDevice?.type || "",
+      serialNumber: initialDevice?.serialNumber || "",
+      year: initialDevice?.year || new Date().getFullYear(),
+      purchasePrice: initialDevice?.purchasePrice || undefined,
+      serviceExpiryDate: initialDevice?.serviceExpiryDate ? new Date(initialDevice.serviceExpiryDate) : undefined,
+      serviceReminderDays: initialDevice?.serviceReminderDays || 30,
+      notes: initialDevice?.notes || "",
     },
   });
 
   const handleSubmit = (values: DeviceFormValues) => {
-    const newDevice: Partial<Device> = {
+    const updatedDevice: Partial<Device> = {
+      ...initialDevice,
       ...values,
-      images: images.map(img => URL.createObjectURL(img)),
-      attachments: attachments.map(file => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        url: URL.createObjectURL(file)
-      })),
-      status: 'ok',
-      lastService: new Date(),
+      images: [
+        ...existingImages,
+        ...images.map(img => URL.createObjectURL(img))
+      ],
+      attachments: [
+        ...existingAttachments,
+        ...attachments.map(file => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: URL.createObjectURL(file)
+        }))
+      ],
+      status: initialDevice?.status || 'ok',
+      lastService: initialDevice?.lastService || new Date(),
       nextService: values.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6))
     };
     
-    onSubmit(newDevice);
+    onSubmit(updatedDevice);
   };
 
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +103,14 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingAttachment = (index: number) => {
+    setExistingAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -303,10 +322,27 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
             onChange={handleImagesChange}
             className="cursor-pointer"
           />
-          {images.length > 0 && (
+          
+          {(existingImages.length > 0 || images.length > 0) && (
             <div className="flex flex-wrap gap-2 mt-2">
+              {existingImages.map((img, idx) => (
+                <div key={`existing-${idx}`} className="relative">
+                  <img 
+                    src={img} 
+                    alt={`Device preview ${idx}`} 
+                    className="h-20 w-20 object-cover rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(idx)}
+                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
               {images.map((img, idx) => (
-                <div key={idx} className="relative">
+                <div key={`new-${idx}`} className="relative">
                   <img 
                     src={URL.createObjectURL(img)} 
                     alt={`Device preview ${idx}`} 
@@ -333,10 +369,25 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
             onChange={handleAttachmentsChange}
             className="cursor-pointer"
           />
-          {attachments.length > 0 && (
+          
+          {(existingAttachments.length > 0 || attachments.length > 0) && (
             <div className="space-y-2 mt-2">
+              {existingAttachments.map((file, idx) => (
+                <div key={`existing-attach-${idx}`} className="flex items-center justify-between bg-secondary p-2 rounded-md">
+                  <div className="truncate text-sm">
+                    {file.name} ({(file.size / 1024).toFixed(0)} KB)
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeExistingAttachment(idx)}
+                    className="text-destructive hover:text-destructive/80"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
               {attachments.map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-secondary p-2 rounded-md">
+                <div key={`new-attach-${idx}`} className="flex items-center justify-between bg-secondary p-2 rounded-md">
                   <div className="truncate text-sm">
                     {file.name} ({(file.size / 1024).toFixed(0)} KB)
                   </div>
@@ -358,7 +409,7 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles }: AddDeviceFormProps) => 
             Anuluj
           </Button>
           <Button type="submit" className="bg-primary">
-            Dodaj urządzenie
+            {isEditing ? "Zapisz zmiany" : "Dodaj urządzenie"}
           </Button>
         </div>
       </form>

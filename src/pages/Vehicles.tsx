@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
 import { PlusCircle, Search, X } from 'lucide-react';
@@ -15,6 +14,7 @@ import VehicleList from '../components/VehicleList';
 import VehicleDetailPanel from '../components/VehicleDetailPanel';
 import NoVehiclesFound from '../components/NoVehiclesFound';
 import VehicleSearchBar from '../components/VehicleSearchBar';
+import AddDeviceForm from '../components/AddDeviceForm';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,10 +47,13 @@ const Vehicles = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDeviceDialogOpen, setIsEditDeviceDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [unsavedServiceChanges, setUnsavedServiceChanges] = useState(false);
   
   // Save vehicles to localStorage whenever they change
   useEffect(() => {
@@ -66,7 +69,7 @@ const Vehicles = () => {
   useEffect(() => {
     localStorage.setItem('serviceRecords', JSON.stringify(serviceRecords));
   }, [serviceRecords]);
-  
+
   // Filter and sort vehicles alphabetically by name
   const filteredVehicles = allVehicles
     .filter(vehicle => 
@@ -83,7 +86,7 @@ const Vehicles = () => {
   const selectedVehicleServices = serviceRecords.filter(
     record => record.vehicleId === selectedVehicleId
   );
-  
+
   const handleAddVehicle = (vehicleData: Partial<Vehicle>) => {
     const now = new Date();
     const nextServiceDate = vehicleData.serviceExpiryDate || new Date(now);
@@ -176,7 +179,32 @@ const Vehicles = () => {
     setServiceRecords(prev => [...prev, serviceRecord]);
     setIsServiceDialogOpen(false);
     setShowingServiceRecords(true); // Switch to service records view
+    setUnsavedServiceChanges(true);
     toast.success("Serwis/naprawa została dodana pomyślnie");
+  };
+
+  const handleSaveServiceChanges = () => {
+    // This function is mainly to provide a way to confirm changes
+    // Actual saving to localStorage is handled by useEffect
+    setUnsavedServiceChanges(false);
+    toast.success("Zmiany zostały zapisane pomyślnie");
+  };
+
+  const handleEditDevice = (device: Device) => {
+    setSelectedDevice(device);
+    setIsEditDeviceDialogOpen(true);
+  };
+
+  const handleUpdateDevice = (updatedDevice: Partial<Device>) => {
+    if (!updatedDevice.id) return;
+    
+    setAllDevices(prevDevices => 
+      prevDevices.map(device => 
+        device.id === updatedDevice.id ? { ...device, ...updatedDevice } : device
+      )
+    );
+    setIsEditDeviceDialogOpen(false);
+    toast.success("Urządzenie zostało zaktualizowane pomyślnie");
   };
   
   return (
@@ -221,6 +249,8 @@ const Vehicles = () => {
                 onViewDetails={handleViewDetails}
                 onEdit={handleEditVehicle}
                 onAddService={handleAddService}
+                onEditDevice={handleEditDevice}
+                onSaveService={handleSaveServiceChanges}
               />
             </div>
           </div>
@@ -288,6 +318,26 @@ const Vehicles = () => {
               devices={allDevices.filter(device => device.vehicleId === selectedVehicleId)}
               onSubmit={handleSubmitService}
               onCancel={() => setIsServiceDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDeviceDialogOpen} onOpenChange={setIsEditDeviceDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Edytuj urządzenie</DialogTitle>
+            <DialogDescription>
+              Zaktualizuj informacje o urządzeniu
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDevice && (
+            <AddDeviceForm
+              initialDevice={selectedDevice}
+              onSubmit={handleUpdateDevice}
+              onCancel={() => setIsEditDeviceDialogOpen(false)}
+              vehicles={allVehicles}
+              isEditing={true}
             />
           )}
         </DialogContent>

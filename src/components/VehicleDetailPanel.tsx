@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
-import { Info, Wrench, Cpu } from 'lucide-react';
+import { Info, Wrench, Cpu, Edit, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,8 @@ interface VehicleDetailPanelProps {
   onViewDetails: (vehicle: Vehicle) => void;
   onEdit: (vehicle: Vehicle) => void;
   onAddService: () => void;
+  onEditDevice?: (device: Device) => void;
+  onSaveService?: () => void;
 }
 
 const VehicleDetailPanel = ({
@@ -29,7 +32,9 @@ const VehicleDetailPanel = ({
   onServiceClick,
   onViewDetails,
   onEdit,
-  onAddService
+  onAddService,
+  onEditDevice,
+  onSaveService
 }: VehicleDetailPanelProps) => {
   if (!selectedVehicleId) {
     return (
@@ -75,6 +80,7 @@ const VehicleDetailPanel = ({
                 variant="secondary" 
                 onClick={() => onEdit(vehicle)}
               >
+                <Edit className="h-4 w-4 mr-1" />
                 Edytuj
               </Button>
               <Button 
@@ -118,19 +124,40 @@ const VehicleDetailPanel = ({
                 </div>
               )}
               
-              <Button 
-                size="sm" 
-                onClick={() => showingServiceRecords 
-                  ? onAddService() 
-                  : onServiceClick()
-                }
-              >
-                {showingServiceRecords ? "Dodaj serwis/naprawę" : "Pokaż historię serwisową"}
-              </Button>
+              {!showingServiceRecords ? (
+                <Button 
+                  size="sm" 
+                  onClick={onServiceClick}
+                >
+                  Pokaż historię serwisową
+                </Button>
+              ) : (
+                <div className="flex space-x-2">
+                  <Button 
+                    size="sm" 
+                    onClick={onAddService}
+                  >
+                    <PlusCircle className="h-4 w-4 mr-1" />
+                    Dodaj serwis/naprawę
+                  </Button>
+                  {services.length > 0 && onSaveService && (
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={onSaveService}
+                    >
+                      Zapisz zmiany
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
             
             {!showingServiceRecords ? (
-              <DeviceList devices={selectedVehicleDevices} />
+              <DeviceList 
+                devices={selectedVehicleDevices} 
+                onEditDevice={onEditDevice}
+              />
             ) : (
               <ServiceRecordList services={services} />
             )}
