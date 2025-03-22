@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { devices as initialDevices, vehicles as initialVehicles } from '../utils/data';
+import { devices as initialDevices, vehicles as initialVehicles, formatDate } from '../utils/data';
 import DeviceCard from '../components/DeviceCard';
 import { PlusCircle, Search } from 'lucide-react';
 import { Device, Vehicle } from '../utils/types';
@@ -148,7 +147,7 @@ const Devices = () => {
         </div>
         
         {filteredDevices.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col space-y-4">
             {filteredDevices.map((device, index) => (
               <DeviceCard 
                 key={device.id} 
@@ -199,7 +198,7 @@ const Devices = () => {
           </DialogHeader>
           {selectedDevice && (
             <AddDeviceForm
-              device={selectedDevice}
+              initialDevice={selectedDevice}
               onSubmit={handleUpdateDevice}
               onCancel={() => setIsEditDialogOpen(false)}
               vehicles={allVehicles}
