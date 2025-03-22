@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
-import VehicleCard from '../components/VehicleCard';
-import { PlusCircle, Search, Cpu, Info, Wrench, X } from 'lucide-react'; // Removed AlertDialog
+import { PlusCircle, Search, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
@@ -10,13 +9,14 @@ import VehicleDetails from '../components/VehicleDetails';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Badge } from "@/components/ui/badge";
 import EditVehicleForm from '../components/EditVehicleForm';
-import { Card, CardContent } from "@/components/ui/card";
 import ServiceForm from '../components/ServiceForm';
-import ServiceRecordList from '../components/ServiceRecordList';
+import VehicleList from '../components/VehicleList';
+import VehicleDetailPanel from '../components/VehicleDetailPanel';
+import NoVehiclesFound from '../components/NoVehiclesFound';
+import VehicleSearchBar from '../components/VehicleSearchBar';
 import {
-  AlertDialog as AlertDialogComponent,
+  AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
@@ -78,11 +78,6 @@ const Vehicles = () => {
       (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
     )
     .sort((a, b) => a.name.localeCompare(b.name));
-  
-  // Get devices for the selected vehicle
-  const selectedVehicleDevices = allDevices.filter(
-    device => device.vehicleId === selectedVehicleId
-  );
   
   // Get service records for the selected vehicle
   const selectedVehicleServices = serviceRecords.filter(
@@ -173,8 +168,7 @@ const Vehicles = () => {
     setShowingServiceRecords(!showingServiceRecords);
   };
   
-  const handleAddService = (vehicleId: string) => {
-    setSelectedVehicleId(vehicleId);
+  const handleAddService = () => {
     setIsServiceDialogOpen(true);
   };
   
@@ -194,204 +188,44 @@ const Vehicles = () => {
             <p className="text-muted-foreground">Zarządzaj i śledź wszystkie swoje pojazdy</p>
           </div>
           
-          <div className="mt-6 md:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <input
-                type="text"
-                placeholder="Szukaj pojazdów..."
-                className="pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 w-full shadow-sm backdrop-blur-sm bg-white/60"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <Button 
-              className="flex items-center justify-center space-x-2 shadow-sm"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <PlusCircle className="h-5 w-5" />
-              <span>Dodaj Pojazd</span>
-            </Button>
-          </div>
+          <VehicleSearchBar 
+            searchQuery={searchQuery} 
+            onSearchChange={setSearchQuery} 
+            onAddVehicle={() => setIsAddDialogOpen(true)} 
+          />
         </div>
         
         {filteredVehicles.length > 0 ? (
           <div className="flex">
             {/* Lewa strona - lista pojazdów (1/3 szerokości) */}
-            <div className="w-1/3 pr-4 space-y-2 overflow-y-auto max-h-[70vh]">
-              {filteredVehicles.map((vehicle, index) => (
-                <VehicleCard 
-                  key={vehicle.id}
-                  vehicle={vehicle} 
-                  delay={index % 5 + 1}
-                  onViewDetails={() => handleViewDetails(vehicle)}
-                  onEdit={() => handleEditVehicle(vehicle)}
-                  onDelete={() => handleDeleteVehicle(vehicle)}
-                  isSelected={selectedVehicleId === vehicle.id}
-                  onClick={() => handleVehicleClick(vehicle.id)}
-                  compact={true}
-                />
-              ))}
+            <div className="w-1/3 pr-4">
+              <VehicleList 
+                vehicles={filteredVehicles}
+                selectedVehicleId={selectedVehicleId}
+                onVehicleClick={handleVehicleClick}
+                onViewDetails={handleViewDetails}
+                onEdit={handleEditVehicle}
+                onDelete={handleDeleteVehicle}
+              />
             </div>
             
             {/* Prawa strona - szczegóły pojazdu i urządzenia (2/3 szerokości) */}
             <div className="w-2/3 pl-4">
-              {selectedVehicleId ? (
-                <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
-                  <CardContent className="p-6">
-                    {(() => {
-                      const vehicle = allVehicles.find(v => v.id === selectedVehicleId);
-                      if (!vehicle) return null;
-                      
-                      return (
-                        <div className="space-y-6">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{vehicle.name}</h2>
-                              <p className="text-muted-foreground">{vehicle.brand || 'Brak marki'}</p>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleViewDetails(vehicle)}
-                              >
-                                <Info className="h-4 w-4 mr-1" />
-                                Szczegóły
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="secondary" 
-                                onClick={() => handleEditVehicle(vehicle)}
-                              >
-                                Edytuj
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant={showingServiceRecords ? "default" : "outline"}
-                                onClick={handleServiceClick}
-                              >
-                                <Wrench className="h-4 w-4 mr-1" />
-                                Serwis
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                              <p className="text-sm text-muted-foreground">Numer rejestracyjny</p>
-                              <p className="font-medium">{vehicle.registrationNumber}</p>
-                            </div>
-                            <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                              <p className="text-sm text-muted-foreground">Następny serwis</p>
-                              <p className="font-medium">
-                                {vehicle.serviceExpiryDate ? 
-                                  new Date(vehicle.serviceExpiryDate).toLocaleDateString() : 
-                                  new Date(vehicle.nextService).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          {/* Toggle between devices and service records */}
-                          <div className="pt-4 border-t border-border/50">
-                            <div className="flex items-center justify-between mb-3">
-                              {!showingServiceRecords ? (
-                                <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                                  <Cpu className="h-4 w-4" />
-                                  <span>Przypisane urządzenia ({selectedVehicleDevices.length})</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                                  <Wrench className="h-4 w-4" />
-                                  <span>Historia serwisowa ({selectedVehicleServices.length})</span>
-                                </div>
-                              )}
-                              
-                              <Button 
-                                size="sm" 
-                                onClick={() => showingServiceRecords 
-                                  ? setIsServiceDialogOpen(true) 
-                                  : setShowingServiceRecords(true)
-                                }
-                              >
-                                {showingServiceRecords ? "Dodaj serwis/naprawę" : "Pokaż historię serwisową"}
-                              </Button>
-                            </div>
-                            
-                            {!showingServiceRecords ? (
-                              selectedVehicleDevices.length > 0 ? (
-                                <div className="space-y-3">
-                                  {selectedVehicleDevices.map((device) => (
-                                    <div 
-                                      key={device.id} 
-                                      className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
-                                    >
-                                      <div className="flex justify-between items-center">
-                                        <div>
-                                          <h4 className="font-medium">{device.name}</h4>
-                                          <p className="text-xs text-muted-foreground">{device.type}</p>
-                                        </div>
-                                        <Badge variant={
-                                          device.status === 'ok' ? 'outline' : 
-                                          device.status === 'needs-service' ? 'secondary' : 
-                                          device.status === 'in-service' ? 'default' : 
-                                          'destructive'
-                                        }>
-                                          {device.status === 'ok' ? 'Sprawne' : 
-                                          device.status === 'needs-service' ? 'Wymaga serwisu' : 
-                                          device.status === 'in-service' ? 'W serwisie' : 
-                                          'Problem'}
-                                        </Badge>
-                                      </div>
-                                      <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
-                                        <span className="text-xs text-muted-foreground">Nr seryjny: {device.serialNumber}</span>
-                                        <span className="text-xs text-muted-foreground">Typ: {device.type}</span>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
-                                  <p className="text-sm text-muted-foreground">Brak przypisanych urządzeń do tego pojazdu.</p>
-                                </div>
-                              )
-                            ) : (
-                              <ServiceRecordList services={selectedVehicleServices} />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="h-full flex items-center justify-center p-6 bg-white/50 backdrop-blur-sm border border-border/50 rounded-lg shadow-sm">
-                  <div className="text-center">
-                    <div className="icon-container mx-auto mb-4">
-                      <Search className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-lg font-medium mb-2">Wybierz pojazd</h3>
-                    <p className="text-muted-foreground max-w-sm">
-                      Wybierz pojazd z listy po lewej stronie, aby zobaczyć szczegóły i przypisane urządzenia
-                    </p>
-                  </div>
-                </div>
-              )}
+              <VehicleDetailPanel 
+                selectedVehicleId={selectedVehicleId}
+                vehicles={allVehicles}
+                devices={allDevices}
+                services={selectedVehicleServices}
+                showingServiceRecords={showingServiceRecords}
+                onServiceClick={handleServiceClick}
+                onViewDetails={handleViewDetails}
+                onEdit={handleEditVehicle}
+                onAddService={handleAddService}
+              />
             </div>
           </div>
         ) : (
-          <div className="backdrop-blur-card rounded-xl p-12 text-center shadow-md border border-border/50">
-            <div className="icon-container mx-auto mb-4">
-              <Search className="h-5 w-5" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Nie znaleziono pojazdów</h3>
-            <p className="text-muted-foreground">
-              Żadne pojazdy nie pasują do kryteriów wyszukiwania. Spróbuj innego zapytania lub dodaj nowy pojazd.
-            </p>
-          </div>
+          <NoVehiclesFound />
         )}
       </div>
       
@@ -451,7 +285,7 @@ const Vehicles = () => {
           {selectedVehicleId && (
             <ServiceForm
               vehicleId={selectedVehicleId}
-              devices={selectedVehicleDevices}
+              devices={allDevices.filter(device => device.vehicleId === selectedVehicleId)}
               onSubmit={handleSubmitService}
               onCancel={() => setIsServiceDialogOpen(false)}
             />
@@ -459,7 +293,7 @@ const Vehicles = () => {
         </DialogContent>
       </Dialog>
       
-      <AlertDialogComponent open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Czy na pewno chcesz usunąć ten pojazd?</AlertDialogTitle>
@@ -474,7 +308,7 @@ const Vehicles = () => {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialogComponent>
+      </AlertDialog>
     </div>
   );
 };

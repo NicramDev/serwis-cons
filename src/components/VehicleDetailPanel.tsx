@@ -1,0 +1,144 @@
+import React from 'react';
+import { Vehicle, Device, ServiceRecord } from '../utils/types';
+import { formatDate } from '../utils/data';
+import { Info, Wrench, Cpu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from "@/components/ui/card";
+import ServiceRecordList from './ServiceRecordList';
+import DeviceList from './DeviceList';
+
+interface VehicleDetailPanelProps {
+  selectedVehicleId: string | null;
+  vehicles: Vehicle[];
+  devices: Device[];
+  services: ServiceRecord[];
+  showingServiceRecords: boolean;
+  onServiceClick: () => void;
+  onViewDetails: (vehicle: Vehicle) => void;
+  onEdit: (vehicle: Vehicle) => void;
+  onAddService: () => void;
+}
+
+const VehicleDetailPanel = ({
+  selectedVehicleId,
+  vehicles,
+  devices,
+  services,
+  showingServiceRecords,
+  onServiceClick,
+  onViewDetails,
+  onEdit,
+  onAddService
+}: VehicleDetailPanelProps) => {
+  if (!selectedVehicleId) {
+    return (
+      <div className="h-full flex items-center justify-center p-6 bg-white/50 backdrop-blur-sm border border-border/50 rounded-lg shadow-sm">
+        <div className="text-center">
+          <div className="icon-container mx-auto mb-4">
+            <Info className="h-5 w-5" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">Wybierz pojazd</h3>
+          <p className="text-muted-foreground max-w-sm">
+            Wybierz pojazd z listy po lewej stronie, aby zobaczyć szczegóły i przypisane urządzenia
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const vehicle = vehicles.find(v => v.id === selectedVehicleId);
+  if (!vehicle) return null;
+
+  const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
+  
+  return (
+    <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{vehicle.name}</h2>
+              <p className="text-muted-foreground">{vehicle.brand || 'Brak marki'}</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onViewDetails(vehicle)}
+              >
+                <Info className="h-4 w-4 mr-1" />
+                Szczegóły
+              </Button>
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                onClick={() => onEdit(vehicle)}
+              >
+                Edytuj
+              </Button>
+              <Button 
+                size="sm" 
+                variant={showingServiceRecords ? "default" : "outline"}
+                onClick={onServiceClick}
+              >
+                <Wrench className="h-4 w-4 mr-1" />
+                Serwis
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+              <p className="text-sm text-muted-foreground">Numer rejestracyjny</p>
+              <p className="font-medium">{vehicle.registrationNumber}</p>
+            </div>
+            <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+              <p className="text-sm text-muted-foreground">Następny serwis</p>
+              <p className="font-medium">
+                {vehicle.serviceExpiryDate ? 
+                  new Date(vehicle.serviceExpiryDate).toLocaleDateString() : 
+                  new Date(vehicle.nextService).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          
+          {/* Toggle between devices and service records */}
+          <div className="pt-4 border-t border-border/50">
+            <div className="flex items-center justify-between mb-3">
+              {!showingServiceRecords ? (
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <Cpu className="h-4 w-4" />
+                  <span>Przypisane urządzenia ({selectedVehicleDevices.length})</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <Wrench className="h-4 w-4" />
+                  <span>Historia serwisowa ({services.length})</span>
+                </div>
+              )}
+              
+              <Button 
+                size="sm" 
+                onClick={() => showingServiceRecords 
+                  ? onAddService() 
+                  : onServiceClick()
+                }
+              >
+                {showingServiceRecords ? "Dodaj serwis/naprawę" : "Pokaż historię serwisową"}
+              </Button>
+            </div>
+            
+            {!showingServiceRecords ? (
+              <DeviceList devices={selectedVehicleDevices} />
+            ) : (
+              <ServiceRecordList services={services} />
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default VehicleDetailPanel;
