@@ -1,13 +1,16 @@
+
 import { ServiceRecord } from "../utils/types";
 import { formatDate } from "../utils/data";
-import { Wrench, Hammer, FileCheck } from "lucide-react";
+import { Wrench, Hammer, FileCheck, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
+  onViewDetails?: (service: ServiceRecord) => void;
 }
 
-const ServiceRecordList = ({ services }: ServiceRecordListProps) => {
+const ServiceRecordList = ({ services, onViewDetails }: ServiceRecordListProps) => {
   if (services.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground bg-secondary/20 rounded-lg border border-border/50">
@@ -73,9 +76,19 @@ const ServiceRecordList = ({ services }: ServiceRecordListProps) => {
               <h3 className="mt-2 font-medium">{service.deviceName}</h3>
               <p className="text-sm text-muted-foreground">Miejsce: {service.location}</p>
             </div>
-            <div className="text-right">
+            <div className="flex flex-col items-end gap-2">
               <div className="font-semibold text-primary">{service.cost.toFixed(2)} PLN</div>
               <div className="text-xs text-muted-foreground">Wykonał: {service.technician}</div>
+              {onViewDetails && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="mt-1"
+                  onClick={() => onViewDetails(service)}
+                >
+                  <Info className="h-4 w-4 mr-1" /> Szczegóły
+                </Button>
+              )}
             </div>
           </div>
           

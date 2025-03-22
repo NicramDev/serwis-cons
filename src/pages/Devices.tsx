@@ -9,6 +9,16 @@ import { Button } from '@/components/ui/button';
 import AddDeviceForm from '../components/AddDeviceForm';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Devices = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,6 +33,11 @@ const Devices = () => {
     return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
   });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   
   // Save devices to localStorage whenever they change
   useEffect(() => {
@@ -52,6 +67,8 @@ const Devices = () => {
       purchasePrice: deviceData.purchasePrice,
       lastService: now,
       nextService: nextServiceDate,
+      serviceExpiryDate: deviceData.serviceExpiryDate,
+      serviceReminderDays: deviceData.serviceReminderDays || 30,
       notes: deviceData.notes,
       status: 'ok',
       images: deviceData.images,
@@ -61,6 +78,40 @@ const Devices = () => {
     setAllDevices(prevDevices => [...prevDevices, newDevice]);
     setIsAddDialogOpen(false);
     toast.success("Urządzenie zostało dodane pomyślnie");
+  };
+
+  const handleEditDevice = (device: Device) => {
+    setSelectedDevice(device);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateDevice = (updatedDevice: Device) => {
+    setAllDevices(prevDevices => 
+      prevDevices.map(device => 
+        device.id === updatedDevice.id ? updatedDevice : device
+      )
+    );
+    setIsEditDialogOpen(false);
+    toast.success("Urządzenie zostało zaktualizowane pomyślnie");
+  };
+
+  const handleViewDeviceDetails = (device: Device) => {
+    setSelectedDevice(device);
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleDeleteDevice = (device: Device) => {
+    setDeviceToDelete(device);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteDevice = () => {
+    if (deviceToDelete) {
+      setAllDevices(prevDevices => prevDevices.filter(d => d.id !== deviceToDelete.id));
+      toast.success("Urządzenie zostało usunięte pomyślnie");
+    }
+    setIsDeleteDialogOpen(false);
+    setDeviceToDelete(null);
   };
   
   return (
@@ -99,7 +150,14 @@ const Devices = () => {
         {filteredDevices.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDevices.map((device, index) => (
-              <DeviceCard key={device.id} device={device} delay={index % 5 + 1} />
+              <DeviceCard 
+                key={device.id} 
+                device={device} 
+                delay={index % 5 + 1} 
+                onEdit={handleEditDevice}
+                onDelete={handleDeleteDevice}
+                onViewDetails={handleViewDeviceDetails}
+              />
             ))}
           </div>
         ) : (
@@ -130,6 +188,125 @@ const Devices = () => {
           />
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Edytuj urządzenie</DialogTitle>
+            <DialogDescription>
+              Zaktualizuj informacje o urządzeniu
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDevice && (
+            <AddDeviceForm
+              device={selectedDevice}
+              onSubmit={handleUpdateDevice}
+              onCancel={() => setIsEditDialogOpen(false)}
+              vehicles={allVehicles}
+              isEditing={true}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Szczegóły urządzenia</DialogTitle>
+            <DialogDescription>
+              Pełne informacje o urządzeniu
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDevice && (
+            <div className="space-y-4 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Nazwa</p>
+                  <p className="font-medium">{selectedDevice.name}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Typ</p>
+                  <p className="font-medium">{selectedDevice.type}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Model</p>
+                  <p className="font-medium">{selectedDevice.model || '-'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Numer seryjny</p>
+                  <p className="font-medium">{selectedDevice.serialNumber}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Rok produkcji</p>
+                  <p className="font-medium">{selectedDevice.year || '-'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Cena zakupu</p>
+                  <p className="font-medium">{selectedDevice.purchasePrice ? `${selectedDevice.purchasePrice} PLN` : '-'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Ostatni serwis</p>
+                  <p className="font-medium">{formatDate(selectedDevice.lastService)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Następny serwis</p>
+                  <p className="font-medium">{formatDate(selectedDevice.nextService)}</p>
+                </div>
+                {selectedDevice.serviceExpiryDate && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Serwis ważny do</p>
+                    <p className="font-medium">{formatDate(selectedDevice.serviceExpiryDate)}</p>
+                  </div>
+                )}
+                {selectedDevice.serviceReminderDays && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Dni przypomnienia</p>
+                    <p className="font-medium">{selectedDevice.serviceReminderDays} dni</p>
+                  </div>
+                )}
+              </div>
+              {selectedDevice.notes && (
+                <div className="pt-4 border-t border-border/50">
+                  <p className="text-sm text-muted-foreground mb-1">Notatki</p>
+                  <p className="text-sm whitespace-pre-line">{selectedDevice.notes}</p>
+                </div>
+              )}
+              {selectedDevice.images && selectedDevice.images.length > 0 && (
+                <div className="pt-4 border-t border-border/50">
+                  <p className="text-sm text-muted-foreground mb-2">Zdjęcia</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDevice.images.map((img, idx) => (
+                      <img 
+                        key={idx} 
+                        src={img} 
+                        alt={`Device image ${idx}`} 
+                        className="h-20 w-20 object-cover rounded-md"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć to urządzenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna. Spowoduje to usunięcie urządzenia i jego danych.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteDevice} className="bg-destructive text-destructive-foreground">
+              Usuń urządzenie
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

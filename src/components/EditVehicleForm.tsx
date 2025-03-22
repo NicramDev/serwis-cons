@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,7 +13,6 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon, X, Info } from "lucide-react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const vehicleSchema = z.object({
@@ -32,9 +30,9 @@ const vehicleSchema = z.object({
   driverName: z.string().optional(),
   tags: z.string().optional(),
   notes: z.string().optional(),
-  insuranceReminderDays: z.number().min(0).max(90).default(30),
-  inspectionReminderDays: z.number().min(0).max(90).default(30),
-  serviceReminderDays: z.number().min(0).max(90).default(30),
+  insuranceReminderDays: z.coerce.number().min(0).max(90).default(30),
+  inspectionReminderDays: z.coerce.number().min(0).max(90).default(30),
+  serviceReminderDays: z.coerce.number().min(0).max(90).default(30),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -51,7 +49,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState(vehicle.images || []);
 
-  // Safely convert date strings to Date objects for the form
   const convertToDate = (dateInput: any) => {
     if (!dateInput) return undefined;
     try {
@@ -102,7 +99,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
           url: URL.createObjectURL(file)
         }))
       ],
-      // Update service dates
       lastService: vehicle.lastService,
       nextService: values.serviceExpiryDate || vehicle.nextService
     };
@@ -313,7 +309,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between mb-1">
-                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem</FormLabel>
+                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem (dni)</FormLabel>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -325,18 +321,15 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <div className="flex items-center gap-4">
-                  <FormControl className="flex-1">
-                    <Slider
-                      value={[field.value]}
-                      min={1}
-                      max={90}
-                      step={1}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                  <span className="w-16 text-right text-sm">{formatReminderDays(field.value)}</span>
-                </div>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={90} 
+                    step={1} 
+                    {...field} 
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -393,7 +386,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between mb-1">
-                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem</FormLabel>
+                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem (dni)</FormLabel>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -405,18 +398,15 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <div className="flex items-center gap-4">
-                  <FormControl className="flex-1">
-                    <Slider
-                      value={[field.value]}
-                      min={1}
-                      max={90}
-                      step={1}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                  <span className="w-16 text-right text-sm">{formatReminderDays(field.value)}</span>
-                </div>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={90} 
+                    step={1} 
+                    {...field} 
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -473,7 +463,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between mb-1">
-                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem</FormLabel>
+                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem (dni)</FormLabel>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -485,18 +475,15 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <div className="flex items-center gap-4">
-                  <FormControl className="flex-1">
-                    <Slider
-                      value={[field.value]}
-                      min={1}
-                      max={90}
-                      step={1}
-                      onValueChange={(value) => field.onChange(value[0])}
-                    />
-                  </FormControl>
-                  <span className="w-16 text-right text-sm">{formatReminderDays(field.value)}</span>
-                </div>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={90} 
+                    step={1} 
+                    {...field} 
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

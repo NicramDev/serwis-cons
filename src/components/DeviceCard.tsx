@@ -1,14 +1,18 @@
 
-import { Smartphone, Check, Clock, AlertTriangle, Car } from 'lucide-react';
+import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2 } from 'lucide-react';
 import { Device } from '../utils/types';
 import { formatDate } from '../utils/data';
+import { Button } from '@/components/ui/button';
 
 interface DeviceCardProps {
   device: Device;
   delay?: number;
+  onEdit?: (device: Device) => void;
+  onDelete?: (device: Device) => void;
+  onViewDetails?: (device: Device) => void;
 }
 
-const DeviceCard = ({ device, delay = 0 }: DeviceCardProps) => {
+const DeviceCard = ({ device, delay = 0, onEdit, onDelete, onViewDetails }: DeviceCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
   const getStatusIcon = () => {
@@ -65,9 +69,34 @@ const DeviceCard = ({ device, delay = 0 }: DeviceCardProps) => {
         </div>
       </div>
       
-      <button className="w-full mt-4 px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
-        Zobacz Szczegóły
-      </button>
+      <div className="flex justify-between mt-4 gap-2">
+        <Button 
+          className="flex-1"
+          variant="secondary"
+          size="sm"
+          onClick={() => onViewDetails && onViewDetails(device)}
+        >
+          Szczegóły
+        </Button>
+        <Button 
+          className="flex-1" 
+          variant="outline"
+          size="sm"
+          onClick={() => onEdit && onEdit(device)}
+        >
+          <Edit className="h-4 w-4 mr-1" />
+          Edytuj
+        </Button>
+        <Button 
+          className="flex-1"
+          variant="destructive"
+          size="sm"
+          onClick={() => onDelete && onDelete(device)}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Usuń
+        </Button>
+      </div>
     </div>
   );
 };
