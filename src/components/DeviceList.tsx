@@ -2,12 +2,15 @@
 import React from 'react';
 import { Device } from "../utils/types";
 import { Badge } from "@/components/ui/badge";
+import { Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface DeviceListProps {
   devices: Device[];
+  onEditDevice?: (device: Device) => void;
 }
 
-const DeviceList = ({ devices }: DeviceListProps) => {
+const DeviceList = ({ devices, onEditDevice }: DeviceListProps) => {
   if (devices.length === 0) {
     return (
       <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
@@ -28,17 +31,30 @@ const DeviceList = ({ devices }: DeviceListProps) => {
               <h4 className="font-medium">{device.name}</h4>
               <p className="text-xs text-muted-foreground">{device.type}</p>
             </div>
-            <Badge variant={
-              device.status === 'ok' ? 'outline' : 
-              device.status === 'needs-service' ? 'secondary' : 
-              device.status === 'in-service' ? 'default' : 
-              'destructive'
-            }>
-              {device.status === 'ok' ? 'Sprawne' : 
-              device.status === 'needs-service' ? 'Wymaga serwisu' : 
-              device.status === 'in-service' ? 'W serwisie' : 
-              'Problem'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {onEditDevice && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onEditDevice(device)}
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  Edytuj
+                </Button>
+              )}
+              <Badge variant={
+                device.status === 'ok' ? 'outline' : 
+                device.status === 'needs-service' ? 'secondary' : 
+                device.status === 'in-service' ? 'default' : 
+                'destructive'
+              }>
+                {device.status === 'ok' ? 'Sprawne' : 
+                device.status === 'needs-service' ? 'Wymaga serwisu' : 
+                device.status === 'in-service' ? 'W serwisie' : 
+                'Problem'}
+              </Badge>
+            </div>
           </div>
           <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
             <span className="text-xs text-muted-foreground">Nr seryjny: {device.serialNumber}</span>
