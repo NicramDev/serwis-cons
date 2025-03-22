@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
 import VehicleCard from '../components/VehicleCard';
-import { PlusCircle, Search, Cpu, Info, Wrench, X, AlertDialog } from 'lucide-react';
+import { PlusCircle, Search, Cpu, Info, Wrench, X } from 'lucide-react'; // Removed AlertDialog
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';

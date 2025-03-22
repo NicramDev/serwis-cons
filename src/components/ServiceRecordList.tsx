@@ -1,7 +1,6 @@
-
 import { ServiceRecord } from "../utils/types";
 import { formatDate } from "../utils/data";
-import { Wrench, Tool, FileCheck } from "lucide-react";
+import { Wrench, Hammer, FileCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ServiceRecordListProps {
@@ -22,11 +21,11 @@ const ServiceRecordList = ({ services }: ServiceRecordListProps) => {
       case 'repair':
         return <Wrench className="h-4 w-4" />;
       case 'maintenance':
-        return <Tool className="h-4 w-4" />;
+        return <Hammer className="h-4 w-4" />;
       case 'inspection':
         return <FileCheck className="h-4 w-4" />;
       default:
-        return <Tool className="h-4 w-4" />;
+        return <Hammer className="h-4 w-4" />;
     }
   };
 
