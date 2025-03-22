@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, ServiceRecord } from "../utils/types";
-import { X, Calendar } from "lucide-react";
+import { X, Calendar, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -277,6 +277,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
             Anuluj
           </Button>
           <Button type="submit" className="bg-primary">
+            <Save className="h-4 w-4 mr-1" />
             Zapisz serwis/naprawę
           </Button>
         </div>
