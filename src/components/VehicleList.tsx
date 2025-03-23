@@ -6,7 +6,6 @@ interface VehicleListProps {
   vehicles: Vehicle[];
   selectedVehicleId: string | null;
   onVehicleClick: (vehicleId: string) => void;
-  onViewDetails: (vehicle: Vehicle) => void;
   onEdit: (vehicle: Vehicle) => void;
   onDelete: (vehicle: Vehicle) => void;
 }
@@ -15,7 +14,6 @@ const VehicleList = ({
   vehicles, 
   selectedVehicleId, 
   onVehicleClick, 
-  onViewDetails, 
   onEdit, 
   onDelete 
 }: VehicleListProps) => {
@@ -34,7 +32,6 @@ const VehicleList = ({
           key={vehicle.id}
           vehicle={vehicle} 
           delay={index % 5 + 1}
-          onViewDetails={() => onViewDetails(vehicle)}
           onEdit={() => onEdit(vehicle)}
           onDelete={() => onDelete(vehicle)}
           isSelected={selectedVehicleId === vehicle.id}

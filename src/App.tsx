@@ -9,6 +9,7 @@ import Vehicles from "./pages/Vehicles";
 import Devices from "./pages/Devices";
 import History from "./pages/History";
 import Notifications from "./pages/Notifications";
+import Costs from "./pages/Costs";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/devices" element={<Devices />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/history" element={<History />} />
+          <Route path="/costs" element={<Costs />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

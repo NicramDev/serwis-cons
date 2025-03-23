@@ -17,9 +17,9 @@ interface VehicleDetailPanelProps {
   services: ServiceRecord[];
   showingServiceRecords: boolean;
   onServiceClick: () => void;
-  onViewDetails?: (vehicle: Vehicle) => void;
   onEdit: (vehicle: Vehicle) => void;
   onAddService: () => void;
+  onAddDevice?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onEditService?: (service: ServiceRecord) => void;
@@ -34,9 +34,9 @@ const VehicleDetailPanel = ({
   services,
   showingServiceRecords,
   onServiceClick,
-  onViewDetails,
   onEdit,
   onAddService,
+  onAddDevice,
   onEditDevice,
   onDeleteDevice,
   onEditService,
@@ -87,7 +87,7 @@ const VehicleDetailPanel = ({
                   <TabsTrigger 
                     value="service" 
                     onClick={showingServiceRecords ? undefined : onServiceClick}
-                    className="flex items-center gap-1"
+                    className={`flex items-center gap-1 ${showingServiceRecords ? "bg-primary text-primary-foreground" : ""}`}
                   >
                     <Wrench className="h-4 w-4" />
                     Serwis
@@ -95,7 +95,7 @@ const VehicleDetailPanel = ({
                   <TabsTrigger 
                     value="devices" 
                     onClick={showingServiceRecords ? onServiceClick : undefined}
-                    className="flex items-center gap-1"
+                    className={`flex items-center gap-1 ${!showingServiceRecords ? "bg-primary text-primary-foreground" : ""}`}
                   >
                     <Cpu className="h-4 w-4" />
                     Urządzenia
@@ -136,7 +136,17 @@ const VehicleDetailPanel = ({
               )}
               
               {!showingServiceRecords ? (
-                null
+                <div>
+                  {onAddDevice && (
+                    <Button 
+                      size="sm" 
+                      onClick={onAddDevice}
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      Dodaj urządzenie
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <div className="flex space-x-2">
                   <Button 
