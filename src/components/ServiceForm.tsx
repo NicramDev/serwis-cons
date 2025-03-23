@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, ServiceRecord } from "../utils/types";
-import { X, Calendar, Save, Check } from "lucide-react";
+import { X, Calendar, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -83,7 +83,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pr-2">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pr-2 overflow-y-auto max-h-[65vh]">
         {/* Device selection */}
         <FormField
           control={form.control}
@@ -286,18 +286,6 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           <Button type="submit" className="bg-primary">
             <Save className="h-4 w-4 mr-1" />
             Zapisz serwis/naprawę
-          </Button>
-        </div>
-        
-        {/* Prominent save button at the bottom */}
-        <div className="mt-8 flex justify-center">
-          <Button 
-            type="submit" 
-            size="lg" 
-            className="w-full md:w-2/3 bg-primary text-lg font-semibold py-6"
-          >
-            <Check className="h-6 w-6 mr-2" />
-            ZAPISZ
           </Button>
         </div>
       </form>

@@ -1,12 +1,14 @@
+
 import React from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
-import { Info, Wrench, Cpu, Edit, PlusCircle } from 'lucide-react';
+import { Wrench, Cpu, Edit, PlusCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from "@/components/ui/card";
 import ServiceRecordList from './ServiceRecordList';
 import DeviceList from './DeviceList';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
@@ -15,10 +17,13 @@ interface VehicleDetailPanelProps {
   services: ServiceRecord[];
   showingServiceRecords: boolean;
   onServiceClick: () => void;
-  onViewDetails: (vehicle: Vehicle) => void;
+  onViewDetails?: (vehicle: Vehicle) => void;
   onEdit: (vehicle: Vehicle) => void;
   onAddService: () => void;
   onEditDevice?: (device: Device) => void;
+  onDeleteDevice?: (device: Device) => void;
+  onEditService?: (service: ServiceRecord) => void;
+  onDeleteService?: (service: ServiceRecord) => void;
   onSaveService?: () => void;
 }
 
@@ -33,6 +38,9 @@ const VehicleDetailPanel = ({
   onEdit,
   onAddService,
   onEditDevice,
+  onDeleteDevice,
+  onEditService,
+  onDeleteService,
   onSaveService
 }: VehicleDetailPanelProps) => {
   if (!selectedVehicleId) {
@@ -40,7 +48,7 @@ const VehicleDetailPanel = ({
       <div className="h-full flex items-center justify-center p-6 bg-white/50 backdrop-blur-sm border border-border/50 rounded-lg shadow-sm">
         <div className="text-center">
           <div className="icon-container mx-auto mb-4">
-            <Info className="h-5 w-5" />
+            <Wrench className="h-5 w-5" />
           </div>
           <h3 className="text-lg font-medium mb-2">Wybierz pojazd</h3>
           <p className="text-muted-foreground max-w-sm">
@@ -68,28 +76,32 @@ const VehicleDetailPanel = ({
             <div className="flex space-x-2">
               <Button 
                 size="sm" 
-                variant="outline" 
-                onClick={() => onViewDetails(vehicle)}
-              >
-                <Info className="h-4 w-4 mr-1" />
-                Szczegóły
-              </Button>
-              <Button 
-                size="sm" 
                 variant="secondary" 
                 onClick={() => onEdit(vehicle)}
               >
                 <Edit className="h-4 w-4 mr-1" />
                 Edytuj
               </Button>
-              <Button 
-                size="sm" 
-                variant={showingServiceRecords ? "default" : "outline"}
-                onClick={onServiceClick}
-              >
-                <Wrench className="h-4 w-4 mr-1" />
-                Serwis/Urządzenia
-              </Button>
+              <Tabs defaultValue={showingServiceRecords ? "service" : "devices"} className="w-auto">
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger 
+                    value="service" 
+                    onClick={showingServiceRecords ? undefined : onServiceClick}
+                    className="flex items-center gap-1"
+                  >
+                    <Wrench className="h-4 w-4" />
+                    Serwis
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="devices" 
+                    onClick={showingServiceRecords ? onServiceClick : undefined}
+                    className="flex items-center gap-1"
+                  >
+                    <Cpu className="h-4 w-4" />
+                    Urządzenia
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </div>
           
@@ -151,9 +163,14 @@ const VehicleDetailPanel = ({
               <DeviceList 
                 devices={selectedVehicleDevices} 
                 onEditDevice={onEditDevice}
+                onDeleteDevice={onDeleteDevice}
               />
             ) : (
-              <ServiceRecordList services={services} />
+              <ServiceRecordList 
+                services={services} 
+                onEditService={onEditService}
+                onDeleteService={onDeleteService}
+              />
             )}
           </div>
         </div>

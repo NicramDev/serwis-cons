@@ -2,15 +2,16 @@
 import React from 'react';
 import { Device } from "../utils/types";
 import { Badge } from "@/components/ui/badge";
-import { Edit } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DeviceListProps {
   devices: Device[];
   onEditDevice?: (device: Device) => void;
+  onDeleteDevice?: (device: Device) => void;
 }
 
-const DeviceList = ({ devices, onEditDevice }: DeviceListProps) => {
+const DeviceList = ({ devices, onEditDevice, onDeleteDevice }: DeviceListProps) => {
   if (devices.length === 0) {
     return (
       <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
@@ -41,6 +42,17 @@ const DeviceList = ({ devices, onEditDevice }: DeviceListProps) => {
                 >
                   <Edit className="h-3 w-3 mr-1" />
                   Edytuj
+                </Button>
+              )}
+              {onDeleteDevice && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onDeleteDevice(device)}
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Usuń
                 </Button>
               )}
               <Badge variant={

@@ -1,16 +1,18 @@
 
 import { ServiceRecord } from "../utils/types";
 import { formatDate } from "../utils/data";
-import { Wrench, Hammer, FileCheck, Info } from "lucide-react";
+import { Wrench, Hammer, FileCheck, Info, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
   onViewDetails?: (service: ServiceRecord) => void;
+  onEditService?: (service: ServiceRecord) => void;
+  onDeleteService?: (service: ServiceRecord) => void;
 }
 
-const ServiceRecordList = ({ services, onViewDetails }: ServiceRecordListProps) => {
+const ServiceRecordList = ({ services, onViewDetails, onEditService, onDeleteService }: ServiceRecordListProps) => {
   if (services.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground bg-secondary/20 rounded-lg border border-border/50">
@@ -79,16 +81,28 @@ const ServiceRecordList = ({ services, onViewDetails }: ServiceRecordListProps) 
             <div className="flex flex-col items-end gap-2">
               <div className="font-semibold text-primary">{service.cost.toFixed(2)} PLN</div>
               <div className="text-xs text-muted-foreground">Wykonał: {service.technician}</div>
-              {onViewDetails && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="mt-1"
-                  onClick={() => onViewDetails(service)}
-                >
-                  <Info className="h-4 w-4 mr-1" /> Szczegóły
-                </Button>
-              )}
+              <div className="flex items-center space-x-2 mt-1">
+                {onEditService && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-7 px-2 text-xs"
+                    onClick={() => onEditService(service)}
+                  >
+                    <Edit className="h-3 w-3 mr-1" /> Edytuj
+                  </Button>
+                )}
+                {onDeleteService && (
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    className="h-7 px-2 text-xs"
+                    onClick={() => onDeleteService(service)}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" /> Usuń
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           
