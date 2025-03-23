@@ -281,6 +281,14 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
             Zapisz serwis/naprawę
           </Button>
         </div>
+        
+        {/* Add extra save button at the bottom */}
+        <div className="mt-6 flex justify-center">
+          <Button type="submit" size="lg" className="w-full md:w-1/2 bg-primary">
+            <Save className="h-5 w-5 mr-2" />
+            Zapisz
+          </Button>
+        </div>
       </form>
     </Form>
   );
