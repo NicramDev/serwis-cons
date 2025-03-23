@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -89,7 +88,7 @@ const VehicleDetailPanel = ({
                 onClick={onServiceClick}
               >
                 <Wrench className="h-4 w-4 mr-1" />
-                Serwis
+                Serwis/Urządzenia
               </Button>
             </div>
           </div>
@@ -125,12 +124,7 @@ const VehicleDetailPanel = ({
               )}
               
               {!showingServiceRecords ? (
-                <Button 
-                  size="sm" 
-                  onClick={onServiceClick}
-                >
-                  Pokaż historię serwisową
-                </Button>
+                null
               ) : (
                 <div className="flex space-x-2">
                   <Button 
