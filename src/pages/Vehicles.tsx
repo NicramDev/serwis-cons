@@ -29,12 +29,10 @@ import {
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
-    // Try to get vehicles from localStorage first
     const savedVehicles = localStorage.getItem('vehicles');
     return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
   });
   const [allDevices, setAllDevices] = useState<Device[]>(() => {
-    // Try to get devices from localStorage
     const savedDevices = localStorage.getItem('devices');
     return savedDevices ? JSON.parse(savedDevices) : initialDevices;
   });
@@ -55,22 +53,18 @@ const Vehicles = () => {
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   const [unsavedServiceChanges, setUnsavedServiceChanges] = useState(false);
   
-  // Save vehicles to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('vehicles', JSON.stringify(allVehicles));
   }, [allVehicles]);
   
-  // Save devices to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('devices', JSON.stringify(allDevices));
   }, [allDevices]);
   
-  // Save service records to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('serviceRecords', JSON.stringify(serviceRecords));
   }, [serviceRecords]);
 
-  // Filter and sort vehicles alphabetically by name
   const filteredVehicles = allVehicles
     .filter(vehicle => 
       vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -82,7 +76,6 @@ const Vehicles = () => {
     )
     .sort((a, b) => a.name.localeCompare(b.name));
   
-  // Get service records for the selected vehicle
   const selectedVehicleServices = serviceRecords.filter(
     record => record.vehicleId === selectedVehicleId
   );
@@ -97,13 +90,13 @@ const Vehicles = () => {
     const newVehicle: Vehicle = {
       ...vehicleData,
       id: uuidv4(),
-      lastService: now, // Keep for compatibility
-      nextService: nextServiceDate, // Keep for compatibility
+      lastService: now,
+      nextService: nextServiceDate,
       status: 'ok',
-      model: 'Generic', // We need to keep model for compatibility with existing code
+      model: 'Generic',
       registrationNumber: vehicleData.registrationNumber || '',
       year: vehicleData.year || 0,
-      vehicleType: 'car', // Default type
+      vehicleType: 'car',
     } as Vehicle;
     
     setAllVehicles(prevVehicles => [...prevVehicles, newVehicle]);
@@ -128,10 +121,7 @@ const Vehicles = () => {
   
   const confirmDeleteVehicle = () => {
     if (vehicleToDelete) {
-      // Remove all devices associated with this vehicle
       const updatedDevices = allDevices.filter(device => device.vehicleId !== vehicleToDelete.id);
-      
-      // Remove all service records associated with this vehicle
       const updatedServiceRecords = serviceRecords.filter(record => record.vehicleId !== vehicleToDelete.id);
       
       setAllVehicles(prevVehicles => prevVehicles.filter(v => v.id !== vehicleToDelete.id));
@@ -160,10 +150,10 @@ const Vehicles = () => {
   
   const handleVehicleClick = (vehicleId: string) => {
     if (selectedVehicleId === vehicleId) {
-      setSelectedVehicleId(null); // Zamknij, jeśli ten sam pojazd jest już wybrany
+      setSelectedVehicleId(null);
     } else {
-      setSelectedVehicleId(vehicleId); // Wybierz nowy pojazd
-      setShowingServiceRecords(false); // Reset view to devices
+      setSelectedVehicleId(vehicleId);
+      setShowingServiceRecords(false);
     }
   };
   
@@ -178,14 +168,12 @@ const Vehicles = () => {
   const handleSubmitService = (serviceRecord: ServiceRecord) => {
     setServiceRecords(prev => [...prev, serviceRecord]);
     setIsServiceDialogOpen(false);
-    setShowingServiceRecords(true); // Switch to service records view
+    setShowingServiceRecords(true);
     setUnsavedServiceChanges(true);
     toast.success("Serwis/naprawa została dodana pomyślnie");
   };
 
   const handleSaveServiceChanges = () => {
-    // This function is mainly to provide a way to confirm changes
-    // Actual saving to localStorage is handled by useEffect
     setUnsavedServiceChanges(false);
     toast.success("Zmiany zostały zapisane pomyślnie");
   };
@@ -225,7 +213,6 @@ const Vehicles = () => {
         
         {filteredVehicles.length > 0 ? (
           <div className="flex">
-            {/* Lewa strona - lista pojazdów (1/3 szerokości) */}
             <div className="w-1/3 pr-4">
               <VehicleList 
                 vehicles={filteredVehicles}
@@ -237,7 +224,6 @@ const Vehicles = () => {
               />
             </div>
             
-            {/* Prawa strona - szczegóły pojazdu i urządzenia (2/3 szerokości) */}
             <div className="w-2/3 pl-4">
               <VehicleDetailPanel 
                 selectedVehicleId={selectedVehicleId}
@@ -305,7 +291,7 @@ const Vehicles = () => {
       </Dialog>
       
       <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Dodaj serwis/naprawę</DialogTitle>
             <DialogDescription>

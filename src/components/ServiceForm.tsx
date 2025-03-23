@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, ServiceRecord } from "../utils/types";
-import { X, Calendar, Save } from "lucide-react";
+import { X, Calendar, Save, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -84,6 +84,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pr-2">
+        {/* Device selection */}
         <FormField
           control={form.control}
           name="deviceId"
@@ -109,6 +110,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           )}
         />
         
+        {/* Date and location fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -165,6 +167,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           />
         </div>
         
+        {/* Type and cost fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -209,6 +212,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           />
         </div>
         
+        {/* Technician field */}
         <FormField
           control={form.control}
           name="technician"
@@ -223,6 +227,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           )}
         />
         
+        {/* Description field */}
         <FormField
           control={form.control}
           name="description"
@@ -241,6 +246,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           )}
         />
         
+        {/* Image upload */}
         <div className="space-y-2">
           <FormLabel>Zdjęcia z serwisu/naprawy</FormLabel>
           <Input 
@@ -272,6 +278,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           )}
         </div>
         
+        {/* Buttons at the bottom of the form */}
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onCancel}>
             Anuluj
@@ -282,11 +289,15 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           </Button>
         </div>
         
-        {/* Add extra save button at the bottom */}
-        <div className="mt-6 flex justify-center">
-          <Button type="submit" size="lg" className="w-full md:w-1/2 bg-primary">
-            <Save className="h-5 w-5 mr-2" />
-            Zapisz
+        {/* Prominent save button at the bottom */}
+        <div className="mt-8 flex justify-center">
+          <Button 
+            type="submit" 
+            size="lg" 
+            className="w-full md:w-2/3 bg-primary text-lg font-semibold py-6"
+          >
+            <Check className="h-6 w-6 mr-2" />
+            ZAPISZ
           </Button>
         </div>
       </form>
