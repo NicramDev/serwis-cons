@@ -57,6 +57,9 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
     }
   };
   
+  // Ensure that date is properly handled (it may be a string when loaded from localStorage)
+  const recordDate = record.date instanceof Date ? record.date : new Date(record.date);
+  
   return (
     <div className={`glass-card rounded-xl p-6 mb-4 opacity-0 animate-fade-in ${delayClass}`}>
       <div className="flex justify-between items-start">
@@ -71,7 +74,7 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
                 {getTypeText()}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">{formatDate(record.date)}</p>
+            <p className="text-sm text-muted-foreground">{formatDate(recordDate)}</p>
           </div>
         </div>
         <div className="text-right">

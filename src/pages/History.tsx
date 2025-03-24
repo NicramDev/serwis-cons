@@ -1,20 +1,38 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { serviceRecords } from '../utils/data';
 import ServiceHistoryItem from '../components/ServiceHistoryItem';
 import { Filter, Search } from 'lucide-react';
+import { ServiceRecord } from '../utils/types';
 
 const History = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [allServiceRecords, setAllServiceRecords] = useState<ServiceRecord[]>(() => {
+    const savedRecords = localStorage.getItem('serviceRecords');
+    return savedRecords ? JSON.parse(savedRecords) : serviceRecords;
+  });
   
-  const filteredRecords = serviceRecords.filter(record => 
+  // Update from localStorage if it changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedRecords = localStorage.getItem('serviceRecords');
+      if (savedRecords) {
+        setAllServiceRecords(JSON.parse(savedRecords));
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+  
+  const filteredRecords = allServiceRecords.filter(record => 
     record.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     record.technician.toLowerCase().includes(searchQuery.toLowerCase()) ||
     record.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   // Sort records by date (newest first)
-  filteredRecords.sort((a, b) => b.date.getTime() - a.date.getTime());
+  filteredRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
