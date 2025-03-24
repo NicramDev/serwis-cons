@@ -1,23 +1,44 @@
 
 import { useState, useEffect } from 'react';
-import { serviceRecords, vehicles, devices } from '../utils/data';
+import { serviceRecords as initialServiceRecords, vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
 import ServiceHistoryItem from '../components/ServiceHistoryItem';
 import { Filter, Search } from 'lucide-react';
-import { ServiceRecord } from '../utils/types';
+import { ServiceRecord, Vehicle, Device } from '../utils/types';
 
 const History = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [allServiceRecords, setAllServiceRecords] = useState<ServiceRecord[]>(() => {
     const savedRecords = localStorage.getItem('serviceRecords');
-    return savedRecords ? JSON.parse(savedRecords) : serviceRecords;
+    return savedRecords ? JSON.parse(savedRecords) : initialServiceRecords;
+  });
+  
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
+    const savedVehicles = localStorage.getItem('vehicles');
+    return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
+  });
+  
+  const [allDevices, setAllDevices] = useState<Device[]>(() => {
+    const savedDevices = localStorage.getItem('devices');
+    return savedDevices ? JSON.parse(savedDevices) : initialDevices;
   });
   
   // Update from localStorage if it changes
   useEffect(() => {
     const handleStorageChange = () => {
       const savedRecords = localStorage.getItem('serviceRecords');
+      const savedVehicles = localStorage.getItem('vehicles');
+      const savedDevices = localStorage.getItem('devices');
+      
       if (savedRecords) {
         setAllServiceRecords(JSON.parse(savedRecords));
+      }
+      
+      if (savedVehicles) {
+        setAllVehicles(JSON.parse(savedVehicles));
+      }
+      
+      if (savedDevices) {
+        setAllDevices(JSON.parse(savedDevices));
       }
     };
     
@@ -39,7 +60,7 @@ const History = () => {
     
     // Search in related vehicle
     if (record.vehicleId) {
-      const vehicle = vehicles.find(v => v.id === record.vehicleId);
+      const vehicle = allVehicles.find(v => v.id === record.vehicleId);
       if (vehicle && (
         vehicle.name.toLowerCase().includes(searchLower) ||
         vehicle.model.toLowerCase().includes(searchLower) ||
@@ -51,7 +72,7 @@ const History = () => {
     
     // Search in related device
     if (record.deviceId) {
-      const device = devices.find(d => d.id === record.deviceId);
+      const device = allDevices.find(d => d.id === record.deviceId);
       if (device && (
         device.name.toLowerCase().includes(searchLower) ||
         device.type.toLowerCase().includes(searchLower) ||
@@ -62,7 +83,7 @@ const History = () => {
       
       // Also search in the device's associated vehicle
       if (device && device.vehicleId) {
-        const vehicle = vehicles.find(v => v.id === device.vehicleId);
+        const vehicle = allVehicles.find(v => v.id === device.vehicleId);
         if (vehicle && (
           vehicle.name.toLowerCase().includes(searchLower) ||
           vehicle.model.toLowerCase().includes(searchLower) ||
