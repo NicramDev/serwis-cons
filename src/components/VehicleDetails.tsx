@@ -1,16 +1,21 @@
 
+import { useState } from 'react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
-import { CalendarDays, Car, FileText, Info, MapPin, User, Tag, Truck, Gauge } from 'lucide-react';
+import { CalendarDays, Car, FileText, Info, MapPin, User, Tag, Truck, Gauge, Maximize } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import FullscreenViewer from './FullscreenViewer';
 
 interface VehicleDetailsProps {
   vehicle: Vehicle;
 }
 
 const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
+  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
+
   const getStatusText = () => {
     switch (vehicle.status) {
       case 'ok':
@@ -65,8 +70,23 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
   };
 
+  const openFullscreen = (url: string) => {
+    setFullscreenUrl(url);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreenUrl(null);
+  };
+
   return (
     <div className="pt-2">
+      {fullscreenUrl && (
+        <FullscreenViewer
+          url={fullscreenUrl}
+          onClose={closeFullscreen}
+        />
+      )}
+
       <Tabs defaultValue="general">
         <TabsList className="w-full bg-secondary/50 p-1">
           <TabsTrigger value="general" className="flex-1 rounded-md data-[state=active]:shadow-sm">Informacje ogólne</TabsTrigger>
@@ -177,13 +197,25 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
               <h3 className="text-lg font-semibold mb-3 text-foreground/80">Zdjęcia</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {vehicle.images.map((img, idx) => (
-                  <img 
-                    key={idx} 
-                    src={img} 
-                    alt={`${vehicle.name} - zdjęcie ${idx + 1}`} 
-                    className="rounded-lg object-cover h-32 w-full shadow-sm hover:shadow-md transition-all cursor-pointer"
-                    onClick={() => handleAttachmentOpen(img)}
-                  />
+                  <div key={idx} className="relative group">
+                    <img 
+                      src={img} 
+                      alt={`${vehicle.name} - zdjęcie ${idx + 1}`} 
+                      className="rounded-lg object-cover h-32 w-full shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      onClick={() => handleAttachmentOpen(img)}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 hover:bg-black/60 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openFullscreen(img);
+                      }}
+                    >
+                      <Maximize className="h-4 w-4" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -286,18 +318,32 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                       </p>
                     </div>
                   </div>
-                  <a 
-                    href={file.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-primary hover:text-primary/80 text-sm font-medium bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(file.url, '_blank', 'noopener,noreferrer,fullscreen=yes');
-                    }}
-                  >
-                    Otwórz
-                  </a>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openFullscreen(file.url);
+                      }}
+                      className="text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 border-none"
+                    >
+                      <Maximize className="h-4 w-4 mr-1" />
+                      Pełny ekran
+                    </Button>
+                    <a 
+                      href={file.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-primary hover:text-primary/80 text-sm font-medium bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(file.url, '_blank', 'noopener,noreferrer,fullscreen=yes');
+                      }}
+                    >
+                      Otwórz
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>

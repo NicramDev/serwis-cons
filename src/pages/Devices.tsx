@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { devices as initialDevices, vehicles as initialVehicles, formatDate } from '../utils/data';
 import DeviceCard from '../components/DeviceCard';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Maximize } from 'lucide-react';
 import { Device, Vehicle } from '../utils/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import FullscreenViewer from '../components/FullscreenViewer';
 
 const Devices = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,6 +40,7 @@ const Devices = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
+  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
   
   // Check for deviceId and edit params in URL
   useEffect(() => {
@@ -138,8 +139,23 @@ const Devices = () => {
     window.open(url, '_blank');
   };
   
+  const openFullscreen = (url: string) => {
+    setFullscreenUrl(url);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreenUrl(null);
+  };
+  
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      {fullscreenUrl && (
+        <FullscreenViewer
+          url={fullscreenUrl}
+          onClose={closeFullscreen}
+        />
+      )}
+      
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
@@ -300,13 +316,25 @@ const Devices = () => {
                   <p className="text-sm text-muted-foreground mb-2">Zdjęcia</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedDevice.images.map((img, idx) => (
-                      <img 
-                        key={idx} 
-                        src={img} 
-                        alt={`Device image ${idx}`} 
-                        className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                        onDoubleClick={() => handleAttachmentOpen(img)}
-                      />
+                      <div key={idx} className="relative group">
+                        <img 
+                          src={img} 
+                          alt={`Device image ${idx}`} 
+                          className="h-20 w-20 object-cover rounded-md cursor-pointer"
+                          onClick={() => handleAttachmentOpen(img)}
+                        />
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 hover:bg-black/60 text-white h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openFullscreen(img);
+                          }}
+                        >
+                          <Maximize className="h-3 w-3" />
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -324,15 +352,26 @@ const Devices = () => {
                         <div className="truncate text-sm">
                           {file.name} ({(file.size / 1024).toFixed(0)} KB)
                         </div>
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80 text-xs"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Otwórz
-                        </a>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2"
+                            onClick={() => openFullscreen(file.url)}
+                          >
+                            <Maximize className="h-3 w-3 mr-1" />
+                            <span className="text-xs">Pełny ekran</span>
+                          </Button>
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/80 text-xs"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Otwórz
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
