@@ -9,7 +9,6 @@ interface AuthContextProps {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -76,34 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Konto utworzone",
-        description: "Sprawdź swoją skrzynkę email, aby potwierdzić rejestrację",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Błąd rejestracji",
-        description: error.message || "Wystąpił problem podczas tworzenia konta",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const signOut = async () => {
     try {
       setLoading(true);
@@ -127,7 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     loading,
     signIn,
-    signUp,
     signOut,
   };
 
