@@ -1,7 +1,8 @@
 
 import { formatDate } from "../utils/data";
 import { ServiceRecord } from "../utils/types";
-import { WrenchIcon, CarIcon, SmartphoneIcon } from "lucide-react";
+import { WrenchIcon, CarIcon, SmartphoneIcon, InfoIcon } from "lucide-react";
+import { vehicles, devices } from "../utils/data";
 
 interface ServiceHistoryItemProps {
   record: ServiceRecord;
@@ -18,6 +19,18 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
       return <SmartphoneIcon className="h-5 w-5" />;
     } else {
       return <WrenchIcon className="h-5 w-5" />;
+    }
+  };
+  
+  const getRelatedItemInfo = () => {
+    if (record.vehicleId) {
+      const vehicle = vehicles.find(v => v.id === record.vehicleId);
+      return vehicle ? `${vehicle.name} (${vehicle.model}, ${vehicle.year})` : "Nieznany pojazd";
+    } else if (record.deviceId) {
+      const device = devices.find(d => d.id === record.deviceId);
+      return device ? `${device.name} (${device.model || device.type})` : "Nieznane urządzenie";
+    } else {
+      return "Brak powiązania";
     }
   };
   
@@ -75,6 +88,7 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(recordDate)}</p>
+            <p className="text-sm font-medium mt-1">{getRelatedItemInfo()}</p>
           </div>
         </div>
         <div className="text-right">

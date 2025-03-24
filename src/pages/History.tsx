@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { serviceRecords } from '../utils/data';
+import { serviceRecords, vehicles, devices } from '../utils/data';
 import ServiceHistoryItem from '../components/ServiceHistoryItem';
 import { Filter, Search } from 'lucide-react';
 import { ServiceRecord } from '../utils/types';
@@ -25,11 +25,44 @@ const History = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
   
-  const filteredRecords = allServiceRecords.filter(record => 
-    record.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.technician.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRecords = allServiceRecords.filter(record => {
+    const searchLower = searchQuery.toLowerCase();
+    
+    // Search in record details
+    if (
+      record.description.toLowerCase().includes(searchLower) ||
+      record.technician.toLowerCase().includes(searchLower) ||
+      record.type.toLowerCase().includes(searchLower)
+    ) {
+      return true;
+    }
+    
+    // Search in related vehicle
+    if (record.vehicleId) {
+      const vehicle = vehicles.find(v => v.id === record.vehicleId);
+      if (vehicle && (
+        vehicle.name.toLowerCase().includes(searchLower) ||
+        vehicle.model.toLowerCase().includes(searchLower) ||
+        (vehicle.brand && vehicle.brand.toLowerCase().includes(searchLower))
+      )) {
+        return true;
+      }
+    }
+    
+    // Search in related device
+    if (record.deviceId) {
+      const device = devices.find(d => d.id === record.deviceId);
+      if (device && (
+        device.name.toLowerCase().includes(searchLower) ||
+        device.type.toLowerCase().includes(searchLower) ||
+        (device.model && device.model.toLowerCase().includes(searchLower))
+      )) {
+        return true;
+      }
+    }
+    
+    return false;
+  });
   
   // Sort records by date (newest first)
   filteredRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
