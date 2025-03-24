@@ -25,6 +25,7 @@ interface VehicleDetailPanelProps {
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
   onSaveService?: () => void;
+  onView?: (vehicle: Vehicle) => void;
 }
 
 const VehicleDetailPanel = ({
@@ -41,7 +42,8 @@ const VehicleDetailPanel = ({
   onDeleteDevice,
   onEditService,
   onDeleteService,
-  onSaveService
+  onSaveService,
+  onView
 }: VehicleDetailPanelProps) => {
   // Function to open attachments in a new tab/window
   const handleAttachmentOpen = (url: string) => {

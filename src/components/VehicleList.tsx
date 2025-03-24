@@ -8,6 +8,7 @@ interface VehicleListProps {
   onVehicleClick: (vehicleId: string) => void;
   onEdit: (vehicle: Vehicle) => void;
   onDelete: (vehicle: Vehicle) => void;
+  onView?: (vehicle: Vehicle) => void;
 }
 
 const VehicleList = ({ 
@@ -15,7 +16,8 @@ const VehicleList = ({
   selectedVehicleId, 
   onVehicleClick, 
   onEdit, 
-  onDelete 
+  onDelete,
+  onView
 }: VehicleListProps) => {
   if (vehicles.length === 0) {
     return (
@@ -36,6 +38,7 @@ const VehicleList = ({
           onDelete={() => onDelete(vehicle)}
           isSelected={selectedVehicleId === vehicle.id}
           onClick={() => onVehicleClick(vehicle.id)}
+          onView={onView ? () => onView(vehicle) : undefined}
           compact={true}
         />
       ))}
