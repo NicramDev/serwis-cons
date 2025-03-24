@@ -88,7 +88,9 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(recordDate)}</p>
-            <p className="text-sm font-medium mt-1">{getRelatedItemInfo()}</p>
+            <p className="text-sm font-medium mt-1 flex items-center">
+              <span className="mr-1 font-semibold">Dotyczy:</span> {getRelatedItemInfo()}
+            </p>
           </div>
         </div>
         <div className="text-right">
