@@ -55,17 +55,18 @@ const DeviceList = ({ devices, onEditDevice, onDeleteDevice }: DeviceListProps) 
                   Usuń
                 </Button>
               )}
-              <Badge variant={
-                device.status === 'ok' ? 'outline' : 
-                device.status === 'needs-service' ? 'secondary' : 
-                device.status === 'in-service' ? 'default' : 
-                'destructive'
-              }>
-                {device.status === 'ok' ? 'Sprawne' : 
-                device.status === 'needs-service' ? 'Wymaga serwisu' : 
-                device.status === 'in-service' ? 'W serwisie' : 
-                'Problem'}
-              </Badge>
+              {/* Only show badge for statuses other than 'ok' */}
+              {device.status !== 'ok' && (
+                <Badge variant={
+                  device.status === 'needs-service' ? 'secondary' : 
+                  device.status === 'in-service' ? 'default' : 
+                  'destructive'
+                }>
+                  {device.status === 'needs-service' ? 'Wymaga serwisu' : 
+                  device.status === 'in-service' ? 'W serwisie' : 
+                  'Problem'}
+                </Badge>
+              )}
             </div>
           </div>
           <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
