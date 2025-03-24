@@ -9,9 +9,10 @@ interface ServiceRecordListProps {
   services: ServiceRecord[];
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
+  onOpenAttachment?: (url: string) => void;
 }
 
-const ServiceRecordList = ({ services, onEditService, onDeleteService }: ServiceRecordListProps) => {
+const ServiceRecordList = ({ services, onEditService, onDeleteService, onOpenAttachment }: ServiceRecordListProps) => {
   if (services.length === 0) {
     return (
       <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">

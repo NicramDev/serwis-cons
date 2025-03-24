@@ -9,9 +9,10 @@ interface DeviceListProps {
   devices: Device[];
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
+  onOpenAttachment?: (url: string) => void;
 }
 
-const DeviceList = ({ devices, onEditDevice, onDeleteDevice }: DeviceListProps) => {
+const DeviceList = ({ devices, onEditDevice, onDeleteDevice, onOpenAttachment }: DeviceListProps) => {
   if (devices.length === 0) {
     return (
       <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
