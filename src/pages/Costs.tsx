@@ -104,7 +104,7 @@ const Costs = () => {
                     <SelectValue placeholder="Wszystkie pojazdy" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Wszystkie pojazdy</SelectItem>
+                    <SelectItem value="all">Wszystkie pojazdy</SelectItem>
                     {allVehicles.map(vehicle => (
                       <SelectItem key={vehicle.id} value={vehicle.id}>
                         {vehicle.name} ({vehicle.registrationNumber})
@@ -124,7 +124,7 @@ const Costs = () => {
                     <SelectValue placeholder="Wszystkie urządzenia" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Wszystkie urządzenia</SelectItem>
+                    <SelectItem value="all">Wszystkie urządzenia</SelectItem>
                     {allDevices.map(device => (
                       <SelectItem key={device.id} value={device.id}>
                         {device.name} ({device.serialNumber})
