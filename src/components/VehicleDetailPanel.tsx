@@ -74,7 +74,6 @@ const VehicleDetailPanel = ({
               <p className="text-muted-foreground">{vehicle.brand || 'Brak marki'}</p>
             </div>
             <div className="flex space-x-2">
-              {/* Removed Edit button here */}
               <Tabs 
                 defaultValue={showingServiceRecords ? "service" : "devices"} 
                 value={showingServiceRecords ? "service" : "devices"}
@@ -121,7 +120,6 @@ const VehicleDetailPanel = ({
             </div>
           </div>
           
-          {/* Toggle between devices and service records */}
           <div className="pt-4 border-t border-border/50">
             <div className="flex items-center justify-between mb-3">
               {!showingServiceRecords ? (

@@ -1,4 +1,3 @@
-
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { CalendarDays, Car, FileText, Info, MapPin, User, Tag, Truck, Gauge } from 'lucide-react';
@@ -59,6 +58,10 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
       default:
         return <Car className="h-5 w-5" />;
     }
+  };
+
+  const handleAttachmentOpen = (url: string) => {
+    window.open(url, '_blank');
   };
 
   return (
@@ -177,7 +180,8 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                     key={idx} 
                     src={img} 
                     alt={`${vehicle.name} - zdjęcie ${idx + 1}`} 
-                    className="rounded-lg object-cover h-32 w-full shadow-sm hover:shadow-md transition-all"
+                    className="rounded-lg object-cover h-32 w-full shadow-sm hover:shadow-md transition-all cursor-pointer"
+                    onDoubleClick={() => handleAttachmentOpen(img)}
                   />
                 ))}
               </div>
@@ -265,7 +269,11 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             <h3 className="text-lg font-semibold mb-3 text-foreground/80">Załączniki</h3>
             <div className="space-y-3">
               {vehicle.attachments.map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-white/50 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-border/50 hover:shadow-md transition-all">
+                <div 
+                  key={idx} 
+                  className="flex items-center justify-between bg-white/50 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-border/50 hover:shadow-md transition-all cursor-pointer"
+                  onDoubleClick={() => handleAttachmentOpen(file.url)}
+                >
                   <div className="flex items-center space-x-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                       <FileText className="h-5 w-5" />
@@ -282,6 +290,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-primary hover:text-primary/80 text-sm font-medium bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     Otwórz
                   </a>
