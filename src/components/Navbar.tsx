@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -56,7 +57,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="text-primary font-bold text-lg">FleetMaster</div>
+            <div className="text-primary font-bold text-lg">Cons Road</div>
           </div>
           
           {isMobile ? (
