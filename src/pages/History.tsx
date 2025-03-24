@@ -99,6 +99,38 @@ const History = () => {
   
   // Sort records by date (newest first)
   filteredRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // Function to get vehicle and device information for a service record
+  const getItemInfo = (record: ServiceRecord) => {
+    let vehicleName, vehicleModel, deviceName, deviceModel;
+    
+    if (record.vehicleId) {
+      const vehicle = allVehicles.find(v => v.id === record.vehicleId);
+      if (vehicle) {
+        vehicleName = vehicle.name;
+        vehicleModel = vehicle.model;
+      }
+    }
+    
+    if (record.deviceId) {
+      const device = allDevices.find(d => d.id === record.deviceId);
+      if (device) {
+        deviceName = device.name;
+        deviceModel = device.model || device.type;
+        
+        // If device is connected to a vehicle, get the vehicle info
+        if (device.vehicleId && !record.vehicleId) {
+          const vehicle = allVehicles.find(v => v.id === device.vehicleId);
+          if (vehicle) {
+            vehicleName = vehicle.name;
+            vehicleModel = vehicle.model;
+          }
+        }
+      }
+    }
+    
+    return { vehicleName, vehicleModel, deviceName, deviceModel };
+  };
   
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -132,13 +164,21 @@ const History = () => {
         
         {filteredRecords.length > 0 ? (
           <div className="space-y-4">
-            {filteredRecords.map((record, index) => (
-              <ServiceHistoryItem 
-                key={record.id} 
-                record={record}
-                delay={index % 5 + 1}
-              />
-            ))}
+            {filteredRecords.map((record, index) => {
+              const { vehicleName, vehicleModel, deviceName, deviceModel } = getItemInfo(record);
+              
+              return (
+                <ServiceHistoryItem 
+                  key={record.id} 
+                  record={record}
+                  delay={index % 5 + 1}
+                  vehicleName={vehicleName}
+                  vehicleModel={vehicleModel}
+                  deviceName={deviceName}
+                  deviceModel={deviceModel}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="glass-card rounded-xl p-12 text-center">

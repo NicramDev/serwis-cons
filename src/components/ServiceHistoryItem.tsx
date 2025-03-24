@@ -2,14 +2,24 @@
 import { formatDate } from "../utils/data";
 import { ServiceRecord } from "../utils/types";
 import { WrenchIcon, CarIcon, SmartphoneIcon, InfoIcon } from "lucide-react";
-import { vehicles, devices } from "../utils/data";
 
 interface ServiceHistoryItemProps {
   record: ServiceRecord;
   delay?: number;
+  vehicleName?: string;
+  deviceName?: string;
+  vehicleModel?: string;
+  deviceModel?: string;
 }
 
-const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
+const ServiceHistoryItem = ({ 
+  record, 
+  delay = 0, 
+  vehicleName,
+  deviceName,
+  vehicleModel,
+  deviceModel
+}: ServiceHistoryItemProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
   const getTypeIcon = () => {
@@ -19,30 +29,6 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
       return <SmartphoneIcon className="h-5 w-5" />;
     } else {
       return <WrenchIcon className="h-5 w-5" />;
-    }
-  };
-  
-  const getRelatedItemInfo = () => {
-    if (record.vehicleId) {
-      const vehicle = vehicles.find(v => v.id === record.vehicleId);
-      return vehicle ? `${vehicle.name} (${vehicle.model}, ${vehicle.year})` : "Nieznany pojazd";
-    } else if (record.deviceId) {
-      const device = devices.find(d => d.id === record.deviceId);
-      
-      // If the device belongs to a vehicle, get the vehicle info
-      let vehicleInfo = "";
-      if (device && device.vehicleId) {
-        const vehicle = vehicles.find(v => v.id === device.vehicleId);
-        if (vehicle) {
-          vehicleInfo = ` z pojazdu ${vehicle.name}`;
-        }
-      }
-      
-      return device 
-        ? `${device.name} (${device.model || device.type})${vehicleInfo}` 
-        : "Nieznane urządzenie";
-    } else {
-      return "Brak powiązania";
     }
   };
   
@@ -100,10 +86,29 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(recordDate)}</p>
-            <p className="text-sm font-bold mt-1 flex items-center text-primary">
-              {record.vehicleId ? "Z pojazdu: " : record.deviceId ? "Z urządzenia: " : ""}
-              <span className="ml-1">{getRelatedItemInfo()}</span>
-            </p>
+            
+            {/* Clear information about what device/vehicle this service is for */}
+            {record.vehicleId && vehicleName && (
+              <p className="text-sm font-bold mt-1 flex items-center">
+                <span className="text-primary">Pojazd:</span>
+                <span className="ml-1">{vehicleName}{vehicleModel ? ` (${vehicleModel})` : ''}</span>
+              </p>
+            )}
+            
+            {record.deviceId && deviceName && (
+              <div>
+                <p className="text-sm font-bold mt-1 flex items-center">
+                  <span className="text-primary">Urządzenie:</span>
+                  <span className="ml-1">{deviceName}{deviceModel ? ` (${deviceModel})` : ''}</span>
+                </p>
+                {vehicleName && (
+                  <p className="text-sm font-bold mt-1 flex items-center">
+                    <span className="text-primary">Z pojazdu:</span>
+                    <span className="ml-1">{vehicleName}</span>
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="text-right">
