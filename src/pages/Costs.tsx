@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ServiceRecord, Vehicle, Device } from '../utils/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -15,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Calendar as CalendarIcon, PlusCircle, FileText, ArrowDown } from 'lucide-react';
+import { Calendar as CalendarIcon, PlusCircle, FileText, ArrowDown, Printer } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import {
@@ -40,9 +39,9 @@ const Costs = () => {
   const [totalCost, setTotalCost] = useState<number>(0);
   const [vehicleDevices, setVehicleDevices] = useState<Device[]>([]);
   const [showMultipleDevices, setShowMultipleDevices] = useState<boolean>(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false);
 
   useEffect(() => {
-    // Load data from localStorage
     const savedVehicles = localStorage.getItem('vehicles');
     const savedDevices = localStorage.getItem('devices');
     const savedRecords = localStorage.getItem('serviceRecords');
@@ -53,12 +52,10 @@ const Costs = () => {
   }, []);
 
   useEffect(() => {
-    // Update available devices when vehicle changes
     if (selectedVehicleId) {
       const devicesForVehicle = allDevices.filter(device => device.vehicleId === selectedVehicleId);
       setVehicleDevices(devicesForVehicle);
       
-      // Reset selected devices when vehicle changes
       setSelectedDeviceIds([]);
       setSelectedDeviceId(null);
     } else {
@@ -67,32 +64,26 @@ const Costs = () => {
   }, [selectedVehicleId, allDevices]);
 
   useEffect(() => {
-    // Filter service records based on selections
     if (serviceRecords.length) {
       let filtered = [...serviceRecords];
       
-      // Filter by vehicle if selected
       if (selectedVehicleId) {
         filtered = filtered.filter(record => record.vehicleId === selectedVehicleId);
       }
       
-      // Filter by device if selected (single device mode)
       if (!showMultipleDevices && selectedDeviceId) {
         filtered = filtered.filter(record => record.deviceId === selectedDeviceId);
       }
       
-      // Filter by multiple devices if selected (multiple devices mode)
       if (showMultipleDevices && selectedDeviceIds.length > 0) {
         filtered = filtered.filter(record => selectedDeviceIds.includes(record.deviceId || ''));
       }
       
-      // Filter by date range
       if (dateFrom) {
         filtered = filtered.filter(record => new Date(record.date) >= dateFrom);
       }
       
       if (dateTo) {
-        // Add one day to include the end date fully
         const endDate = new Date(dateTo);
         endDate.setDate(endDate.getDate() + 1);
         filtered = filtered.filter(record => new Date(record.date) < endDate);
@@ -100,7 +91,6 @@ const Costs = () => {
       
       setFilteredRecords(filtered);
       
-      // Calculate total cost
       const total = filtered.reduce((sum, record) => sum + record.cost, 0);
       setTotalCost(total);
     }
@@ -127,9 +117,165 @@ const Costs = () => {
 
   const toggleMultipleDevicesMode = () => {
     setShowMultipleDevices(!showMultipleDevices);
-    // Clear device selections when toggling modes
     setSelectedDeviceId(null);
     setSelectedDeviceIds([]);
+  };
+
+  const reportRef = useRef<HTMLDivElement>(null);
+  const handleGenerateReport = () => {
+    setIsGeneratingReport(true);
+    
+    setTimeout(() => {
+      if (reportRef.current) {
+        try {
+          const printWindow = window.open('', '_blank');
+          
+          if (!printWindow) {
+            toast({
+              title: "Błąd",
+              description: "Nie można otworzyć okna wydruku. Sprawdź czy wyskakujące okienka nie są blokowane.",
+              variant: "destructive",
+            });
+            setIsGeneratingReport(false);
+            return;
+          }
+          
+          const selectedVehicle = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId)?.name || 'Wszystkie pojazdy' : 'Wszystkie pojazdy';
+          const dateRange = dateFrom && dateTo 
+            ? `${format(dateFrom, "dd.MM.yyyy")} - ${format(dateTo, "dd.MM.yyyy")}`
+            : dateFrom 
+              ? `Od ${format(dateFrom, "dd.MM.yyyy")}`
+              : dateTo
+                ? `Do ${format(dateTo, "dd.MM.yyyy")}`
+                : 'Cały okres';
+          
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Podsumowanie kosztów</title>
+                <style>
+                  body { font-family: Arial, sans-serif; padding: 20px; }
+                  .report-header { text-align: center; margin-bottom: 30px; }
+                  .report-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+                  .report-subtitle { font-size: 16px; color: #666; margin-bottom: 5px; }
+                  .report-info { margin-bottom: 20px; }
+                  .report-info p { margin: 5px 0; }
+                  .report-total { font-size: 18px; font-weight: bold; margin: 20px 0; text-align: right; }
+                  table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                  th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+                  th { background-color: #f5f5f5; font-weight: bold; }
+                  .cost-item { margin-bottom: 15px; padding: 10px; border: 1px solid #eee; }
+                  .cost-item-header { display: flex; justify-content: space-between; }
+                  .cost-item-title { font-weight: bold; }
+                  .cost-item-subtitle { font-size: 14px; color: #666; }
+                  .cost-value { font-weight: bold; }
+                  .cost-note { font-size: 12px; color: #666; }
+                  .device-summary { margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }
+                </style>
+              </head>
+              <body>
+                <div class="report-header">
+                  <div class="report-title">PODSUMOWANIE KOSZTÓW</div>
+                  <div class="report-subtitle">Wygenerowano ${format(new Date(), "dd.MM.yyyy 'o' HH:mm")}</div>
+                </div>
+                
+                <div class="report-info">
+                  <p><strong>Pojazd:</strong> ${selectedVehicle}</p>
+                  <p><strong>Zakres dat:</strong> ${dateRange}</p>
+                  ${selectedDeviceId 
+                    ? `<p><strong>Urządzenie:</strong> ${allDevices.find(d => d.id === selectedDeviceId)?.name || 'Nieznane'}</p>` 
+                    : ''}
+                  ${showMultipleDevices && selectedDeviceIds.length > 0
+                    ? `<p><strong>Wybrane urządzenia:</strong> ${selectedDeviceIds.length} z ${vehicleDevices.length}</p>`
+                    : ''}
+                </div>
+                
+                <div class="report-total">
+                  Łączny koszt: ${totalCost.toFixed(2)} PLN
+                </div>
+                
+                ${showMultipleDevices && selectedDeviceIds.length > 0 ? `
+                <div class="device-summary">
+                  <h3>Koszty według urządzeń</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Urządzenie</th>
+                        <th style="text-align: right">Liczba napraw</th>
+                        <th style="text-align: right">Łączny koszt</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${selectedDeviceIds.map(deviceId => {
+                        const deviceRecords = filteredRecords.filter(record => record.deviceId === deviceId);
+                        const deviceCost = deviceRecords.reduce((sum, record) => sum + record.cost, 0);
+                        const device = allDevices.find(d => d.id === deviceId);
+                        
+                        return `
+                          <tr>
+                            <td>${device?.name || 'Nieznane urządzenie'}</td>
+                            <td style="text-align: right">${deviceRecords.length}</td>
+                            <td style="text-align: right">${deviceCost.toFixed(2)} PLN</td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+                ` : ''}
+                
+                <h3>Szczegóły kosztów</h3>
+                ${filteredRecords.length > 0 ? `
+                  ${filteredRecords.map(record => `
+                    <div class="cost-item">
+                      <div class="cost-item-header">
+                        <div>
+                          <div class="cost-item-title">
+                            ${record.deviceName}
+                            ${record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) 
+                              ? ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}` 
+                              : ''}
+                          </div>
+                          <div class="cost-item-subtitle">
+                            ${format(new Date(record.date), "dd.MM.yyyy")} - ${record.type === 'repair' ? 'Naprawa' : 
+                            record.type === 'maintenance' ? 'Serwis' : 
+                            record.type === 'inspection' ? 'Przegląd' : 'Inne'}
+                          </div>
+                        </div>
+                        <div>
+                          <div class="cost-value">${record.cost.toFixed(2)} PLN</div>
+                          <div class="cost-note">${record.technician}</div>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                ` : `
+                  <p style="text-align: center; color: #666; padding: 30px;">Brak wyników dla wybranych filtrów</p>
+                `}
+              </body>
+            </html>
+          `);
+          
+          printWindow.document.close();
+          printWindow.focus();
+          
+          setTimeout(() => {
+            printWindow.print();
+            setIsGeneratingReport(false);
+          }, 500);
+          
+        } catch (error) {
+          console.error('Error generating report:', error);
+          toast({
+            title: "Błąd",
+            description: "Wystąpił problem podczas generowania raportu.",
+            variant: "destructive",
+          });
+          setIsGeneratingReport(false);
+        }
+      }
+    }, 100);
   };
 
   return (
@@ -284,9 +430,19 @@ const Costs = () => {
                 Wyczyść filtry
               </Button>
               
-              <Button className="w-full">
-                <FileText className="mr-2 h-4 w-4" />
-                Generuj raport
+              <Button 
+                className="w-full"
+                onClick={handleGenerateReport}
+                disabled={isGeneratingReport}
+              >
+                {isGeneratingReport ? (
+                  <>Generowanie...</>
+                ) : (
+                  <>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Generuj raport
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -299,70 +455,71 @@ const Costs = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {filteredRecords.length > 0 ? (
-                <>
-                  {/* Show details of selected devices if multiple selected */}
-                  {showMultipleDevices && selectedDeviceIds.length > 0 && (
-                    <div className="mb-4 border rounded-lg p-4 bg-white/80">
-                      <h3 className="font-medium mb-2">Koszty według urządzeń</h3>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Urządzenie</TableHead>
-                            <TableHead className="text-right">Liczba napraw</TableHead>
-                            <TableHead className="text-right">Łączny koszt</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {selectedDeviceIds.map(deviceId => {
-                            const deviceRecords = filteredRecords.filter(record => record.deviceId === deviceId);
-                            const deviceCost = deviceRecords.reduce((sum, record) => sum + record.cost, 0);
-                            const device = allDevices.find(d => d.id === deviceId);
-                            
-                            return (
-                              <TableRow key={deviceId}>
-                                <TableCell>{device?.name || 'Nieznane urządzenie'}</TableCell>
-                                <TableCell className="text-right">{deviceRecords.length}</TableCell>
-                                <TableCell className="text-right font-medium">{deviceCost.toFixed(2)} PLN</TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                
-                  <div className="space-y-4">
-                    {filteredRecords.map(record => (
-                      <div 
-                        key={record.id}
-                        className="flex justify-between items-center p-3 border rounded-lg"
-                      >
-                        <div>
-                          <div className="font-medium">
-                            {record.deviceName}
-                            {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
-                              ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {format(new Date(record.date), "dd.MM.yyyy")} - {record.type === 'repair' ? 'Naprawa' : 
-                             record.type === 'maintenance' ? 'Serwis' : 
-                             record.type === 'inspection' ? 'Przegląd' : 'Inne'}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-semibold">{record.cost.toFixed(2)} PLN</div>
-                          <div className="text-xs text-muted-foreground">{record.technician}</div>
-                        </div>
+              <div ref={reportRef}>
+                {filteredRecords.length > 0 ? (
+                  <>
+                    {showMultipleDevices && selectedDeviceIds.length > 0 && (
+                      <div className="mb-4 border rounded-lg p-4 bg-white/80">
+                        <h3 className="font-medium mb-2">Koszty według urządzeń</h3>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Urządzenie</TableHead>
+                              <TableHead className="text-right">Liczba napraw</TableHead>
+                              <TableHead className="text-right">Łączny koszt</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedDeviceIds.map(deviceId => {
+                              const deviceRecords = filteredRecords.filter(record => record.deviceId === deviceId);
+                              const deviceCost = deviceRecords.reduce((sum, record) => sum + record.cost, 0);
+                              const device = allDevices.find(d => d.id === deviceId);
+                              
+                              return (
+                                <TableRow key={deviceId}>
+                                  <TableCell>{device?.name || 'Nieznane urządzenie'}</TableCell>
+                                  <TableCell className="text-right">{deviceRecords.length}</TableCell>
+                                  <TableCell className="text-right font-medium">{deviceCost.toFixed(2)} PLN</TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
                       </div>
-                    ))}
+                    )}
+                  
+                    <div className="space-y-4">
+                      {filteredRecords.map(record => (
+                        <div 
+                          key={record.id}
+                          className="flex justify-between items-center p-3 border rounded-lg"
+                        >
+                          <div>
+                            <div className="font-medium">
+                              {record.deviceName}
+                              {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
+                                ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(record.date), "dd.MM.yyyy")} - {record.type === 'repair' ? 'Naprawa' : 
+                               record.type === 'maintenance' ? 'Serwis' : 
+                               record.type === 'inspection' ? 'Przegląd' : 'Inne'}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold">{record.cost.toFixed(2)} PLN</div>
+                            <div className="text-xs text-muted-foreground">{record.technician}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>Brak wyników dla wybranych filtrów</p>
                   </div>
-                </>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <p>Brak wyników dla wybranych filtrów</p>
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
