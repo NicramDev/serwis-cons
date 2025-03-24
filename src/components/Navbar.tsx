@@ -25,9 +25,9 @@ const Navbar = () => {
   const navItems = [
     { path: '/', label: 'Pulpit', icon: <Home className="h-5 w-5" /> },
     { path: '/vehicles', label: 'Pojazdy', icon: <Car className="h-5 w-5" /> },
+    { path: '/costs', label: 'Koszty', icon: <DollarSign className="h-5 w-5" /> },
     { path: '/notifications', label: 'Powiadomienia', icon: <Bell className="h-5 w-5" /> },
     { path: '/history', label: 'Historia', icon: <History className="h-5 w-5" /> },
-    { path: '/costs', label: 'Koszty', icon: <DollarSign className="h-5 w-5" /> },
   ];
   
   const NavItems = () => (
