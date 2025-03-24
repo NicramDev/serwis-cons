@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Wrench, Cpu, Edit, PlusCircle, Trash2 } from 'lucide-react';
@@ -9,8 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import ServiceRecordList from './ServiceRecordList';
 import DeviceList from './DeviceList';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import DeviceDetails from './DeviceDetails';
-import FullscreenViewer from './FullscreenViewer';
 
 interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
@@ -51,30 +49,9 @@ const VehicleDetailPanel = ({
   onSaveService,
   onView
 }: VehicleDetailPanelProps) => {
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
-  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
-
   // Function to open attachments in a new tab/window
   const handleAttachmentOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
-  };
-
-  const openFullscreen = (url: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
-    setFullscreenUrl(url);
-  };
-
-  const closeFullscreen = () => {
-    setFullscreenUrl(null);
-  };
-
-  const openInNewTab = (url: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
-    window.open(url, '_blank');
   };
 
   if (!selectedVehicleId) {
@@ -97,59 +74,6 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
-  const selectedDevice = selectedVehicleDevices.find(device => device.id === selectedDeviceId);
-  
-  if (selectedDeviceId && selectedDevice) {
-    return (
-      <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
-        <CardContent className="p-6">
-          {fullscreenUrl && (
-            <FullscreenViewer
-              url={fullscreenUrl}
-              onClose={closeFullscreen}
-            />
-          )}
-          <div className="flex justify-between items-center mb-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setSelectedDeviceId(null)}
-              className="flex items-center gap-1 text-primary"
-            >
-              &larr; Wróć do listy urządzeń
-            </Button>
-            <div className="flex gap-2">
-              {onEditDevice && (
-                <Button 
-                  size="sm" 
-                  onClick={() => onEditDevice(selectedDevice)}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edytuj
-                </Button>
-              )}
-              {onDeleteDevice && (
-                <Button 
-                  size="sm" 
-                  variant="destructive"
-                  onClick={() => {
-                    onDeleteDevice(selectedDevice);
-                    setSelectedDeviceId(null);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Usuń
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          <DeviceDetails 
-            device={selectedDevice} 
-          />
-        </CardContent>
-      </Card>
-    );
-  }
   
   return (
     <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
@@ -201,8 +125,8 @@ const VehicleDetailPanel = ({
               <p className="text-sm text-muted-foreground">Następny serwis</p>
               <p className="font-medium">
                 {vehicle.serviceExpiryDate ? 
-                  formatDate(vehicle.serviceExpiryDate) : 
-                  formatDate(vehicle.nextService)}
+                  new Date(vehicle.serviceExpiryDate).toLocaleDateString() : 
+                  new Date(vehicle.nextService).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -251,7 +175,7 @@ const VehicleDetailPanel = ({
                 devices={selectedVehicleDevices} 
                 onEditDevice={onEditDevice}
                 onDeleteDevice={onDeleteDevice}
-                onViewDevice={(device) => setSelectedDeviceId(device.id)}
+                onViewDevice={onViewDevice}
                 onOpenAttachment={handleAttachmentOpen}
               />
             ) : (
