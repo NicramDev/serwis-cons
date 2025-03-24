@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
-import { Bell, Calendar, Car, CheckSquare, Info } from 'lucide-react';
-import { Vehicle } from '../utils/types';
+import { Bell, Calendar, Car, CheckSquare, Info, Zap } from 'lucide-react';
+import { Device, Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 const Notifications = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   
   useEffect(() => {
@@ -19,10 +20,16 @@ const Notifications = () => {
     const loadedVehicles = savedVehicles ? JSON.parse(savedVehicles) : [];
     setVehicles(loadedVehicles);
     
-    // Generate notifications from vehicle data
+    // Load devices from localStorage
+    const savedDevices = localStorage.getItem('devices');
+    const loadedDevices = savedDevices ? JSON.parse(savedDevices) : [];
+    setDevices(loadedDevices);
+    
+    // Generate notifications from vehicle and device data
     const now = new Date();
     const allNotifications: any[] = [];
     
+    // Process vehicle notifications
     loadedVehicles.forEach((vehicle: Vehicle) => {
       // Insurance notifications
       if (vehicle.insuranceExpiryDate) {
@@ -37,7 +44,8 @@ const Notifications = () => {
             type: 'insurance',
             date: insuranceDate,
             daysLeft: daysToInsuranceExpiry,
-            message: `Ubezpieczenie OC/AC pojazdu ${vehicle.name} wygasa za ${daysToInsuranceExpiry} dni`
+            message: `Ubezpieczenie OC/AC pojazdu ${vehicle.name} wygasa za ${daysToInsuranceExpiry} dni`,
+            itemType: 'vehicle'
           });
         } else if (daysToInsuranceExpiry < 0) {
           allNotifications.push({
@@ -48,7 +56,8 @@ const Notifications = () => {
             date: insuranceDate,
             daysLeft: daysToInsuranceExpiry,
             message: `Ubezpieczenie OC/AC pojazdu ${vehicle.name} wygasło ${Math.abs(daysToInsuranceExpiry)} dni temu`,
-            expired: true
+            expired: true,
+            itemType: 'vehicle'
           });
         }
       }
@@ -66,7 +75,8 @@ const Notifications = () => {
             type: 'inspection',
             date: inspectionDate,
             daysLeft: daysToInspectionExpiry,
-            message: `Przegląd pojazdu ${vehicle.name} wygasa za ${daysToInspectionExpiry} dni`
+            message: `Przegląd pojazdu ${vehicle.name} wygasa za ${daysToInspectionExpiry} dni`,
+            itemType: 'vehicle'
           });
         } else if (daysToInspectionExpiry < 0) {
           allNotifications.push({
@@ -77,7 +87,8 @@ const Notifications = () => {
             date: inspectionDate,
             daysLeft: daysToInspectionExpiry,
             message: `Przegląd pojazdu ${vehicle.name} wygasł ${Math.abs(daysToInspectionExpiry)} dni temu`,
-            expired: true
+            expired: true,
+            itemType: 'vehicle'
           });
         }
       }
@@ -95,7 +106,8 @@ const Notifications = () => {
             type: 'service',
             date: serviceDate,
             daysLeft: daysToServiceExpiry,
-            message: `Serwis pojazdu ${vehicle.name} wygasa za ${daysToServiceExpiry} dni`
+            message: `Serwis pojazdu ${vehicle.name} wygasa za ${daysToServiceExpiry} dni`,
+            itemType: 'vehicle'
           });
         } else if (daysToServiceExpiry < 0) {
           allNotifications.push({
@@ -106,7 +118,42 @@ const Notifications = () => {
             date: serviceDate,
             daysLeft: daysToServiceExpiry,
             message: `Serwis pojazdu ${vehicle.name} wygasł ${Math.abs(daysToServiceExpiry)} dni temu`,
-            expired: true
+            expired: true,
+            itemType: 'vehicle'
+          });
+        }
+      }
+    });
+    
+    // Process device notifications
+    loadedDevices.forEach((device: Device) => {
+      // Service notifications for devices
+      if (device.serviceExpiryDate) {
+        const serviceDate = new Date(device.serviceExpiryDate);
+        const daysToServiceExpiry = Math.floor((serviceDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysToServiceExpiry <= (device.serviceReminderDays || 30) && daysToServiceExpiry >= 0) {
+          allNotifications.push({
+            id: `device-service-${device.id}`,
+            deviceId: device.id,
+            deviceName: device.name,
+            type: 'device-service',
+            date: serviceDate,
+            daysLeft: daysToServiceExpiry,
+            message: `Serwis urządzenia ${device.name} wygasa za ${daysToServiceExpiry} dni`,
+            itemType: 'device'
+          });
+        } else if (daysToServiceExpiry < 0) {
+          allNotifications.push({
+            id: `device-service-${device.id}`,
+            deviceId: device.id,
+            deviceName: device.name,
+            type: 'device-service',
+            date: serviceDate,
+            daysLeft: daysToServiceExpiry,
+            message: `Serwis urządzenia ${device.name} wygasł ${Math.abs(daysToServiceExpiry)} dni temu`,
+            expired: true,
+            itemType: 'device'
           });
         }
       }
@@ -122,7 +169,7 @@ const Notifications = () => {
     setNotifications(allNotifications);
   }, []);
   
-  const getNotificationIcon = (type: string, expired: boolean) => {
+  const getNotificationIcon = (type: string, expired: boolean, itemType: string) => {
     if (expired) {
       return <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-600"><Info className="h-5 w-5" /></div>;
     }
@@ -134,8 +181,25 @@ const Notifications = () => {
         return <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600"><Car className="h-5 w-5" /></div>;
       case 'service':
         return <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Calendar className="h-5 w-5" /></div>;
+      case 'device-service':
+        return <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><Zap className="h-5 w-5" /></div>;
       default:
         return <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center"><Bell className="h-5 w-5" /></div>;
+    }
+  };
+  
+  const getNotificationTypeName = (type: string, itemType: string) => {
+    switch (type) {
+      case 'insurance':
+        return 'Ubezpieczenie';
+      case 'inspection':
+        return 'Przegląd';
+      case 'service':
+        return 'Serwis';
+      case 'device-service':
+        return 'Serwis urządzenia';
+      default:
+        return 'Powiadomienie';
     }
   };
   
@@ -157,13 +221,12 @@ const Notifications = () => {
             {notifications.map((notification) => (
               <Card key={notification.id} className={`p-4 border ${notification.expired ? 'border-destructive/30' : 'border-border'}`}>
                 <div className="flex items-start gap-4">
-                  {getNotificationIcon(notification.type, notification.expired)}
+                  {getNotificationIcon(notification.type, notification.expired, notification.itemType)}
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant={notification.expired ? "destructive" : "outline"} className="font-normal">
-                        {notification.type === 'insurance' ? 'Ubezpieczenie' : 
-                         notification.type === 'inspection' ? 'Przegląd' : 'Serwis'}
+                        {getNotificationTypeName(notification.type, notification.itemType)}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
                         {formatDate(notification.date)}
@@ -171,7 +234,9 @@ const Notifications = () => {
                     </div>
                     
                     <p className="font-medium mb-1">{notification.message}</p>
-                    <p className="text-sm text-muted-foreground">Pojazd: {notification.vehicleName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {notification.itemType === 'vehicle' ? `Pojazd: ${notification.vehicleName}` : `Urządzenie: ${notification.deviceName}`}
+                    </p>
                   </div>
                   
                   <Button 
@@ -193,7 +258,7 @@ const Notifications = () => {
             </div>
             <h3 className="text-lg font-medium mb-2">Brak powiadomień</h3>
             <p className="text-muted-foreground">
-              Nie masz żadnych aktywnych powiadomień. Powiadomienia pojawią się, gdy zbliżą się terminy przeglądów, ubezpieczeń lub serwisów pojazdów.
+              Nie masz żadnych aktywnych powiadomień. Powiadomienia pojawią się, gdy zbliżą się terminy przeglądów, ubezpieczeń lub serwisów pojazdów i urządzeń.
             </p>
           </div>
         )}
