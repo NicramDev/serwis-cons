@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FullscreenViewer from './FullscreenViewer';
 import VehicleBasicInfo from './vehicle-details/VehicleBasicInfo';
 import VehicleServiceInfo from './vehicle-details/VehicleServiceInfo';
-import VehicleAttachments from './vehicle-details/VehicleAttachments';
+import FileAttachments from './FileAttachments';
 
 interface VehicleDetailsProps {
   vehicle: Vehicle;
@@ -65,8 +65,10 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
 
         {hasAttachmentsOrImages && (
           <TabsContent value="files" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3">
-            <VehicleAttachments 
-              vehicle={vehicle} 
+            <FileAttachments 
+              attachments={vehicle.attachments} 
+              images={vehicle.images}
+              itemName={vehicle.name}
               onOpenFullscreen={openFullscreen}
               onOpenInNewTab={openInNewTab}
             />
