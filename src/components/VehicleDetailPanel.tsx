@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -156,7 +155,7 @@ const VehicleDetailPanel = ({
                   )}
                 </div>
               ) : (
-                <div className="flex space-x-2">
+                <div>
                   <Button 
                     size="sm" 
                     onClick={onAddService}
@@ -164,15 +163,6 @@ const VehicleDetailPanel = ({
                     <PlusCircle className="h-4 w-4 mr-1" />
                     Dodaj serwis/naprawę
                   </Button>
-                  {services.length > 0 && onSaveService && (
-                    <Button 
-                      size="sm" 
-                      variant="default"
-                      onClick={onSaveService}
-                    >
-                      Zapisz zmiany
-                    </Button>
-                  )}
                 </div>
               )}
             </div>

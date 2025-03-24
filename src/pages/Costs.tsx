@@ -171,6 +171,7 @@ const Costs = () => {
                   .cost-item-subtitle { font-size: 14px; color: #666; }
                   .cost-value { font-weight: bold; }
                   .cost-note { font-size: 12px; color: #666; }
+                  .cost-description { font-size: 14px; padding-top: 10px; margin-top: 10px; border-top: 1px solid #eee; }
                   .device-summary { margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }
                 </style>
               </head>
@@ -247,6 +248,9 @@ const Costs = () => {
                           <div class="cost-value">${record.cost.toFixed(2)} PLN</div>
                           <div class="cost-note">${record.technician}</div>
                         </div>
+                      </div>
+                      <div class="cost-description">
+                        <strong>Zakres usługi/naprawy:</strong> ${record.description}
                       </div>
                     </div>
                   `).join('')}
@@ -492,23 +496,30 @@ const Costs = () => {
                       {filteredRecords.map(record => (
                         <div 
                           key={record.id}
-                          className="flex justify-between items-center p-3 border rounded-lg"
+                          className="flex flex-col p-3 border rounded-lg"
                         >
-                          <div>
-                            <div className="font-medium">
-                              {record.deviceName}
-                              {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
-                                ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">
+                                {record.deviceName}
+                                {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
+                                  ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {format(new Date(record.date), "dd.MM.yyyy")} - {record.type === 'repair' ? 'Naprawa' : 
+                                 record.type === 'maintenance' ? 'Serwis' : 
+                                 record.type === 'inspection' ? 'Przegląd' : 'Inne'}
+                              </div>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {format(new Date(record.date), "dd.MM.yyyy")} - {record.type === 'repair' ? 'Naprawa' : 
-                               record.type === 'maintenance' ? 'Serwis' : 
-                               record.type === 'inspection' ? 'Przegląd' : 'Inne'}
+                            <div className="text-right">
+                              <div className="font-semibold">{record.cost.toFixed(2)} PLN</div>
+                              <div className="text-xs text-muted-foreground">{record.technician}</div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="font-semibold">{record.cost.toFixed(2)} PLN</div>
-                            <div className="text-xs text-muted-foreground">{record.technician}</div>
+                          <div className="mt-2 pt-2 border-t border-border/30">
+                            <div className="text-sm">
+                              <span className="font-medium">Zakres usługi/naprawy:</span> {record.description}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -529,3 +540,4 @@ const Costs = () => {
 };
 
 export default Costs;
+
