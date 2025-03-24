@@ -1,19 +1,14 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import { Vehicle } from "../utils/types";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon, X, Info, ExternalLink } from "lucide-react";
-import { format } from "date-fns";
-import { pl } from "date-fns/locale";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import VehicleBasicFields from "./vehicle-form/VehicleBasicFields";
+import ReminderSection from "./vehicle-form/ReminderSection";
+import FileUploadField from "./vehicle-form/FileUploadField";
 
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
@@ -106,16 +101,12 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
     onSubmit(updatedVehicle);
   };
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setImages(Array.from(e.target.files));
-    }
+  const handleImagesChange = (newFiles: File[]) => {
+    setImages(newFiles);
   };
 
-  const handleAttachmentsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setAttachments(prev => [...prev, ...Array.from(e.target.files || [])]);
-    }
+  const handleAttachmentsChange = (newFiles: File[]) => {
+    setAttachments(prev => [...prev, ...newFiles]);
   };
 
   const removeAttachment = (index: number) => {
@@ -134,537 +125,58 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
     setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank');
-  };
-
-  const formatReminderDays = (days: number) => {
-    if (days === 1) return "1 dzień";
-    return `${days} dni`;
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nazwa własna pojazdu</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz nazwę pojazdu" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="brand"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Marka pojazdu</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz markę pojazdu" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <VehicleBasicFields form={form} />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="year"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rok produkcji</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="vin"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Numer VIN</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz numer VIN pojazdu" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="registrationNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Numer rejestracyjny</FormLabel>
-              <FormControl>
-                <Input placeholder="Wpisz numer rejestracyjny" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <ReminderSection 
+          form={form} 
+          type="insurance" 
+          title="Ubezpieczenie OC/AC ważne do" 
+          useInputs={true}
         />
         
-        <FormField
-          control={form.control}
-          name="purchaseDate"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Data zakupu</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "dd.MM.yyyy", { locale: pl })
-                      ) : (
-                        <span>Wybierz datę</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
+        <ReminderSection 
+          form={form} 
+          type="inspection" 
+          title="Przegląd ważny do" 
+          useInputs={true}
         />
         
-        <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
-          <FormField
-            control={form.control}
-            name="insuranceExpiryDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Ubezpieczenie OC/AC ważne do</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy", { locale: pl })
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="insuranceReminderDays"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between mb-1">
-                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem (dni)</FormLabel>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div><Info className="h-4 w-4 text-muted-foreground cursor-help" /></div>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        Ustaw ile dni przed wygaśnięciem ubezpieczenia chcesz otrzymać przypomnienie
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    max={90} 
-                    step={1} 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
-          <FormField
-            control={form.control}
-            name="inspectionExpiryDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Przegląd ważny do</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy", { locale: pl })
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="inspectionReminderDays"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between mb-1">
-                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem (dni)</FormLabel>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div><Info className="h-4 w-4 text-muted-foreground cursor-help" /></div>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        Ustaw ile dni przed wygaśnięciem przeglądu chcesz otrzymać przypomnienie
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    max={90} 
-                    step={1} 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
-          <FormField
-            control={form.control}
-            name="serviceExpiryDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Serwis ważny do</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy", { locale: pl })
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="serviceReminderDays"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between mb-1">
-                  <FormLabel className="text-sm">Przypomnienie przed wygaśnięciem (dni)</FormLabel>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div><Info className="h-4 w-4 text-muted-foreground cursor-help" /></div>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        Ustaw ile dni przed terminem serwisu chcesz otrzymać przypomnienie
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    max={90} 
-                    step={1} 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="fuelCardNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nr karty paliwowej</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz numer karty paliwowej" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="gpsSystemNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nr systemu GPS</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz numer systemu GPS" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="driverName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Imię i nazwisko kierowcy</FormLabel>
-              <FormControl>
-                <Input placeholder="Wpisz imię i nazwisko kierowcy" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <ReminderSection 
+          form={form} 
+          type="service" 
+          title="Serwis ważny do" 
+          useInputs={true}
         />
         
-        <FormField
-          control={form.control}
-          name="tags"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tagi (oddzielone przecinkami)</FormLabel>
-              <FormControl>
-                <Input placeholder="np. VIP, serwis, leasing" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <FileUploadField 
+          label="Zdjęcia pojazdu"
+          onChange={handleImagesChange}
+          files={images}
+          accept="image/*"
+          multiple={true}
+          existingFiles={existingImages.map((url, i) => ({
+            name: `Zdjęcie ${i+1}`,
+            type: "image/jpeg",
+            size: 0,
+            url
+          }))}
+          onRemoveExisting={removeExistingImage}
+          onRemove={removeImage}
+          isImage={true}
         />
         
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notatki</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Dodatkowe informacje o pojeździe" 
-                  {...field} 
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <FileUploadField 
+          label="Załączniki"
+          onChange={handleAttachmentsChange}
+          files={attachments}
+          multiple={true}
+          existingFiles={existingAttachments}
+          onRemoveExisting={removeExistingAttachment}
+          onRemove={removeAttachment}
         />
-        
-        <div className="space-y-2">
-          <FormLabel>Zdjęcia pojazdu</FormLabel>
-          <Input 
-            type="file" 
-            multiple 
-            accept="image/*" 
-            onChange={handleImagesChange}
-            className="cursor-pointer"
-          />
-          <div className="flex flex-wrap gap-2 mt-2">
-            {existingImages.map((imgUrl, idx) => (
-              <div key={`existing-${idx}`} className="relative">
-                <img 
-                  src={imgUrl} 
-                  alt={`Vehicle preview ${idx}`} 
-                  className="h-20 w-20 object-cover rounded-md"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeExistingImage(idx)}
-                  className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-            {images.map((img, idx) => (
-              <div key={`new-${idx}`} className="relative">
-                <img 
-                  src={URL.createObjectURL(img)} 
-                  alt={`Vehicle preview ${idx}`} 
-                  className="h-20 w-20 object-cover rounded-md"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx)}
-                  className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <FormLabel>Załączniki</FormLabel>
-          <Input 
-            type="file" 
-            multiple 
-            onChange={handleAttachmentsChange}
-            className="cursor-pointer"
-          />
-          <div className="space-y-2 mt-2">
-            {existingAttachments.map((file, idx) => (
-              <div key={`existing-${idx}`} className="flex items-center justify-between bg-secondary p-2 rounded-md">
-                <div className="truncate text-sm">
-                  {file.name} ({(file.size / 1024).toFixed(0)} KB)
-                </div>
-                <div className="flex items-center space-x-1">
-                  <button
-                    type="button"
-                    onClick={() => openInNewTab(file.url)}
-                    className="text-primary hover:text-primary/80 p-1"
-                    title="Otwórz w nowej karcie"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeExistingAttachment(idx)}
-                    className="text-destructive hover:text-destructive/80 p-1"
-                    title="Usuń załącznik"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-            {attachments.map((file, idx) => (
-              <div key={`new-${idx}`} className="flex items-center justify-between bg-secondary p-2 rounded-md">
-                <div className="truncate text-sm">
-                  {file.name} ({(file.size / 1024).toFixed(0)} KB)
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeAttachment(idx)}
-                  className="text-destructive hover:text-destructive/80"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onCancel}>
