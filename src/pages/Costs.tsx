@@ -12,9 +12,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Calendar as CalendarIcon, PlusCircle, FileText } from 'lucide-react';
+import { Calendar as CalendarIcon, PlusCircle, FileText, ArrowDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/components/ui/use-toast';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Costs = () => {
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
@@ -22,10 +33,13 @@ const Costs = () => {
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>([]);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [filteredRecords, setFilteredRecords] = useState<ServiceRecord[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
+  const [vehicleDevices, setVehicleDevices] = useState<Device[]>([]);
+  const [showMultipleDevices, setShowMultipleDevices] = useState<boolean>(false);
 
   useEffect(() => {
     // Load data from localStorage
@@ -39,6 +53,20 @@ const Costs = () => {
   }, []);
 
   useEffect(() => {
+    // Update available devices when vehicle changes
+    if (selectedVehicleId) {
+      const devicesForVehicle = allDevices.filter(device => device.vehicleId === selectedVehicleId);
+      setVehicleDevices(devicesForVehicle);
+      
+      // Reset selected devices when vehicle changes
+      setSelectedDeviceIds([]);
+      setSelectedDeviceId(null);
+    } else {
+      setVehicleDevices([]);
+    }
+  }, [selectedVehicleId, allDevices]);
+
+  useEffect(() => {
     // Filter service records based on selections
     if (serviceRecords.length) {
       let filtered = [...serviceRecords];
@@ -48,9 +76,14 @@ const Costs = () => {
         filtered = filtered.filter(record => record.vehicleId === selectedVehicleId);
       }
       
-      // Filter by device if selected
-      if (selectedDeviceId) {
+      // Filter by device if selected (single device mode)
+      if (!showMultipleDevices && selectedDeviceId) {
         filtered = filtered.filter(record => record.deviceId === selectedDeviceId);
+      }
+      
+      // Filter by multiple devices if selected (multiple devices mode)
+      if (showMultipleDevices && selectedDeviceIds.length > 0) {
+        filtered = filtered.filter(record => selectedDeviceIds.includes(record.deviceId || ''));
       }
       
       // Filter by date range
@@ -71,13 +104,32 @@ const Costs = () => {
       const total = filtered.reduce((sum, record) => sum + record.cost, 0);
       setTotalCost(total);
     }
-  }, [selectedVehicleId, selectedDeviceId, dateFrom, dateTo, serviceRecords]);
+  }, [selectedVehicleId, selectedDeviceId, selectedDeviceIds, dateFrom, dateTo, serviceRecords, showMultipleDevices]);
 
   const handleClearFilters = () => {
     setSelectedVehicleId(null);
     setSelectedDeviceId(null);
+    setSelectedDeviceIds([]);
     setDateFrom(undefined);
     setDateTo(undefined);
+    setShowMultipleDevices(false);
+  };
+
+  const toggleDeviceSelection = (deviceId: string) => {
+    setSelectedDeviceIds(prev => {
+      if (prev.includes(deviceId)) {
+        return prev.filter(id => id !== deviceId);
+      } else {
+        return [...prev, deviceId];
+      }
+    });
+  };
+
+  const toggleMultipleDevicesMode = () => {
+    setShowMultipleDevices(!showMultipleDevices);
+    // Clear device selections when toggling modes
+    setSelectedDeviceId(null);
+    setSelectedDeviceIds([]);
   };
 
   return (
@@ -104,7 +156,7 @@ const Costs = () => {
                     <SelectValue placeholder="Wszystkie pojazdy" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Wszystkie pojazdy</SelectItem>
+                    <SelectItem value="">Wszystkie pojazdy</SelectItem>
                     {allVehicles.map(vehicle => (
                       <SelectItem key={vehicle.id} value={vehicle.id}>
                         {vehicle.name} ({vehicle.registrationNumber})
@@ -114,25 +166,69 @@ const Costs = () => {
                 </Select>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">Urządzenie</label>
-                <Select 
-                  value={selectedDeviceId || ""} 
-                  onValueChange={(value) => setSelectedDeviceId(value || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wszystkie urządzenia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Wszystkie urządzenia</SelectItem>
-                    {allDevices.map(device => (
-                      <SelectItem key={device.id} value={device.id}>
-                        {device.name} ({device.serialNumber})
-                      </SelectItem>
+              {selectedVehicleId && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="multipleDevices" 
+                    checked={showMultipleDevices}
+                    onCheckedChange={toggleMultipleDevicesMode}
+                  />
+                  <label
+                    htmlFor="multipleDevices"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Wybierz wiele urządzeń
+                  </label>
+                </div>
+              )}
+              
+              {selectedVehicleId && !showMultipleDevices && (
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Urządzenie</label>
+                  <Select 
+                    value={selectedDeviceId || ""} 
+                    onValueChange={(value) => setSelectedDeviceId(value || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wszystkie urządzenia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Wszystkie urządzenia</SelectItem>
+                      {vehicleDevices.map(device => (
+                        <SelectItem key={device.id} value={device.id}>
+                          {device.name} ({device.serialNumber})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {selectedVehicleId && showMultipleDevices && vehicleDevices.length > 0 && (
+                <div className="border p-3 rounded-md space-y-2">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">Wybierz urządzenia:</label>
+                  <div className="max-h-40 overflow-y-auto space-y-2">
+                    {vehicleDevices.map(device => (
+                      <div key={device.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`device-${device.id}`} 
+                          checked={selectedDeviceIds.includes(device.id)} 
+                          onCheckedChange={() => toggleDeviceSelection(device.id)}
+                        />
+                        <label 
+                          htmlFor={`device-${device.id}`}
+                          className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {device.name} ({device.serialNumber})
+                        </label>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <p className="text-xs text-muted-foreground">Wybrano: {selectedDeviceIds.length} z {vehicleDevices.length}</p>
+                  </div>
+                </div>
+              )}
               
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Data od</label>
@@ -204,31 +300,64 @@ const Costs = () => {
             </CardHeader>
             <CardContent>
               {filteredRecords.length > 0 ? (
-                <div className="space-y-4">
-                  {filteredRecords.map(record => (
-                    <div 
-                      key={record.id}
-                      className="flex justify-between items-center p-3 border rounded-lg"
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {record.deviceName}
-                          {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
-                            ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {format(new Date(record.date), "dd.MM.yyyy")} - {record.type === 'repair' ? 'Naprawa' : 
-                           record.type === 'maintenance' ? 'Serwis' : 
-                           record.type === 'inspection' ? 'Przegląd' : 'Inne'}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">{record.cost.toFixed(2)} PLN</div>
-                        <div className="text-xs text-muted-foreground">{record.technician}</div>
-                      </div>
+                <>
+                  {/* Show details of selected devices if multiple selected */}
+                  {showMultipleDevices && selectedDeviceIds.length > 0 && (
+                    <div className="mb-4 border rounded-lg p-4 bg-white/80">
+                      <h3 className="font-medium mb-2">Koszty według urządzeń</h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Urządzenie</TableHead>
+                            <TableHead className="text-right">Liczba napraw</TableHead>
+                            <TableHead className="text-right">Łączny koszt</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedDeviceIds.map(deviceId => {
+                            const deviceRecords = filteredRecords.filter(record => record.deviceId === deviceId);
+                            const deviceCost = deviceRecords.reduce((sum, record) => sum + record.cost, 0);
+                            const device = allDevices.find(d => d.id === deviceId);
+                            
+                            return (
+                              <TableRow key={deviceId}>
+                                <TableCell>{device?.name || 'Nieznane urządzenie'}</TableCell>
+                                <TableCell className="text-right">{deviceRecords.length}</TableCell>
+                                <TableCell className="text-right font-medium">{deviceCost.toFixed(2)} PLN</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
                     </div>
-                  ))}
-                </div>
+                  )}
+                
+                  <div className="space-y-4">
+                    {filteredRecords.map(record => (
+                      <div 
+                        key={record.id}
+                        className="flex justify-between items-center p-3 border rounded-lg"
+                      >
+                        <div>
+                          <div className="font-medium">
+                            {record.deviceName}
+                            {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
+                              ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {format(new Date(record.date), "dd.MM.yyyy")} - {record.type === 'repair' ? 'Naprawa' : 
+                             record.type === 'maintenance' ? 'Serwis' : 
+                             record.type === 'inspection' ? 'Przegląd' : 'Inne'}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{record.cost.toFixed(2)} PLN</div>
+                          <div className="text-xs text-muted-foreground">{record.technician}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
                   <p>Brak wyników dla wybranych filtrów</p>
