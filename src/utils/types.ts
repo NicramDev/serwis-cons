@@ -47,7 +47,7 @@ export interface Device {
   nextService: Date;
   serviceExpiryDate?: Date;
   serviceReminderDays?: number;
-  notes?: string;
+  notes?: string; // Added for device description/notes
   status: 'ok' | 'needs-service' | 'in-service' | 'error';
   images?: string[];
   attachments?: {
@@ -69,5 +69,12 @@ export interface ServiceRecord {
   description: string;
   cost: number;
   technician: string;
+  notes?: string; // Added for additional service notes
   images?: string[];
+  attachments?: {
+    name: string;
+    type: string;
+    size: number;
+    url: string;
+  }[];
 }

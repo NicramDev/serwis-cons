@@ -8,6 +8,7 @@ import VehicleDetails from '../components/VehicleDetails';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import EditVehicleForm from '../components/EditVehicleForm';
 import ServiceForm from '../components/ServiceForm';
 import VehicleList from '../components/VehicleList';
@@ -422,10 +423,10 @@ const Vehicles = () => {
                 </div>
               </div>
               
-              {selectedDevice.description && (
+              {selectedDevice.notes && (
                 <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
                   <p className="text-sm text-muted-foreground">Opis</p>
-                  <p className="font-medium whitespace-pre-wrap">{selectedDevice.description}</p>
+                  <p className="font-medium whitespace-pre-wrap">{selectedDevice.notes}</p>
                 </div>
               )}
               
@@ -433,14 +434,14 @@ const Vehicles = () => {
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">Załączniki</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {selectedDevice.attachments.map((url, index) => (
+                    {selectedDevice.attachments.map((attachment, index) => (
                       <div 
                         key={index} 
                         className="border border-border/50 rounded-lg overflow-hidden cursor-pointer"
-                        onClick={() => window.open(url, '_blank')}
+                        onClick={() => window.open(attachment.url, '_blank')}
                       >
                         <img 
-                          src={url} 
+                          src={attachment.url} 
                           alt={`Załącznik ${index + 1}`} 
                           className="w-full h-32 object-cover"
                         />
@@ -496,18 +497,11 @@ const Vehicles = () => {
                 <p className="font-medium whitespace-pre-wrap">{selectedService.description}</p>
               </div>
               
-              {selectedService.notes && (
-                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                  <p className="text-sm text-muted-foreground">Dodatkowe uwagi</p>
-                  <p className="font-medium whitespace-pre-wrap">{selectedService.notes}</p>
-                </div>
-              )}
-              
-              {selectedService.attachments && selectedService.attachments.length > 0 && (
+              {selectedService.images && selectedService.images.length > 0 && (
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">Załączniki</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {selectedService.attachments.map((url, index) => (
+                    {selectedService.images.map((url, index) => (
                       <div 
                         key={index} 
                         className="border border-border/50 rounded-lg overflow-hidden cursor-pointer"
@@ -677,4 +671,3 @@ const Vehicles = () => {
 };
 
 export default Vehicles;
-
