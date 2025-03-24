@@ -1,3 +1,4 @@
+
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { CalendarDays, Car, FileText, Info, MapPin, User, Tag, Truck, Gauge } from 'lucide-react';
@@ -61,7 +62,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
   };
 
   const handleAttachmentOpen = (url: string) => {
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
   };
 
   return (
@@ -181,7 +182,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                     src={img} 
                     alt={`${vehicle.name} - zdjęcie ${idx + 1}`} 
                     className="rounded-lg object-cover h-32 w-full shadow-sm hover:shadow-md transition-all cursor-pointer"
-                    onDoubleClick={() => handleAttachmentOpen(img)}
+                    onClick={() => handleAttachmentOpen(img)}
                   />
                 ))}
               </div>
@@ -272,7 +273,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                 <div 
                   key={idx} 
                   className="flex items-center justify-between bg-white/50 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-border/50 hover:shadow-md transition-all cursor-pointer"
-                  onDoubleClick={() => handleAttachmentOpen(file.url)}
+                  onClick={() => handleAttachmentOpen(file.url)}
                 >
                   <div className="flex items-center space-x-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
@@ -290,7 +291,10 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="text-primary hover:text-primary/80 text-sm font-medium bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(file.url, '_blank', 'noopener,noreferrer,fullscreen=yes');
+                    }}
                   >
                     Otwórz
                   </a>

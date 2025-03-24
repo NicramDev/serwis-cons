@@ -43,6 +43,11 @@ const VehicleDetailPanel = ({
   onDeleteService,
   onSaveService
 }: VehicleDetailPanelProps) => {
+  // Function to open attachments in a new tab/window
+  const handleAttachmentOpen = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
+  };
+
   if (!selectedVehicleId) {
     return (
       <div className="h-full flex items-center justify-center p-6 bg-white/50 backdrop-blur-sm border border-border/50 rounded-lg shadow-sm">
@@ -164,12 +169,14 @@ const VehicleDetailPanel = ({
                 devices={selectedVehicleDevices} 
                 onEditDevice={onEditDevice}
                 onDeleteDevice={onDeleteDevice}
+                onOpenAttachment={handleAttachmentOpen}
               />
             ) : (
               <ServiceRecordList 
                 services={services} 
                 onEditService={onEditService}
                 onDeleteService={onDeleteService}
+                onOpenAttachment={handleAttachmentOpen}
               />
             )}
           </div>
