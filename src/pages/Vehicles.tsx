@@ -61,7 +61,9 @@ const Vehicles = () => {
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
   const [unsavedServiceChanges, setUnsavedServiceChanges] = useState(false);
-  
+  const [isDeviceDetailsDialogOpen, setIsDeviceDetailsDialogOpen] = useState(false);
+  const [isServiceDetailsDialogOpen, setIsServiceDetailsDialogOpen] = useState(false);
+
   useEffect(() => {
     const vehicleId = searchParams.get('vehicleId');
     const shouldEdit = searchParams.get('edit') === 'true';
@@ -286,6 +288,16 @@ const Vehicles = () => {
     toast.success("Serwis został zaktualizowany pomyślnie");
   };
 
+  const handleViewDevice = (device: Device) => {
+    setSelectedDevice(device);
+    setIsDeviceDetailsDialogOpen(true);
+  };
+
+  const handleViewService = (service: ServiceRecord) => {
+    setSelectedService(service);
+    setIsServiceDetailsDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/30">
       <div className="max-w-7xl mx-auto">
@@ -328,8 +340,10 @@ const Vehicles = () => {
                 onAddDevice={handleAddDevice}
                 onEditDevice={handleEditDevice}
                 onDeleteDevice={handleDeleteDevice}
+                onViewDevice={handleViewDevice}
                 onEditService={handleEditService}
                 onDeleteService={handleDeleteService}
+                onViewService={handleViewService}
                 onSaveService={handleSaveServiceChanges}
                 onView={handleViewDetails}
               />
@@ -356,7 +370,7 @@ const Vehicles = () => {
       </Dialog>
 
       <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Szczegóły pojazdu</DialogTitle>
             <DialogDescription>
@@ -364,6 +378,153 @@ const Vehicles = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedVehicle && <VehicleDetails vehicle={selectedVehicle} />}
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isDeviceDetailsDialogOpen} onOpenChange={setIsDeviceDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Szczegóły urządzenia</DialogTitle>
+            <DialogDescription>
+              Informacje o urządzeniu {selectedDevice?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDevice && (
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Nazwa</p>
+                  <p className="font-medium">{selectedDevice.name}</p>
+                </div>
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Typ</p>
+                  <p className="font-medium">{selectedDevice.type}</p>
+                </div>
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Numer seryjny</p>
+                  <p className="font-medium">{selectedDevice.serialNumber}</p>
+                </div>
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="font-medium">
+                    <Badge variant={
+                      selectedDevice.status === 'ok' ? 'outline' :
+                      selectedDevice.status === 'needs-service' ? 'secondary' : 
+                      selectedDevice.status === 'in-service' ? 'default' : 
+                      'destructive'
+                    }>
+                      {selectedDevice.status === 'ok' ? 'OK' :
+                      selectedDevice.status === 'needs-service' ? 'Wymaga serwisu' : 
+                      selectedDevice.status === 'in-service' ? 'W serwisie' : 
+                      'Problem'}
+                    </Badge>
+                  </p>
+                </div>
+              </div>
+              
+              {selectedDevice.description && (
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Opis</p>
+                  <p className="font-medium whitespace-pre-wrap">{selectedDevice.description}</p>
+                </div>
+              )}
+              
+              {selectedDevice.attachments && selectedDevice.attachments.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">Załączniki</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {selectedDevice.attachments.map((url, index) => (
+                      <div 
+                        key={index} 
+                        className="border border-border/50 rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => window.open(url, '_blank')}
+                      >
+                        <img 
+                          src={url} 
+                          alt={`Załącznik ${index + 1}`} 
+                          className="w-full h-32 object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isServiceDetailsDialogOpen} onOpenChange={setIsServiceDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[90vw] md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Szczegóły serwisu</DialogTitle>
+            <DialogDescription>
+              Informacje o serwisie z dnia {selectedService && new Date(selectedService.date).toLocaleDateString()}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedService && (
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                  {selectedService.type === 'repair' ? 'Naprawa' : 
+                   selectedService.type === 'maintenance' ? 'Konserwacja' : 
+                   'Przegląd'}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Data</p>
+                  <p className="font-medium">{new Date(selectedService.date).toLocaleDateString()}</p>
+                </div>
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Technik</p>
+                  <p className="font-medium">{selectedService.technician}</p>
+                </div>
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Koszt</p>
+                  <p className="font-medium">{selectedService.cost.toFixed(2)} PLN</p>
+                </div>
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Dotyczy</p>
+                  <p className="font-medium">{selectedService.deviceName || 'Pojazd'}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                <p className="text-sm text-muted-foreground">Opis</p>
+                <p className="font-medium whitespace-pre-wrap">{selectedService.description}</p>
+              </div>
+              
+              {selectedService.notes && (
+                <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                  <p className="text-sm text-muted-foreground">Dodatkowe uwagi</p>
+                  <p className="font-medium whitespace-pre-wrap">{selectedService.notes}</p>
+                </div>
+              )}
+              
+              {selectedService.attachments && selectedService.attachments.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">Załączniki</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {selectedService.attachments.map((url, index) => (
+                      <div 
+                        key={index} 
+                        className="border border-border/50 rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => window.open(url, '_blank')}
+                      >
+                        <img 
+                          src={url} 
+                          alt={`Załącznik ${index + 1}`} 
+                          className="w-full h-32 object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
       
@@ -516,3 +677,4 @@ const Vehicles = () => {
 };
 
 export default Vehicles;
+

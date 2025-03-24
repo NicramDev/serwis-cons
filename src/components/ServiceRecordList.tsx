@@ -2,17 +2,24 @@
 import React from 'react';
 import { ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
-import { CalendarDays, Wrench, Car, Zap, Edit, Trash2 } from 'lucide-react';
+import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
+  onViewService?: (service: ServiceRecord) => void;
   onOpenAttachment?: (url: string) => void;
 }
 
-const ServiceRecordList = ({ services, onEditService, onDeleteService, onOpenAttachment }: ServiceRecordListProps) => {
+const ServiceRecordList = ({ 
+  services, 
+  onEditService, 
+  onDeleteService, 
+  onViewService,
+  onOpenAttachment 
+}: ServiceRecordListProps) => {
   if (services.length === 0) {
     return (
       <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
@@ -55,6 +62,17 @@ const ServiceRecordList = ({ services, onEditService, onDeleteService, onOpenAtt
               <p className="text-sm mt-1">{service.description}</p>
             </div>
             <div className="flex items-center gap-2">
+              {onViewService && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onViewService(service)}
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Podgląd
+                </Button>
+              )}
               {onEditService && (
                 <Button 
                   variant="outline" 

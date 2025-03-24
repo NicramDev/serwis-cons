@@ -2,17 +2,24 @@
 import React from 'react';
 import { Device } from "../utils/types";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DeviceListProps {
   devices: Device[];
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
+  onViewDevice?: (device: Device) => void;
   onOpenAttachment?: (url: string) => void;
 }
 
-const DeviceList = ({ devices, onEditDevice, onDeleteDevice, onOpenAttachment }: DeviceListProps) => {
+const DeviceList = ({ 
+  devices, 
+  onEditDevice, 
+  onDeleteDevice, 
+  onViewDevice,
+  onOpenAttachment 
+}: DeviceListProps) => {
   if (devices.length === 0) {
     return (
       <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
@@ -34,6 +41,17 @@ const DeviceList = ({ devices, onEditDevice, onDeleteDevice, onOpenAttachment }:
               <p className="text-xs text-muted-foreground">{device.type}</p>
             </div>
             <div className="flex items-center gap-2">
+              {onViewDevice && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onViewDevice(device)}
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  Podgląd
+                </Button>
+              )}
               {onEditDevice && (
                 <Button 
                   variant="outline" 

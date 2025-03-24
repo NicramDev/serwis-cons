@@ -22,8 +22,10 @@ interface VehicleDetailPanelProps {
   onAddDevice?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
+  onViewDevice?: (device: Device) => void;
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
+  onViewService?: (service: ServiceRecord) => void;
   onSaveService?: () => void;
   onView?: (vehicle: Vehicle) => void;
 }
@@ -40,8 +42,10 @@ const VehicleDetailPanel = ({
   onAddDevice,
   onEditDevice,
   onDeleteDevice,
+  onViewDevice,
   onEditService,
   onDeleteService,
+  onViewService,
   onSaveService,
   onView
 }: VehicleDetailPanelProps) => {
@@ -171,6 +175,7 @@ const VehicleDetailPanel = ({
                 devices={selectedVehicleDevices} 
                 onEditDevice={onEditDevice}
                 onDeleteDevice={onDeleteDevice}
+                onViewDevice={onViewDevice}
                 onOpenAttachment={handleAttachmentOpen}
               />
             ) : (
@@ -178,6 +183,7 @@ const VehicleDetailPanel = ({
                 services={services} 
                 onEditService={onEditService}
                 onDeleteService={onDeleteService}
+                onViewService={onViewService}
                 onOpenAttachment={handleAttachmentOpen}
               />
             )}
