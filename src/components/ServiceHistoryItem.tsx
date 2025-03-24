@@ -1,4 +1,3 @@
-
 import { formatDate } from "../utils/data";
 import { ServiceRecord } from "../utils/types";
 import { WrenchIcon, CarIcon, SmartphoneIcon, InfoIcon } from "lucide-react";
@@ -68,42 +67,34 @@ const ServiceHistoryItem = ({
     }
   };
   
-  // Ensure that date is properly handled (it may be a string when loaded from localStorage)
   const recordDate = record.date instanceof Date ? record.date : new Date(record.date);
   
   return (
-    <div className={`glass-card rounded-xl p-3 mb-3 opacity-0 animate-fade-in ${delayClass}`}>
+    <div className={`glass-card rounded-xl p-2 mb-3 opacity-0 animate-fade-in ${delayClass}`}>
       <div className="flex justify-between items-start">
-        <div className="flex items-center">
-          <div className="icon-container mr-2">
-            {getTypeIcon()}
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-primary">{getTypeLabel()}</span>
-              <span className="text-xs text-muted-foreground">{formatDate(recordDate)}</span>
+        <div className="flex-1">
+          <div className="flex items-center space-x-2 mb-1">
+            <div className="icon-container">
+              {getTypeIcon()}
             </div>
-            
+            <span className="text-xs text-muted-foreground">{formatDate(recordDate)}</span>
+          </div>
+          
+          <div className="ml-7">
             {record.vehicleId && vehicleName && (
-              <p className="text-sm font-medium">
-                {vehicleName}{vehicleModel ? ` (${vehicleModel})` : ''}
+              <p className="text-sm">
+                <span className="font-medium">Pojazd:</span> {vehicleName}{vehicleModel ? ` (${vehicleModel})` : ''}
               </p>
             )}
             
             {record.deviceId && deviceName && (
-              <div>
-                <p className="text-sm font-medium">
-                  {deviceName}{deviceModel ? ` (${deviceModel})` : ''}
-                </p>
-                {vehicleName && (
-                  <p className="text-xs text-muted-foreground">
-                    Z pojazdu: {vehicleName}
-                  </p>
-                )}
-              </div>
+              <p className="text-sm">
+                <span className="font-medium">Urządzenie:</span> {deviceName}{deviceModel ? ` (${deviceModel})` : ''}
+              </p>
             )}
           </div>
         </div>
+        
         <div className="text-right flex flex-col items-end">
           <span className={`text-xs px-2 py-0.5 rounded-full mb-1 ${getTypeColor()}`}>
             {getTypeText()}
@@ -112,7 +103,7 @@ const ServiceHistoryItem = ({
           <p className="text-xs text-muted-foreground">Technik: {record.technician}</p>
         </div>
       </div>
-      <div className="mt-2">
+      <div className="mt-1 ml-7">
         <p className="text-sm">{record.description}</p>
       </div>
     </div>
