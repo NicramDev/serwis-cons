@@ -218,7 +218,6 @@ const Vehicles = () => {
                 vehicles={filteredVehicles}
                 selectedVehicleId={selectedVehicleId}
                 onVehicleClick={handleVehicleClick}
-                onViewDetails={handleViewDetails}
                 onEdit={handleEditVehicle}
                 onDelete={handleDeleteVehicle}
               />
@@ -232,7 +231,6 @@ const Vehicles = () => {
                 services={selectedVehicleServices}
                 showingServiceRecords={showingServiceRecords}
                 onServiceClick={handleServiceClick}
-                onViewDetails={handleViewDetails}
                 onEdit={handleEditVehicle}
                 onAddService={handleAddService}
                 onEditDevice={handleEditDevice}
