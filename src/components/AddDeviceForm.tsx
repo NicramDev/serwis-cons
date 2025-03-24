@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,12 +7,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, Vehicle } from "../utils/types";
-import { X, Calendar } from "lucide-react";
+import { X, Calendar, Maximize } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import FullscreenViewer from "./FullscreenViewer";
 
 const deviceSchema = z.object({
   vehicleId: z.string().optional(),
@@ -43,6 +43,7 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(initialDevice?.images || []);
   const [existingAttachments, setExistingAttachments] = useState(initialDevice?.attachments || []);
+  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
   const form = useForm<DeviceFormValues>({
     resolver: zodResolver(deviceSchema),
@@ -113,8 +114,26 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
     setExistingAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
+  const openFullscreen = (url: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setFullscreenUrl(url);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreenUrl(null);
+  };
+
   return (
     <Form {...form}>
+      {fullscreenUrl && (
+        <FullscreenViewer
+          url={fullscreenUrl}
+          onClose={closeFullscreen}
+          type="auto"
+        />
+      )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
         {/* Priority field: Vehicle assignment */}
         <FormField
@@ -326,35 +345,65 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
           {(existingImages.length > 0 || images.length > 0) && (
             <div className="flex flex-wrap gap-2 mt-2">
               {existingImages.map((img, idx) => (
-                <div key={`existing-${idx}`} className="relative">
+                <div key={`existing-${idx}`} className="relative group">
                   <img 
                     src={img} 
                     alt={`Device preview ${idx}`} 
-                    className="h-20 w-20 object-cover rounded-md"
+                    className="h-20 w-20 object-cover rounded-md cursor-pointer"
+                    onClick={() => openFullscreen(img)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => removeExistingImage(idx)}
-                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
+                      onClick={(e) => openFullscreen(img, e)}
+                    >
+                      <Maximize className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeExistingImage(idx);
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
               {images.map((img, idx) => (
-                <div key={`new-${idx}`} className="relative">
+                <div key={`new-${idx}`} className="relative group">
                   <img 
                     src={URL.createObjectURL(img)} 
                     alt={`Device preview ${idx}`} 
-                    className="h-20 w-20 object-cover rounded-md"
+                    className="h-20 w-20 object-cover rounded-md cursor-pointer"
+                    onClick={() => openFullscreen(URL.createObjectURL(img))}
                   />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
+                      onClick={(e) => openFullscreen(URL.createObjectURL(img), e)}
+                    >
+                      <Maximize className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeImage(idx);
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -373,31 +422,57 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
           {(existingAttachments.length > 0 || attachments.length > 0) && (
             <div className="space-y-2 mt-2">
               {existingAttachments.map((file, idx) => (
-                <div key={`existing-attach-${idx}`} className="flex items-center justify-between bg-secondary p-2 rounded-md">
+                <div 
+                  key={`existing-attach-${idx}`} 
+                  className="flex items-center justify-between bg-secondary p-2 rounded-md cursor-pointer"
+                  onClick={() => openFullscreen(file.url)}
+                >
                   <div className="truncate text-sm">
                     {file.name} ({(file.size / 1024).toFixed(0)} KB)
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeExistingAttachment(idx)}
-                    className="text-destructive hover:text-destructive/80"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-primary"
+                      onClick={(e) => openFullscreen(file.url, e)}
+                    >
+                      <Maximize className="h-3 w-3 mr-1" />
+                      <span className="text-xs">Pełny ekran</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeExistingAttachment(idx);
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
               {attachments.map((file, idx) => (
-                <div key={`new-attach-${idx}`} className="flex items-center justify-between bg-secondary p-2 rounded-md">
+                <div 
+                  key={`new-attach-${idx}`} 
+                  className="flex items-center justify-between bg-secondary p-2 rounded-md"
+                >
                   <div className="truncate text-sm">
                     {file.name} ({(file.size / 1024).toFixed(0)} KB)
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachment(idx)}
-                    className="text-destructive hover:text-destructive/80"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeAttachment(idx);
+                    }}
                   >
-                    <X className="h-4 w-4" />
-                  </button>
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -418,3 +493,4 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
 };
 
 export default AddDeviceForm;
+

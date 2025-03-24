@@ -7,13 +7,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, ServiceRecord } from "../utils/types";
-import { X, Calendar, Save } from "lucide-react";
+import { X, Calendar, Save, Maximize } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { v4 as uuidv4 } from 'uuid';
+import FullscreenViewer from "./FullscreenViewer";
 
 const serviceSchema = z.object({
   deviceId: z.string().min(1, "Wybór urządzenia jest wymagany"),
@@ -48,6 +49,7 @@ const ServiceForm = ({
   const [existingImages, setExistingImages] = useState<string[]>(
     initialService?.images || []
   );
+  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
@@ -99,10 +101,27 @@ const ServiceForm = ({
     setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const openFullscreen = (url: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setFullscreenUrl(url);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreenUrl(null);
+  };
+
   return (
     <Form {...form}>
+      {fullscreenUrl && (
+        <FullscreenViewer
+          url={fullscreenUrl}
+          onClose={closeFullscreen}
+          type="auto"
+        />
+      )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pr-2 overflow-y-auto max-h-[65vh]">
-        {/* Device selection */}
         <FormField
           control={form.control}
           name="deviceId"
@@ -128,7 +147,6 @@ const ServiceForm = ({
           )}
         />
         
-        {/* Date and location fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -185,7 +203,6 @@ const ServiceForm = ({
           />
         </div>
         
-        {/* Type and cost fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -230,7 +247,6 @@ const ServiceForm = ({
           />
         </div>
         
-        {/* Technician field */}
         <FormField
           control={form.control}
           name="technician"
@@ -245,7 +261,6 @@ const ServiceForm = ({
           )}
         />
         
-        {/* Description field */}
         <FormField
           control={form.control}
           name="description"
@@ -264,7 +279,6 @@ const ServiceForm = ({
           )}
         />
         
-        {/* Image upload */}
         <div className="space-y-2">
           <FormLabel>Zdjęcia z serwisu/naprawy</FormLabel>
           <Input 
@@ -275,50 +289,78 @@ const ServiceForm = ({
             className="cursor-pointer"
           />
           
-          {/* Existing images */}
           {existingImages.length > 0 && (
             <div>
               <p className="text-sm text-muted-foreground mt-4 mb-2">Istniejące zdjęcia:</p>
               <div className="flex flex-wrap gap-2">
                 {existingImages.map((imgUrl, idx) => (
-                  <div key={idx} className="relative">
+                  <div key={idx} className="relative group">
                     <img 
                       src={imgUrl} 
                       alt={`Service image ${idx}`} 
-                      className="h-20 w-20 object-cover rounded-md"
+                      className="h-20 w-20 object-cover rounded-md cursor-pointer"
+                      onClick={() => openFullscreen(imgUrl)}
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(idx)}
-                      className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
+                        onClick={(e) => openFullscreen(imgUrl, e)}
+                      >
+                        <Maximize className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeExistingImage(idx);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
           
-          {/* New images */}
           {images.length > 0 && (
             <div>
               <p className="text-sm text-muted-foreground mt-4 mb-2">Nowe zdjęcia:</p>
               <div className="flex flex-wrap gap-2">
                 {images.map((img, idx) => (
-                  <div key={idx} className="relative">
+                  <div key={idx} className="relative group">
                     <img 
                       src={URL.createObjectURL(img)} 
                       alt={`Service image ${idx}`} 
-                      className="h-20 w-20 object-cover rounded-md"
+                      className="h-20 w-20 object-cover rounded-md cursor-pointer"
+                      onClick={() => openFullscreen(URL.createObjectURL(img))}
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(idx)}
-                      className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
+                        onClick={(e) => openFullscreen(URL.createObjectURL(img), e)}
+                      >
+                        <Maximize className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(idx);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -326,7 +368,6 @@ const ServiceForm = ({
           )}
         </div>
         
-        {/* Buttons at the bottom of the form */}
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onCancel}>
             Anuluj
