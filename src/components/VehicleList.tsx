@@ -36,7 +36,6 @@ const VehicleList = ({
           onDelete={() => onDelete(vehicle)}
           isSelected={selectedVehicleId === vehicle.id}
           onClick={() => onVehicleClick(vehicle.id)}
-          onViewDetails={() => {}} // Add empty function to satisfy the type requirement
           compact={true}
         />
       ))}

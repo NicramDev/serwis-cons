@@ -8,7 +8,6 @@ import { Badge } from './ui/badge';
 interface VehicleCardProps {
   vehicle: Vehicle;
   delay?: number;
-  onViewDetails: () => void;
   onEdit: () => void;
   onDelete: () => void;
   isSelected?: boolean;
@@ -19,7 +18,6 @@ interface VehicleCardProps {
 const VehicleCard = ({ 
   vehicle, 
   delay = 0, 
-  onViewDetails, 
   onEdit,
   onDelete,
   isSelected = false,
@@ -100,20 +98,7 @@ const VehicleCard = ({
       
       <div className="flex justify-between items-center mt-2">
         <span className="text-xs text-muted-foreground">Następny serwis: {nextServiceFormatted}</span>
-        <div className="flex gap-1">
-          <Button 
-            className="h-6 px-2 text-xs gap-1" 
-            size="sm" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetails();
-            }}
-            variant="outline"
-          >
-            <Car className="h-3 w-3" />
-            Szczegóły
-          </Button>
-          
+        <div className="flex gap-1">          
           <Button 
             className="h-6 w-6 p-0" 
             size="sm"
