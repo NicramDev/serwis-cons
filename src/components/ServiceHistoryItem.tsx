@@ -28,7 +28,19 @@ const ServiceHistoryItem = ({ record, delay = 0 }: ServiceHistoryItemProps) => {
       return vehicle ? `${vehicle.name} (${vehicle.model}, ${vehicle.year})` : "Nieznany pojazd";
     } else if (record.deviceId) {
       const device = devices.find(d => d.id === record.deviceId);
-      return device ? `${device.name} (${device.model || device.type})` : "Nieznane urządzenie";
+      
+      // If the device belongs to a vehicle, get the vehicle info
+      let vehicleInfo = "";
+      if (device && device.vehicleId) {
+        const vehicle = vehicles.find(v => v.id === device.vehicleId);
+        if (vehicle) {
+          vehicleInfo = ` z pojazdu ${vehicle.name}`;
+        }
+      }
+      
+      return device 
+        ? `${device.name} (${device.model || device.type})${vehicleInfo}` 
+        : "Nieznane urządzenie";
     } else {
       return "Brak powiązania";
     }

@@ -59,6 +59,18 @@ const History = () => {
       )) {
         return true;
       }
+      
+      // Also search in the device's associated vehicle
+      if (device && device.vehicleId) {
+        const vehicle = vehicles.find(v => v.id === device.vehicleId);
+        if (vehicle && (
+          vehicle.name.toLowerCase().includes(searchLower) ||
+          vehicle.model.toLowerCase().includes(searchLower) ||
+          (vehicle.brand && vehicle.brand.toLowerCase().includes(searchLower))
+        )) {
+          return true;
+        }
+      }
     }
     
     return false;
