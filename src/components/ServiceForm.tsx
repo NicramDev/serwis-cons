@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -33,21 +32,33 @@ type ServiceFormProps = {
   onCancel: () => void;
   vehicleId: string;
   devices: Device[];
+  initialService?: ServiceRecord;
+  isEditing?: boolean;
 };
 
-const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProps) => {
+const ServiceForm = ({ 
+  onSubmit, 
+  onCancel, 
+  vehicleId, 
+  devices, 
+  initialService, 
+  isEditing = false 
+}: ServiceFormProps) => {
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(
+    initialService?.images || []
+  );
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
-      deviceId: "",
-      date: new Date(),
-      location: "",
-      description: "",
-      cost: 0,
-      technician: "",
-      type: "maintenance",
+      deviceId: initialService?.deviceId || "",
+      date: initialService?.date ? new Date(initialService.date) : new Date(),
+      location: initialService?.location || "",
+      description: initialService?.description || "",
+      cost: initialService?.cost || 0,
+      technician: initialService?.technician || "",
+      type: initialService?.type || "maintenance",
     },
   });
 
@@ -55,7 +66,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
     const selectedDevice = devices.find(d => d.id === values.deviceId);
     
     const serviceRecord: ServiceRecord = {
-      id: uuidv4(),
+      id: initialService?.id || uuidv4(),
       date: values.date,
       vehicleId: vehicleId,
       deviceId: values.deviceId,
@@ -65,7 +76,10 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
       description: values.description,
       cost: values.cost,
       technician: values.technician,
-      images: images.map(img => URL.createObjectURL(img)),
+      images: [
+        ...existingImages,
+        ...images.map(img => URL.createObjectURL(img))
+      ],
     };
     
     onSubmit(serviceRecord);
@@ -79,6 +93,10 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -256,24 +274,54 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
             onChange={handleImagesChange}
             className="cursor-pointer"
           />
+          
+          {/* Existing images */}
+          {existingImages.length > 0 && (
+            <div>
+              <p className="text-sm text-muted-foreground mt-4 mb-2">Istniejące zdjęcia:</p>
+              <div className="flex flex-wrap gap-2">
+                {existingImages.map((imgUrl, idx) => (
+                  <div key={idx} className="relative">
+                    <img 
+                      src={imgUrl} 
+                      alt={`Service image ${idx}`} 
+                      className="h-20 w-20 object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(idx)}
+                      className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* New images */}
           {images.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {images.map((img, idx) => (
-                <div key={idx} className="relative">
-                  <img 
-                    src={URL.createObjectURL(img)} 
-                    alt={`Service image ${idx}`} 
-                    className="h-20 w-20 object-cover rounded-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+            <div>
+              <p className="text-sm text-muted-foreground mt-4 mb-2">Nowe zdjęcia:</p>
+              <div className="flex flex-wrap gap-2">
+                {images.map((img, idx) => (
+                  <div key={idx} className="relative">
+                    <img 
+                      src={URL.createObjectURL(img)} 
+                      alt={`Service image ${idx}`} 
+                      className="h-20 w-20 object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -285,7 +333,7 @@ const ServiceForm = ({ onSubmit, onCancel, vehicleId, devices }: ServiceFormProp
           </Button>
           <Button type="submit" className="bg-primary">
             <Save className="h-4 w-4 mr-1" />
-            Zapisz serwis/naprawę
+            {isEditing ? 'Zapisz zmiany' : 'Zapisz serwis/naprawę'}
           </Button>
         </div>
       </form>

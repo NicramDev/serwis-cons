@@ -96,14 +96,14 @@ const VehicleDetailPanel = ({
                 <TabsList className="grid grid-cols-2">
                   <TabsTrigger 
                     value="service" 
-                    className="flex items-center gap-1"
+                    className={`flex items-center gap-1 ${showingServiceRecords ? 'bg-primary text-primary-foreground' : ''}`}
                   >
                     <Wrench className="h-4 w-4" />
                     Serwis
                   </TabsTrigger>
                   <TabsTrigger 
                     value="devices" 
-                    className="flex items-center gap-1"
+                    className={`flex items-center gap-1 ${!showingServiceRecords ? 'bg-primary text-primary-foreground' : ''}`}
                   >
                     <Cpu className="h-4 w-4" />
                     Urządzenia

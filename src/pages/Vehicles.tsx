@@ -48,12 +48,16 @@ const Vehicles = () => {
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
   const [isEditDeviceDialogOpen, setIsEditDeviceDialogOpen] = useState(false);
   const [isDeleteDeviceDialogOpen, setIsDeleteDeviceDialogOpen] = useState(false);
+  const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
+  const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceRecord | null>(null);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
+  const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
   const [unsavedServiceChanges, setUnsavedServiceChanges] = useState(false);
   
   useEffect(() => {
@@ -235,11 +239,32 @@ const Vehicles = () => {
   };
 
   const handleEditService = (service: ServiceRecord) => {
-    console.log("Edit service:", service);
+    setSelectedService(service);
+    setIsEditServiceDialogOpen(true);
   };
 
   const handleDeleteService = (service: ServiceRecord) => {
-    console.log("Delete service:", service);
+    setServiceToDelete(service);
+    setIsDeleteServiceDialogOpen(true);
+  };
+  
+  const confirmDeleteService = () => {
+    if (serviceToDelete) {
+      setServiceRecords(prev => prev.filter(record => record.id !== serviceToDelete.id));
+      toast.success("Serwis został usunięty pomyślnie");
+    }
+    setIsDeleteServiceDialogOpen(false);
+    setServiceToDelete(null);
+  };
+  
+  const handleUpdateService = (updatedService: ServiceRecord) => {
+    setServiceRecords(prev => 
+      prev.map(service => 
+        service.id === updatedService.id ? updatedService : service
+      )
+    );
+    setIsEditServiceDialogOpen(false);
+    toast.success("Serwis został zaktualizowany pomyślnie");
   };
 
   return (
@@ -358,6 +383,27 @@ const Vehicles = () => {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={isEditServiceDialogOpen} onOpenChange={setIsEditServiceDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edytuj serwis/naprawę</DialogTitle>
+            <DialogDescription>
+              Zaktualizuj informacje o serwisie lub naprawie
+            </DialogDescription>
+          </DialogHeader>
+          {selectedService && selectedVehicleId && (
+            <ServiceForm
+              vehicleId={selectedVehicleId}
+              devices={allDevices.filter(device => device.vehicleId === selectedVehicleId)}
+              initialService={selectedService}
+              onSubmit={handleUpdateService}
+              onCancel={() => setIsEditServiceDialogOpen(false)}
+              isEditing={true}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isAddDeviceDialogOpen} onOpenChange={setIsAddDeviceDialogOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -423,6 +469,23 @@ const Vehicles = () => {
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteDevice} className="bg-destructive text-destructive-foreground">
               Usuń urządzenie
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isDeleteServiceDialogOpen} onOpenChange={setIsDeleteServiceDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć ten serwis?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna. Serwis zostanie usunięty z systemu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteService} className="bg-destructive text-destructive-foreground">
+              Usuń serwis
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
