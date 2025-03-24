@@ -45,12 +45,15 @@ const Vehicles = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
   const [isEditDeviceDialogOpen, setIsEditDeviceDialogOpen] = useState(false);
+  const [isDeleteDeviceDialogOpen, setIsDeleteDeviceDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [unsavedServiceChanges, setUnsavedServiceChanges] = useState(false);
   
   useEffect(() => {
@@ -178,9 +181,45 @@ const Vehicles = () => {
     toast.success("Zmiany zostały zapisane pomyślnie");
   };
 
+  const handleAddDevice = () => {
+    setIsAddDeviceDialogOpen(true);
+  };
+
   const handleEditDevice = (device: Device) => {
     setSelectedDevice(device);
     setIsEditDeviceDialogOpen(true);
+  };
+
+  const handleDeleteDevice = (device: Device) => {
+    setDeviceToDelete(device);
+    setIsDeleteDeviceDialogOpen(true);
+  };
+
+  const confirmDeleteDevice = () => {
+    if (deviceToDelete) {
+      setAllDevices(prevDevices => prevDevices.filter(d => d.id !== deviceToDelete.id));
+      toast.success("Urządzenie zostało usunięte pomyślnie");
+    }
+    setIsDeleteDeviceDialogOpen(false);
+    setDeviceToDelete(null);
+  };
+
+  const handleSubmitDevice = (deviceData: Partial<Device>) => {
+    const newDevice: Device = {
+      id: uuidv4(),
+      name: deviceData.name || '',
+      type: deviceData.type || '',
+      serialNumber: deviceData.serialNumber || '',
+      status: 'ok',
+      lastService: new Date(),
+      nextService: deviceData.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6)),
+      vehicleId: selectedVehicleId || undefined,
+      ...deviceData
+    };
+    
+    setAllDevices(prevDevices => [...prevDevices, newDevice]);
+    setIsAddDeviceDialogOpen(false);
+    toast.success("Urządzenie zostało dodane pomyślnie");
   };
 
   const handleUpdateDevice = (updatedDevice: Partial<Device>) => {
@@ -194,7 +233,15 @@ const Vehicles = () => {
     setIsEditDeviceDialogOpen(false);
     toast.success("Urządzenie zostało zaktualizowane pomyślnie");
   };
-  
+
+  const handleEditService = (service: ServiceRecord) => {
+    console.log("Edit service:", service);
+  };
+
+  const handleDeleteService = (service: ServiceRecord) => {
+    console.log("Delete service:", service);
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/30">
       <div className="max-w-7xl mx-auto">
@@ -233,7 +280,11 @@ const Vehicles = () => {
                 onServiceClick={handleServiceClick}
                 onEdit={handleEditVehicle}
                 onAddService={handleAddService}
+                onAddDevice={handleAddDevice}
                 onEditDevice={handleEditDevice}
+                onDeleteDevice={handleDeleteDevice}
+                onEditService={handleEditService}
+                onDeleteService={handleDeleteService}
                 onSaveService={handleSaveServiceChanges}
               />
             </div>
@@ -307,8 +358,24 @@ const Vehicles = () => {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={isAddDeviceDialogOpen} onOpenChange={setIsAddDeviceDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Dodaj nowe urządzenie</DialogTitle>
+            <DialogDescription>
+              Wypełnij formularz, aby dodać nowe urządzenie do pojazdu
+            </DialogDescription>
+          </DialogHeader>
+          <AddDeviceForm 
+            vehicles={allVehicles}
+            onSubmit={handleSubmitDevice}
+            onCancel={() => setIsAddDeviceDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isEditDeviceDialogOpen} onOpenChange={setIsEditDeviceDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edytuj urządzenie</DialogTitle>
             <DialogDescription>
@@ -339,6 +406,23 @@ const Vehicles = () => {
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteVehicle} className="bg-destructive text-destructive-foreground">
               Usuń pojazd
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isDeleteDeviceDialogOpen} onOpenChange={setIsDeleteDeviceDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć to urządzenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna. Urządzenie zostanie usunięte z systemu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteDevice} className="bg-destructive text-destructive-foreground">
+              Usuń urządzenie
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,129 +1,87 @@
 
-import { ServiceRecord } from "../utils/types";
-import { formatDate } from "../utils/data";
-import { Wrench, Hammer, FileCheck, Info, Edit, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { ServiceRecord } from '../utils/types';
+import { formatDate } from '../utils/data';
+import { CalendarDays, Wrench, Car, Zap, Edit, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
-  onViewDetails?: (service: ServiceRecord) => void;
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
 }
 
-const ServiceRecordList = ({ services, onViewDetails, onEditService, onDeleteService }: ServiceRecordListProps) => {
+const ServiceRecordList = ({ services, onEditService, onDeleteService }: ServiceRecordListProps) => {
   if (services.length === 0) {
     return (
-      <div className="p-4 text-center text-muted-foreground bg-secondary/20 rounded-lg border border-border/50">
-        Brak historii serwisowej dla tego pojazdu.
+      <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
+        <p className="text-sm text-muted-foreground">Brak historii serwisowej dla tego pojazdu.</p>
       </div>
     );
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'repair':
-        return <Wrench className="h-4 w-4" />;
-      case 'maintenance':
-        return <Hammer className="h-4 w-4" />;
-      case 'inspection':
-        return <FileCheck className="h-4 w-4" />;
-      default:
-        return <Hammer className="h-4 w-4" />;
-    }
-  };
-
-  const getTypeText = (type: string) => {
-    switch (type) {
-      case 'repair':
-        return "Naprawa";
-      case 'maintenance':
-        return "Serwis";
-      case 'inspection':
-        return "Przegląd";
-      default:
-        return "Inne";
-    }
-  };
-
-  const getTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case 'repair':
-        return "destructive";
-      case 'maintenance':
-        return "default";
-      case 'inspection':
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {services.map((service) => (
-        <div key={service.id} className="p-4 rounded-lg bg-white/80 backdrop-blur-sm border border-border/50 shadow-sm">
+        <div 
+          key={service.id} 
+          className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
+        >
           <div className="flex justify-between items-start">
             <div>
-              <div className="flex items-center gap-2">
-                <Badge variant={getTypeBadgeVariant(service.type)} className="flex items-center gap-1">
-                  {getTypeIcon(service.type)}
-                  {getTypeText(service.type)}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  {formatDate(new Date(service.date))}
+              <div className="flex items-center gap-2 mb-1">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{formatDate(service.date)}</span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                  {service.type === 'repair' ? 'Naprawa' : 
+                   service.type === 'maintenance' ? 'Konserwacja' : 
+                   'Przegląd'}
                 </span>
               </div>
-              <h3 className="mt-2 font-medium">{service.deviceName}</h3>
-              <p className="text-sm text-muted-foreground">Miejsce: {service.location}</p>
+              <h4 className="font-medium">
+                {service.deviceName ? (
+                  <span className="flex items-center gap-1">
+                    <Zap className="h-3 w-3" />
+                    {service.deviceName}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Car className="h-3 w-3" />
+                    Pojazd
+                  </span>
+                )}
+              </h4>
+              <p className="text-sm mt-1">{service.description}</p>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="font-semibold text-primary">{service.cost.toFixed(2)} PLN</div>
-              <div className="text-xs text-muted-foreground">Wykonał: {service.technician}</div>
-              <div className="flex items-center space-x-2 mt-1">
-                {onEditService && (
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-7 px-2 text-xs"
-                    onClick={() => onEditService(service)}
-                  >
-                    <Edit className="h-3 w-3 mr-1" /> Edytuj
-                  </Button>
-                )}
-                {onDeleteService && (
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    className="h-7 px-2 text-xs"
-                    onClick={() => onDeleteService(service)}
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" /> Usuń
-                  </Button>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              {onEditService && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onEditService(service)}
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  Edytuj
+                </Button>
+              )}
+              {onDeleteService && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onDeleteService(service)}
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Usuń
+                </Button>
+              )}
             </div>
           </div>
-          
-          <div className="mt-3 pt-3 border-t border-border/30">
-            <p className="text-sm whitespace-pre-line">{service.description}</p>
+          <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
+            <span className="text-xs text-muted-foreground">Technik: {service.technician}</span>
+            <span className="text-xs font-medium">{service.cost.toFixed(2)} PLN</span>
           </div>
-          
-          {service.images && service.images.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-border/30">
-              <div className="flex flex-wrap gap-2">
-                {service.images.map((img, idx) => (
-                  <img 
-                    key={idx} 
-                    src={img} 
-                    alt={`Service image ${idx}`} 
-                    className="h-16 w-16 object-cover rounded-md"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       ))}
     </div>
