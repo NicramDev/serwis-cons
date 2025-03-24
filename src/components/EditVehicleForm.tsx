@@ -10,7 +10,7 @@ import { Vehicle } from "../utils/types";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, X, Info } from "lucide-react";
+import { CalendarIcon, X, Info, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -132,6 +132,10 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
 
   const removeExistingImage = (index: number) => {
     setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const openInNewTab = (url: string) => {
+    window.open(url, '_blank');
   };
 
   const formatReminderDays = (days: number) => {
@@ -625,13 +629,24 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
                 <div className="truncate text-sm">
                   {file.name} ({(file.size / 1024).toFixed(0)} KB)
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeExistingAttachment(idx)}
-                  className="text-destructive hover:text-destructive/80"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center space-x-1">
+                  <button
+                    type="button"
+                    onClick={() => openInNewTab(file.url)}
+                    className="text-primary hover:text-primary/80 p-1"
+                    title="Otwórz w nowej karcie"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeExistingAttachment(idx)}
+                    className="text-destructive hover:text-destructive/80 p-1"
+                    title="Usuń załącznik"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             ))}
             {attachments.map((file, idx) => (
