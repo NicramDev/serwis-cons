@@ -1,3 +1,4 @@
+
 import { formatDate } from "../utils/data";
 import { ServiceRecord } from "../utils/types";
 import { WrenchIcon, CarIcon, SmartphoneIcon, InfoIcon } from "lucide-react";
@@ -69,6 +70,11 @@ const ServiceHistoryItem = ({
   
   const recordDate = record.date instanceof Date ? record.date : new Date(record.date);
   
+  // Function to clean vehicle name by removing "(Generic)" suffix
+  const cleanVehicleName = (name: string) => {
+    return name.replace(" (Generic)", "");
+  };
+  
   return (
     <div className={`glass-card rounded-xl p-2 mb-3 opacity-0 animate-fade-in ${delayClass}`}>
       <div className="flex justify-between items-start">
@@ -83,7 +89,7 @@ const ServiceHistoryItem = ({
           <div className="ml-7">
             {record.vehicleId && vehicleName && (
               <p className="text-sm">
-                <span className="font-medium">Pojazd:</span> {vehicleName}{vehicleModel ? ` (${vehicleModel})` : ''}
+                <span className="font-medium">Pojazd:</span> {cleanVehicleName(vehicleName)}{vehicleModel && vehicleModel !== "Generic" ? ` (${vehicleModel})` : ''}
               </p>
             )}
             
@@ -103,8 +109,11 @@ const ServiceHistoryItem = ({
           <p className="text-xs text-muted-foreground">Technik: {record.technician}</p>
         </div>
       </div>
-      <div className="mt-1 ml-7">
-        <p className="text-sm">{record.description}</p>
+      <div className="mt-2">
+        <div className="ml-7">
+          <p className="text-sm font-medium">Zakres serwisu/naprawy:</p>
+          <p className="text-sm">{record.description}</p>
+        </div>
       </div>
     </div>
   );
