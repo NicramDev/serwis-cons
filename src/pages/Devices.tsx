@@ -37,7 +37,7 @@ const Devices = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
@@ -135,11 +135,11 @@ const Devices = () => {
     setDeviceToDelete(null);
   };
   
-  const handleAttachmentOpen = (url: string) => {
-    window.open(url, '_blank');
-  };
-  
-  const openFullscreen = (url: string) => {
+  // Update these functions to consistently use fullscreen viewer
+  const openFullscreen = (url: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setFullscreenUrl(url);
   };
 
@@ -321,16 +321,13 @@ const Devices = () => {
                           src={img} 
                           alt={`Device image ${idx}`} 
                           className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                          onClick={() => handleAttachmentOpen(img)}
+                          onClick={() => openFullscreen(img)}
                         />
                         <Button
                           variant="secondary"
                           size="icon"
                           className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 hover:bg-black/60 text-white h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openFullscreen(img);
-                          }}
+                          onClick={(e) => openFullscreen(img, e)}
                         >
                           <Maximize className="h-3 w-3" />
                         </Button>
@@ -347,7 +344,7 @@ const Devices = () => {
                       <div 
                         key={idx} 
                         className="flex items-center justify-between bg-secondary p-2 rounded-md cursor-pointer"
-                        onDoubleClick={() => handleAttachmentOpen(file.url)}
+                        onClick={() => openFullscreen(file.url)}
                       >
                         <div className="truncate text-sm">
                           {file.name} ({(file.size / 1024).toFixed(0)} KB)
@@ -357,7 +354,7 @@ const Devices = () => {
                             variant="ghost"
                             size="sm"
                             className="h-7 px-2"
-                            onClick={() => openFullscreen(file.url)}
+                            onClick={(e) => openFullscreen(file.url, e)}
                           >
                             <Maximize className="h-3 w-3 mr-1" />
                             <span className="text-xs">Pełny ekran</span>

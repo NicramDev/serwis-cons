@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { X, Maximize } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FullscreenViewerProps {
@@ -57,6 +57,7 @@ const FullscreenViewer = ({ url, onClose, type = 'auto' }: FullscreenViewerProps
             src={url} 
             alt="Podgląd" 
             className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image
           />
         )}
       </div>

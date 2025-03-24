@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -66,11 +65,10 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
     }
   };
 
-  const handleAttachmentOpen = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
-  };
-
-  const openFullscreen = (url: string) => {
+  const openFullscreen = (url: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setFullscreenUrl(url);
   };
 
@@ -202,16 +200,13 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                       src={img} 
                       alt={`${vehicle.name} - zdjęcie ${idx + 1}`} 
                       className="rounded-lg object-cover h-32 w-full shadow-sm hover:shadow-md transition-all cursor-pointer"
-                      onClick={() => handleAttachmentOpen(img)}
+                      onClick={() => openFullscreen(img)}
                     />
                     <Button
                       variant="secondary"
                       size="icon"
                       className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 hover:bg-black/60 text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openFullscreen(img);
-                      }}
+                      onClick={(e) => openFullscreen(img, e)}
                     >
                       <Maximize className="h-4 w-4" />
                     </Button>
@@ -305,7 +300,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                 <div 
                   key={idx} 
                   className="flex items-center justify-between bg-white/50 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-border/50 hover:shadow-md transition-all cursor-pointer"
-                  onClick={() => handleAttachmentOpen(file.url)}
+                  onClick={() => openFullscreen(file.url)}
                 >
                   <div className="flex items-center space-x-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
@@ -322,10 +317,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                     <Button 
                       variant="outline"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openFullscreen(file.url);
-                      }}
+                      onClick={(e) => openFullscreen(file.url, e)}
                       className="text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 border-none"
                     >
                       <Maximize className="h-4 w-4 mr-1" />
@@ -336,10 +328,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="text-primary hover:text-primary/80 text-sm font-medium bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(file.url, '_blank', 'noopener,noreferrer,fullscreen=yes');
-                      }}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Otwórz
                     </a>
