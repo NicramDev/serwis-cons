@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { devices as initialDevices, vehicles as initialVehicles, formatDate } from '../utils/data';
 import DeviceCard from '../components/DeviceCard';
+import DeviceDetails from '../components/DeviceDetails';
 import { PlusCircle, Search, Maximize } from 'lucide-react';
 import { Device, Vehicle } from '../utils/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -25,12 +25,10 @@ import FullscreenViewer from '../components/FullscreenViewer';
 const Devices = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [allDevices, setAllDevices] = useState<Device[]>(() => {
-    // Try to get devices from localStorage
     const savedDevices = localStorage.getItem('devices');
     return savedDevices ? JSON.parse(savedDevices) : initialDevices;
   });
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
-    // Try to get vehicles from localStorage
     const savedVehicles = localStorage.getItem('vehicles');
     return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
   });
@@ -43,7 +41,6 @@ const Devices = () => {
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
   
-  // Check for deviceId and edit params in URL
   useEffect(() => {
     const deviceId = searchParams.get('deviceId');
     const shouldEdit = searchParams.get('edit') === 'true';
@@ -61,7 +58,6 @@ const Devices = () => {
     }
   }, [searchParams, allDevices]);
   
-  // Save devices to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('devices', JSON.stringify(allDevices));
   }, [allDevices]);
@@ -82,7 +78,7 @@ const Devices = () => {
       id: uuidv4(),
       name: deviceData.name || '',
       type: deviceData.type || '',
-      model: deviceData.model || deviceData.type || '', // Use type if model is not provided
+      model: deviceData.model || deviceData.type || '',
       serialNumber: deviceData.serialNumber || '',
       vehicleId: deviceData.vehicleId,
       year: deviceData.year,
@@ -136,7 +132,6 @@ const Devices = () => {
     setDeviceToDelete(null);
   };
   
-  // Update these functions to consistently use fullscreen viewer
   const openFullscreen = (url: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -251,132 +246,14 @@ const Devices = () => {
       </Dialog>
 
       <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Szczegóły urządzenia</DialogTitle>
             <DialogDescription>
               Pełne informacje o urządzeniu
             </DialogDescription>
           </DialogHeader>
-          {selectedDevice && (
-            <div className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Nazwa</p>
-                  <p className="font-medium">{selectedDevice.name}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Typ</p>
-                  <p className="font-medium">{selectedDevice.type}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Model</p>
-                  <p className="font-medium">{selectedDevice.model || '-'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Numer seryjny</p>
-                  <p className="font-medium">{selectedDevice.serialNumber}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Rok produkcji</p>
-                  <p className="font-medium">{selectedDevice.year || '-'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Cena zakupu</p>
-                  <p className="font-medium">{selectedDevice.purchasePrice ? `${selectedDevice.purchasePrice} PLN` : '-'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Ostatni serwis</p>
-                  <p className="font-medium">{formatDate(selectedDevice.lastService)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Następny serwis</p>
-                  <p className="font-medium">{formatDate(selectedDevice.nextService)}</p>
-                </div>
-                {selectedDevice.serviceExpiryDate && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Serwis ważny do</p>
-                    <p className="font-medium">{formatDate(selectedDevice.serviceExpiryDate)}</p>
-                  </div>
-                )}
-                {selectedDevice.serviceReminderDays && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Dni przypomnienia</p>
-                    <p className="font-medium">{selectedDevice.serviceReminderDays} dni</p>
-                  </div>
-                )}
-              </div>
-              {selectedDevice.notes && (
-                <div className="pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground mb-1">Notatki</p>
-                  <p className="text-sm whitespace-pre-line">{selectedDevice.notes}</p>
-                </div>
-              )}
-              {selectedDevice.images && selectedDevice.images.length > 0 && (
-                <div className="pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground mb-2">Zdjęcia</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedDevice.images.map((img, idx) => (
-                      <div key={idx} className="relative group">
-                        <img 
-                          src={img} 
-                          alt={`Device image ${idx}`} 
-                          className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                          onClick={() => openFullscreen(img)}
-                        />
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 hover:bg-black/60 text-white h-6 w-6"
-                          onClick={(e) => openFullscreen(img, e)}
-                        >
-                          <Maximize className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {selectedDevice.attachments && selectedDevice.attachments.length > 0 && (
-                <div className="pt-4 border-t border-border/50">
-                  <p className="text-sm text-muted-foreground mb-2">Załączniki</p>
-                  <div className="space-y-2">
-                    {selectedDevice.attachments.map((file, idx) => (
-                      <div 
-                        key={idx} 
-                        className="flex items-center justify-between bg-secondary p-2 rounded-md cursor-pointer"
-                        onClick={() => openFullscreen(file.url)}
-                      >
-                        <div className="truncate text-sm">
-                          {file.name} ({(file.size / 1024).toFixed(0)} KB)
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2"
-                            onClick={(e) => openFullscreen(file.url, e)}
-                          >
-                            <Maximize className="h-3 w-3 mr-1" />
-                            <span className="text-xs">Pełny ekran</span>
-                          </Button>
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:text-primary/80 text-xs"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Otwórz
-                          </a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          {selectedDevice && <DeviceDetails device={selectedDevice} />}
         </DialogContent>
       </Dialog>
 
