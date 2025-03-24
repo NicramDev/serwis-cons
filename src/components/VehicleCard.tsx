@@ -1,5 +1,5 @@
 
-import { Car, Check, Clock, AlertTriangle, Edit, Trash2 } from 'lucide-react';
+import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Button } from './ui/button';
@@ -13,6 +13,7 @@ interface VehicleCardProps {
   isSelected?: boolean;
   onClick: () => void;
   compact?: boolean;
+  onView?: () => void;
 }
 
 const VehicleCard = ({ 
@@ -22,7 +23,8 @@ const VehicleCard = ({
   onDelete,
   isSelected = false,
   onClick,
-  compact = false
+  compact = false,
+  onView
 }: VehicleCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
@@ -98,7 +100,21 @@ const VehicleCard = ({
       
       <div className="flex justify-between items-center mt-2">
         <span className="text-xs text-muted-foreground">Następny serwis: {nextServiceFormatted}</span>
-        <div className="flex gap-1">          
+        <div className="flex gap-1">
+          {onView && (
+            <Button 
+              className="h-6 w-6 p-0" 
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onView();
+              }}
+              variant="outline"
+            >
+              <Eye className="h-3 w-3" />
+            </Button>
+          )}
+          
           <Button 
             className="h-6 w-6 p-0" 
             size="sm"

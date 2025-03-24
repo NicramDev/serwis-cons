@@ -87,17 +87,29 @@ const ServiceHistoryItem = ({
           </div>
           
           <div className="ml-7">
-            {record.vehicleId && vehicleName && (
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4">
+              {record.vehicleId && vehicleName && (
+                <p className="text-sm">
+                  <span className="font-medium">Pojazd:</span> {cleanVehicleName(vehicleName)}{vehicleModel && vehicleModel !== "Generic" ? ` (${vehicleModel})` : ''}
+                </p>
+              )}
+              
               <p className="text-sm">
-                <span className="font-medium">Pojazd:</span> {cleanVehicleName(vehicleName)}{vehicleModel && vehicleModel !== "Generic" ? ` (${vehicleModel})` : ''}
+                <span className="font-medium">Zakres serwisu/naprawy:</span>
               </p>
-            )}
+            </div>
             
             {record.deviceId && deviceName && (
               <p className="text-sm">
                 <span className="font-medium">Urządzenie:</span> {deviceName}{deviceModel ? ` (${deviceModel})` : ''}
               </p>
             )}
+            
+            <div className="mt-1 pl-4">
+              {record.description.split('\n').map((line, index) => (
+                <p key={index} className="text-sm">- {line}</p>
+              ))}
+            </div>
           </div>
         </div>
         
@@ -107,12 +119,6 @@ const ServiceHistoryItem = ({
           </span>
           <p className="text-base font-semibold">{record.cost.toFixed(2)} zł</p>
           <p className="text-xs text-muted-foreground">Technik: {record.technician}</p>
-        </div>
-      </div>
-      <div className="mt-2">
-        <div className="ml-7">
-          <p className="text-sm font-medium">Zakres serwisu/naprawy:</p>
-          <p className="text-sm">{record.description}</p>
         </div>
       </div>
     </div>

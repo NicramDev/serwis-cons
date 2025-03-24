@@ -311,6 +311,7 @@ const Vehicles = () => {
                 onVehicleClick={handleVehicleClick}
                 onEdit={handleEditVehicle}
                 onDelete={handleDeleteVehicle}
+                onView={handleViewDetails}
               />
             </div>
             
@@ -330,6 +331,7 @@ const Vehicles = () => {
                 onEditService={handleEditService}
                 onDeleteService={handleDeleteService}
                 onSaveService={handleSaveServiceChanges}
+                onView={handleViewDetails}
               />
             </div>
           </div>
