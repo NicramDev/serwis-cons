@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { devices as initialDevices, vehicles as initialVehicles, formatDate } from '../utils/data';
 import DeviceCard from '../components/DeviceCard';
@@ -37,7 +38,7 @@ const Devices = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [isDeleteDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
