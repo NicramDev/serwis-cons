@@ -10,6 +10,8 @@ interface AuthContextProps {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -19,7 +21,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [supabaseInitialized, setSupabaseInitialized] = useState(true);
 
   useEffect(() => {
     // Initial session fetch
@@ -75,6 +76,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signUp = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Konto utworzone pomyślnie",
+        description: "Sprawdź swoją skrzynkę email, aby potwierdzić rejestrację",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Błąd rejestracji",
+        description: error.message || "Wystąpił problem podczas rejestracji",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Link do resetowania hasła wysłany",
+        description: "Sprawdź swoją skrzynkę email",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Błąd resetowania hasła",
+        description: error.message || "Wystąpił problem podczas resetowania hasła",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const signOut = async () => {
     try {
       setLoading(true);
@@ -99,6 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signIn,
     signOut,
+    signUp,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
