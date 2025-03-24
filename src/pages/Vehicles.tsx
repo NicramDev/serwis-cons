@@ -15,6 +15,7 @@ import VehicleDetailPanel from '../components/VehicleDetailPanel';
 import NoVehiclesFound from '../components/NoVehiclesFound';
 import VehicleSearchBar from '../components/VehicleSearchBar';
 import AddDeviceForm from '../components/AddDeviceForm';
+import { useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ const Vehicles = () => {
     const savedRecords = localStorage.getItem('serviceRecords');
     return savedRecords ? JSON.parse(savedRecords) : [];
   });
+  const [searchParams] = useSearchParams();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -59,6 +61,23 @@ const Vehicles = () => {
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
   const [unsavedServiceChanges, setUnsavedServiceChanges] = useState(false);
+  
+  useEffect(() => {
+    const vehicleId = searchParams.get('vehicleId');
+    const shouldEdit = searchParams.get('edit') === 'true';
+    
+    if (vehicleId) {
+      setSelectedVehicleId(vehicleId);
+      
+      if (shouldEdit) {
+        const vehicle = allVehicles.find(v => v.id === vehicleId);
+        if (vehicle) {
+          setSelectedVehicle(vehicle);
+          setIsEditDialogOpen(true);
+        }
+      }
+    }
+  }, [searchParams, allVehicles]);
   
   useEffect(() => {
     localStorage.setItem('vehicles', JSON.stringify(allVehicles));

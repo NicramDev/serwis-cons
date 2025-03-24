@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Bell, Calendar, Car, CheckSquare, Info, Zap, ArrowRight } from 'lucide-react';
 import { Device, Vehicle } from '../utils/types';
@@ -225,11 +224,11 @@ const Notifications = () => {
 
   const handleGoToItem = (notification: any) => {
     if (notification.itemType === 'vehicle' && notification.vehicleId) {
-      // Navigate to vehicle page with selected vehicle
-      navigate(`/vehicles?vehicleId=${notification.vehicleId}`);
+      // Navigate to vehicle page with edit mode parameter
+      navigate(`/vehicles?vehicleId=${notification.vehicleId}&edit=true`);
     } else if (notification.itemType === 'device' && notification.deviceId) {
-      // Navigate to devices page with device id
-      navigate(`/devices?deviceId=${notification.deviceId}`);
+      // Navigate to devices page with edit mode parameter
+      navigate(`/devices?deviceId=${notification.deviceId}&edit=true`);
     }
   };
   

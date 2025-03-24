@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import AddDeviceForm from '../components/AddDeviceForm';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import { useSearchParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,12 +32,31 @@ const Devices = () => {
     const savedVehicles = localStorage.getItem('vehicles');
     return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
   });
+  const [searchParams] = useSearchParams();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
+  
+  // Check for deviceId and edit params in URL
+  useEffect(() => {
+    const deviceId = searchParams.get('deviceId');
+    const shouldEdit = searchParams.get('edit') === 'true';
+    
+    if (deviceId) {
+      const device = allDevices.find(d => d.id === deviceId);
+      if (device) {
+        setSelectedDevice(device);
+        if (shouldEdit) {
+          setIsEditDialogOpen(true);
+        } else {
+          setIsDetailsDialogOpen(true);
+        }
+      }
+    }
+  }, [searchParams, allDevices]);
   
   // Save devices to localStorage whenever they change
   useEffect(() => {

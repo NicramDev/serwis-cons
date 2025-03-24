@@ -11,6 +11,7 @@ import Notifications from "./pages/Notifications";
 import Costs from "./pages/Costs";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
+import Devices from "./pages/Devices";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/history" element={<History />} />
           <Route path="/costs" element={<Costs />} />
+          <Route path="/devices" element={<Devices />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
