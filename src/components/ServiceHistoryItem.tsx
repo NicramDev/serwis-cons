@@ -87,10 +87,9 @@ const ServiceHistoryItem = ({
             </div>
             <p className="text-sm text-muted-foreground">{formatDate(recordDate)}</p>
             
-            {/* Clear information about what device/vehicle this service is for */}
+            {/* Display vehicle name without the "Pojazd:" label */}
             {record.vehicleId && vehicleName && (
               <p className="text-sm font-bold mt-1 flex items-center">
-                <span className="text-primary">Pojazd:</span>
                 <span className="ml-1">{vehicleName}{vehicleModel ? ` (${vehicleModel})` : ''}</span>
               </p>
             )}
