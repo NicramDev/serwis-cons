@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from "@/components/ui/card";
 import ServiceRecordList from './ServiceRecordList';
 import DeviceList from './DeviceList';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
@@ -82,20 +82,28 @@ const VehicleDetailPanel = ({
                 <Edit className="h-4 w-4 mr-1" />
                 Edytuj
               </Button>
-              <Tabs defaultValue={showingServiceRecords ? "service" : "devices"} className="w-auto">
+              <Tabs 
+                defaultValue={showingServiceRecords ? "service" : "devices"} 
+                value={showingServiceRecords ? "service" : "devices"}
+                className="w-auto"
+                onValueChange={(value) => {
+                  if ((value === "service" && !showingServiceRecords) || 
+                      (value === "devices" && showingServiceRecords)) {
+                    onServiceClick();
+                  }
+                }}
+              >
                 <TabsList className="grid grid-cols-2">
                   <TabsTrigger 
                     value="service" 
-                    onClick={showingServiceRecords ? undefined : onServiceClick}
-                    className={`flex items-center gap-1 ${showingServiceRecords ? "bg-primary text-primary-foreground" : ""}`}
+                    className="flex items-center gap-1"
                   >
                     <Wrench className="h-4 w-4" />
                     Serwis
                   </TabsTrigger>
                   <TabsTrigger 
                     value="devices" 
-                    onClick={showingServiceRecords ? onServiceClick : undefined}
-                    className={`flex items-center gap-1 ${!showingServiceRecords ? "bg-primary text-primary-foreground" : ""}`}
+                    className="flex items-center gap-1"
                   >
                     <Cpu className="h-4 w-4" />
                     Urządzenia

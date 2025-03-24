@@ -1,14 +1,11 @@
-
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Car, 
-  Smartphone, 
   Bell, 
   History, 
   Home,
   Menu,
-  X,
   DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +24,6 @@ const Navbar = () => {
   const navItems = [
     { path: '/', label: 'Pulpit', icon: <Home className="h-5 w-5" /> },
     { path: '/vehicles', label: 'Pojazdy', icon: <Car className="h-5 w-5" /> },
-    { path: '/devices', label: 'Urządzenia', icon: <Smartphone className="h-5 w-5" /> },
     { path: '/notifications', label: 'Powiadomienia', icon: <Bell className="h-5 w-5" /> },
     { path: '/history', label: 'Historia', icon: <History className="h-5 w-5" /> },
     { path: '/costs', label: 'Koszty', icon: <DollarSign className="h-5 w-5" /> },
