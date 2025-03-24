@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -73,14 +74,7 @@ const VehicleDetailPanel = ({
               <p className="text-muted-foreground">{vehicle.brand || 'Brak marki'}</p>
             </div>
             <div className="flex space-x-2">
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                onClick={() => onEdit(vehicle)}
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edytuj
-              </Button>
+              {/* Removed Edit button here */}
               <Tabs 
                 defaultValue={showingServiceRecords ? "service" : "devices"} 
                 value={showingServiceRecords ? "service" : "devices"}
