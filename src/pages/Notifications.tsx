@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Bell, Calendar, Car, CheckSquare, Info, Zap } from 'lucide-react';
+import { Bell, Calendar, Car, CheckSquare, Info, Zap, ArrowRight } from 'lucide-react';
 import { Device, Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Badge } from '@/components/ui/badge';
@@ -8,11 +8,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const Notifications = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Load vehicles from localStorage
@@ -132,11 +134,22 @@ const Notifications = () => {
         const serviceDate = new Date(device.serviceExpiryDate);
         const daysToServiceExpiry = Math.floor((serviceDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
         
+        // Find vehicle name if device is attached to a vehicle
+        let vehicleName = '';
+        if (device.vehicleId) {
+          const deviceVehicle = loadedVehicles.find((v: Vehicle) => v.id === device.vehicleId);
+          if (deviceVehicle) {
+            vehicleName = deviceVehicle.name;
+          }
+        }
+        
         if (daysToServiceExpiry <= (device.serviceReminderDays || 30) && daysToServiceExpiry >= 0) {
           allNotifications.push({
             id: `device-service-${device.id}`,
             deviceId: device.id,
             deviceName: device.name,
+            vehicleId: device.vehicleId,
+            vehicleName: vehicleName,
             type: 'device-service',
             date: serviceDate,
             daysLeft: daysToServiceExpiry,
@@ -148,6 +161,8 @@ const Notifications = () => {
             id: `device-service-${device.id}`,
             deviceId: device.id,
             deviceName: device.name,
+            vehicleId: device.vehicleId,
+            vehicleName: vehicleName,
             type: 'device-service',
             date: serviceDate,
             daysLeft: daysToServiceExpiry,
@@ -207,6 +222,16 @@ const Notifications = () => {
     setNotifications(prev => prev.filter(n => n.id !== id));
     toast.success("Powiadomienie oznaczono jako przeczytane");
   };
+
+  const handleGoToItem = (notification: any) => {
+    if (notification.itemType === 'vehicle' && notification.vehicleId) {
+      // Navigate to vehicle page with selected vehicle
+      navigate(`/vehicles?vehicleId=${notification.vehicleId}`);
+    } else if (notification.itemType === 'device' && notification.deviceId) {
+      // Navigate to devices page with device id
+      navigate(`/devices?deviceId=${notification.deviceId}`);
+    }
+  };
   
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -235,18 +260,32 @@ const Notifications = () => {
                     
                     <p className="font-medium mb-1">{notification.message}</p>
                     <p className="text-sm text-muted-foreground">
-                      {notification.itemType === 'vehicle' ? `Pojazd: ${notification.vehicleName}` : `Urządzenie: ${notification.deviceName}`}
+                      {notification.itemType === 'vehicle' 
+                        ? `Pojazd: ${notification.vehicleName}` 
+                        : `Urządzenie: ${notification.deviceName}${notification.vehicleName ? ` (Pojazd: ${notification.vehicleName})` : ''}`}
                     </p>
                   </div>
                   
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleMarkAsRead(notification.id)}
-                    className="text-xs"
-                  >
-                    Oznacz jako przeczytane
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleGoToItem(notification)}
+                      className="flex items-center gap-1"
+                    >
+                      Przejdź
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleMarkAsRead(notification.id)}
+                      className="text-xs"
+                    >
+                      Oznacz jako przeczytane
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
