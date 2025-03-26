@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Car, 
@@ -19,11 +18,13 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 const Navbar = () => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut } = useAuth();
+  const [notificationsCount, setNotificationsCount] = useState(0);
   
   const navItems = [
     { path: '/', label: 'Pulpit', icon: <Home className="h-5 w-5" /> },
@@ -33,6 +34,12 @@ const Navbar = () => {
     { path: '/history', label: 'Historia', icon: <History className="h-5 w-5" /> },
   ];
   
+  useEffect(() => {
+    const savedNotifications = localStorage.getItem('notifications');
+    const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+    setNotificationsCount(notifications.length);
+  }, []);
+
   const NavItems = () => (
     <>
       {navItems.map((item) => (
@@ -93,6 +100,20 @@ const Navbar = () => {
             <div className="flex items-center space-x-1">
               <nav className="flex items-center space-x-1 mr-4">
                 <NavItems />
+                <NavLink 
+                  to="/notifications" 
+                  className="relative flex items-center"
+                >
+                  <Bell className="h-5 w-5" />
+                  {notificationsCount > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full"
+                    >
+                      {notificationsCount}
+                    </Badge>
+                  )}
+                </NavLink>
               </nav>
               <Button 
                 variant="ghost" 
