@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -30,19 +31,35 @@ const Navbar = () => {
     { path: '/', label: 'Pulpit', icon: <Home className="h-5 w-5" /> },
     { path: '/vehicles', label: 'Pojazdy', icon: <Car className="h-5 w-5" /> },
     { path: '/costs', label: 'Koszty', icon: <DollarSign className="h-5 w-5" /> },
-    { path: '/notifications', label: 'Powiadomienia', icon: <Bell className="h-5 w-5" /> },
+    { 
+      path: '/notifications', 
+      label: 'Powiadomienia', 
+      icon: <Bell className="h-5 w-5" />,
+      showBadge: true
+    },
     { path: '/history', label: 'Historia', icon: <History className="h-5 w-5" /> },
   ];
   
   useEffect(() => {
-    const savedNotifications = localStorage.getItem('notifications');
-    const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+    const checkNotifications = () => {
+      const savedNotifications = localStorage.getItem('notifications');
+      const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+      
+      const urgentCount = notifications.filter(n => {
+        return n.expired || (n.daysLeft !== undefined && n.daysLeft <= 7);
+      }).length;
+      
+      setUrgentNotificationsCount(urgentCount);
+    };
     
-    const urgentCount = notifications.filter(n => {
-      return n.expired || (n.daysLeft !== undefined && n.daysLeft <= 7);
-    }).length;
+    // Check notifications on mount
+    checkNotifications();
     
-    setUrgentNotificationsCount(urgentCount);
+    // Set up interval to check for notifications regularly
+    const interval = setInterval(checkNotifications, 60000); // Check every minute
+    
+    // Clean up interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const NavItems = () => (
@@ -52,7 +69,7 @@ const Navbar = () => {
           key={item.path} 
           to={item.path}
           className={({ isActive }) => `
-            flex items-center gap-2 px-3 py-2 rounded-md transition-all
+            relative flex items-center gap-2 px-3 py-2 rounded-md transition-all
             ${isActive 
               ? 'bg-primary text-primary-foreground font-medium' 
               : 'text-foreground/70 hover:bg-secondary hover:text-foreground'
@@ -62,6 +79,14 @@ const Navbar = () => {
         >
           {item.icon}
           <span>{item.label}</span>
+          {item.showBadge && urgentNotificationsCount > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full"
+            >
+              {urgentNotificationsCount}
+            </Badge>
+          )}
         </NavLink>
       ))}
     </>
