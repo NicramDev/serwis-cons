@@ -8,6 +8,7 @@ export const vehicles: Vehicle[] = [
     name: 'Company Car 1',
     vehicleType: 'car',
     model: 'Tesla Model 3',
+    brand: 'Tesla',
     year: 2022,
     registrationNumber: 'ABC123',
     lastService: new Date('2023-11-15'),
@@ -19,6 +20,7 @@ export const vehicles: Vehicle[] = [
     name: 'Delivery Truck',
     vehicleType: 'truck',
     model: 'Mercedes Actros',
+    brand: 'Mercedes',
     year: 2021,
     registrationNumber: 'XYZ789',
     lastService: new Date('2023-12-01'),
@@ -30,6 +32,7 @@ export const vehicles: Vehicle[] = [
     name: 'Service Van',
     vehicleType: 'car',
     model: 'Ford Transit',
+    brand: 'Ford',
     year: 2020,
     registrationNumber: 'DEF456',
     lastService: new Date('2023-10-22'),
@@ -41,12 +44,41 @@ export const vehicles: Vehicle[] = [
     name: 'Executive Car',
     vehicleType: 'car',
     model: 'BMW 7 Series',
+    brand: 'BMW',
     year: 2023,
     registrationNumber: 'GHI789',
     lastService: new Date('2024-01-05'),
     nextService: new Date('2024-07-05'),
     status: 'ok'
   },
+  {
+    id: '5',
+    name: 'Volkswagen Passat',
+    vehicleType: 'car',
+    model: 'Passat',
+    brand: 'Volkswagen',
+    year: 2019,
+    registrationNumber: 'JKL012',
+    lastService: new Date('2023-09-10'),
+    nextService: new Date('2024-03-10'),
+    status: 'ok',
+    vin: 'WVWZZZ3CZPE123456',
+    driverName: 'John Doe'
+  },
+  {
+    id: '6',
+    name: 'Toyota Hilux',
+    vehicleType: 'truck',
+    model: 'Hilux',
+    brand: 'Toyota',
+    year: 2020,
+    registrationNumber: 'MNO345',
+    lastService: new Date('2023-12-15'),
+    nextService: new Date('2024-06-15'),
+    status: 'in-service',
+    vin: 'AHTYZ59G403123456',
+    driverName: 'Mike Smith'
+  }
 ];
 
 export const devices: Device[] = [
@@ -102,6 +134,38 @@ export const devices: Device[] = [
     nextService: new Date('2024-02-28'),
     status: 'in-service'
   },
+  {
+    id: '6',
+    name: 'OBD Scanner',
+    type: 'diagnostic',
+    model: 'OBDMaster 5000',
+    serialNumber: 'OBD-54321',
+    vehicleId: '3',
+    lastService: new Date('2023-10-15'),
+    nextService: new Date('2024-04-15'),
+    status: 'ok'
+  },
+  {
+    id: '7',
+    name: 'Digital Pressure Gauge',
+    type: 'measurement',
+    model: 'PressurePro Digital',
+    serialNumber: 'PPD-98765',
+    vehicleId: '4',
+    lastService: new Date('2023-11-25'),
+    nextService: new Date('2024-05-25'),
+    status: 'ok'
+  },
+  {
+    id: '8',
+    name: 'Advanced Diagnostic System',
+    type: 'diagnostic',
+    model: 'DiagMaster Elite',
+    serialNumber: 'DME-35791',
+    lastService: new Date('2023-12-10'),
+    nextService: new Date('2024-06-10'),
+    status: 'ok'
+  }
 ];
 
 export const serviceRecords: ServiceRecord[] = [
@@ -158,6 +222,42 @@ export const serviceRecords: ServiceRecord[] = [
     description: 'Initial service check, software updates',
     cost: 300,
     technician: 'Mike Johnson'
+  },
+  {
+    id: '7',
+    date: new Date('2023-12-15'),
+    vehicleId: '5',
+    type: 'repair',
+    description: 'Exhaust system repair, oxygen sensor replacement',
+    cost: 420,
+    technician: 'Robert Wilson'
+  },
+  {
+    id: '8',
+    date: new Date('2024-01-20'),
+    deviceId: '6',
+    type: 'maintenance',
+    description: 'Sensor calibration, firmware update',
+    cost: 120,
+    technician: 'Sarah Williams'
+  },
+  {
+    id: '9',
+    date: new Date('2023-11-05'),
+    vehicleId: '6',
+    type: 'inspection',
+    description: 'Annual inspection, emission test',
+    cost: 250,
+    technician: 'Mike Johnson'
+  },
+  {
+    id: '10',
+    date: new Date('2024-02-10'),
+    deviceId: '7',
+    type: 'repair',
+    description: 'Circuit board replacement, recalibration',
+    cost: 320,
+    technician: 'Emily Chen'
   }
 ];
 
