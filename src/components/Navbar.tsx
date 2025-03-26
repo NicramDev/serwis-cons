@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -130,20 +129,6 @@ const Navbar = () => {
             <div className="flex items-center space-x-1">
               <nav className="flex items-center space-x-1 mr-4">
                 <NavItems />
-                <NavLink 
-                  to="/notifications" 
-                  className="relative flex items-center"
-                >
-                  <Bell className="h-5 w-5" />
-                  {urgentNotificationsCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full"
-                    >
-                      {urgentNotificationsCount}
-                    </Badge>
-                  )}
-                </NavLink>
               </nav>
               <Button 
                 variant="ghost" 
