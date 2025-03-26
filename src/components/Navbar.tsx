@@ -24,7 +24,7 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const { signOut } = useAuth();
-  const [notificationsCount, setNotificationsCount] = useState(0);
+  const [urgentNotificationsCount, setUrgentNotificationsCount] = useState(0);
   
   const navItems = [
     { path: '/', label: 'Pulpit', icon: <Home className="h-5 w-5" /> },
@@ -37,7 +37,12 @@ const Navbar = () => {
   useEffect(() => {
     const savedNotifications = localStorage.getItem('notifications');
     const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
-    setNotificationsCount(notifications.length);
+    
+    const urgentCount = notifications.filter(n => {
+      return n.expired || (n.daysLeft !== undefined && n.daysLeft <= 7);
+    }).length;
+    
+    setUrgentNotificationsCount(urgentCount);
   }, []);
 
   const NavItems = () => (
@@ -105,12 +110,12 @@ const Navbar = () => {
                   className="relative flex items-center"
                 >
                   <Bell className="h-5 w-5" />
-                  {notificationsCount > 0 && (
+                  {urgentNotificationsCount > 0 && (
                     <Badge 
                       variant="destructive" 
                       className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full"
                     >
-                      {notificationsCount}
+                      {urgentNotificationsCount}
                     </Badge>
                   )}
                 </NavLink>

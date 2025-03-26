@@ -181,6 +181,9 @@ const Notifications = () => {
     });
     
     setNotifications(allNotifications);
+    
+    // Save notifications to localStorage for the Navbar to use
+    localStorage.setItem('notifications', JSON.stringify(allNotifications));
   }, []);
   
   const getNotificationIcon = (type: string, expired: boolean, itemType: string) => {
@@ -218,7 +221,12 @@ const Notifications = () => {
   };
   
   const handleMarkAsRead = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    const updatedNotifications = notifications.filter(n => n.id !== id);
+    setNotifications(updatedNotifications);
+    
+    // Update localStorage with the updated notifications
+    localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+    
     toast.success("Powiadomienie oznaczono jako przeczytane");
   };
 
