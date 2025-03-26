@@ -1,0 +1,157 @@
+
+import React from "react";
+import { Control } from "react-hook-form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+type ServiceFormFieldsProps = {
+  control: Control<any>;
+};
+
+const ServiceFormFields = ({ control }: ServiceFormFieldsProps) => {
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Data serwisu/naprawy</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "dd.MM.yyyy")
+                      ) : (
+                        <span>Wybierz datę</span>
+                      )}
+                      <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Miejsce serwisu/naprawy</FormLabel>
+              <FormControl>
+                <Input placeholder="Np. Warsztat XYZ" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Typ</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Wybierz typ" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="repair">Naprawa</SelectItem>
+                  <SelectItem value="maintenance">Serwis</SelectItem>
+                  <SelectItem value="inspection">Przegląd</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={control}
+          name="cost"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Koszt (PLN)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  step="0.01"
+                  {...field} 
+                  onChange={e => field.onChange(parseFloat(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <FormField
+        control={control}
+        name="technician"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Technik / Serwisant</FormLabel>
+            <FormControl>
+              <Input placeholder="Imię i nazwisko technika" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Zakres serwisu/naprawy</FormLabel>
+            <FormControl>
+              <Textarea 
+                placeholder="Opisz wykonane czynności" 
+                {...field} 
+                className="min-h-[100px]"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
+  );
+};
+
+export default ServiceFormFields;

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,6 +16,8 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { v4 as uuidv4 } from 'uuid';
 import FullscreenViewer from "./FullscreenViewer";
+import ServiceFormImages from "./ServiceFormImages";
+import ServiceFormFields from "./ServiceFormFields";
 
 const serviceSchema = z.object({
   deviceId: z.string().min(1, "Wybór urządzenia jest wymagany"),
@@ -54,7 +57,7 @@ const ServiceForm = ({
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
-      deviceId: initialService?.deviceId || "",
+      deviceId: initialService?.deviceId || "vehicle",
       date: initialService?.date ? new Date(initialService.date) : new Date(),
       location: initialService?.location || "",
       description: initialService?.description || "",
@@ -65,14 +68,21 @@ const ServiceForm = ({
   });
 
   const handleSubmit = (values: ServiceFormValues) => {
-    const selectedDevice = devices.find(d => d.id === values.deviceId);
+    // Handle the "vehicle" special case
+    let deviceName;
+    if (values.deviceId === "vehicle") {
+      deviceName = "Pojazd";
+    } else {
+      const selectedDevice = devices.find(d => d.id === values.deviceId);
+      deviceName = selectedDevice?.name;
+    }
     
     const serviceRecord: ServiceRecord = {
       id: initialService?.id || uuidv4(),
       date: values.date,
       vehicleId: vehicleId,
-      deviceId: values.deviceId,
-      deviceName: selectedDevice?.name,
+      deviceId: values.deviceId === "vehicle" ? undefined : values.deviceId,
+      deviceName,
       location: values.location,
       type: values.type,
       description: values.description,
@@ -135,6 +145,7 @@ const ServiceForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <SelectItem value="vehicle">Pojazd</SelectItem>
                   {devices.map(device => (
                     <SelectItem key={device.id} value={device.id}>
                       {device.name} - {device.type} ({device.serialNumber})
@@ -147,226 +158,16 @@ const ServiceForm = ({
           )}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Data serwisu/naprawy</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy")
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Miejsce serwisu/naprawy</FormLabel>
-                <FormControl>
-                  <Input placeholder="Np. Warsztat XYZ" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <ServiceFormFields control={form.control} />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Typ</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Wybierz typ" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="repair">Naprawa</SelectItem>
-                    <SelectItem value="maintenance">Serwis</SelectItem>
-                    <SelectItem value="inspection">Przegląd</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="cost"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Koszt (PLN)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    step="0.01"
-                    {...field} 
-                    onChange={e => field.onChange(parseFloat(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="technician"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Technik / Serwisant</FormLabel>
-              <FormControl>
-                <Input placeholder="Imię i nazwisko technika" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <ServiceFormImages 
+          existingImages={existingImages}
+          images={images}
+          handleImagesChange={handleImagesChange}
+          removeExistingImage={removeExistingImage}
+          removeImage={removeImage}
+          openFullscreen={openFullscreen}
         />
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Zakres serwisu/naprawy</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Opisz wykonane czynności" 
-                  {...field} 
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="space-y-2">
-          <FormLabel>Zdjęcia z serwisu/naprawy</FormLabel>
-          <Input 
-            type="file" 
-            multiple 
-            accept="image/*" 
-            onChange={handleImagesChange}
-            className="cursor-pointer"
-          />
-          
-          {existingImages.length > 0 && (
-            <div>
-              <p className="text-sm text-muted-foreground mt-4 mb-2">Istniejące zdjęcia:</p>
-              <div className="flex flex-wrap gap-2">
-                {existingImages.map((imgUrl, idx) => (
-                  <div key={idx} className="relative group">
-                    <img 
-                      src={imgUrl} 
-                      alt={`Service image ${idx}`} 
-                      className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                      onClick={() => openFullscreen(imgUrl)}
-                    />
-                    <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
-                        onClick={(e) => openFullscreen(imgUrl, e)}
-                      >
-                        <Maximize className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeExistingImage(idx);
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {images.length > 0 && (
-            <div>
-              <p className="text-sm text-muted-foreground mt-4 mb-2">Nowe zdjęcia:</p>
-              <div className="flex flex-wrap gap-2">
-                {images.map((img, idx) => (
-                  <div key={idx} className="relative group">
-                    <img 
-                      src={URL.createObjectURL(img)} 
-                      alt={`Service image ${idx}`} 
-                      className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                      onClick={() => openFullscreen(URL.createObjectURL(img))}
-                    />
-                    <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
-                        onClick={(e) => openFullscreen(URL.createObjectURL(img), e)}
-                      >
-                        <Maximize className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeImage(idx);
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onCancel}>
