@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Device } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,7 +53,11 @@ const DeviceDetails = ({ device }: DeviceDetailsProps) => {
           )}
         </TabsList>
 
-        <TabsContent value="general" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-secondary/30 rounded-lg p-4">
+        <TabsContent 
+          value="general" 
+          className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 rounded-lg p-4"
+          style={{ backgroundColor: '#cccac4' }}
+        >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
@@ -128,7 +131,11 @@ const DeviceDetails = ({ device }: DeviceDetailsProps) => {
         </TabsContent>
 
         {hasAttachmentsOrImages && (
-          <TabsContent value="files" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-secondary/30 rounded-lg p-4">
+          <TabsContent 
+            value="files" 
+            className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 rounded-lg p-4"
+            style={{ backgroundColor: '#cccac4' }}
+          >
             <FileAttachments 
               attachments={device.attachments} 
               images={device.images}
