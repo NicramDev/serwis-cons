@@ -63,6 +63,11 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
     setAvailableTags(uniqueTags);
   }, [allVehicles]);
 
+  // Log available tags for debugging
+  useEffect(() => {
+    console.log("Available tags for edit form:", availableTags);
+  }, [availableTags]);
+
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
@@ -91,7 +96,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
       ...vehicle,
       ...values,
       attachments: [
-        ...attachments,
+        ...(attachments || []),
         ...newAttachments.map(file => ({
           name: file.name,
           type: file.type,
@@ -100,7 +105,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
         }))
       ],
       images: [
-        ...images,
+        ...(images || []),
         ...newImages.map(img => URL.createObjectURL(img))
       ],
     };
@@ -180,9 +185,9 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
           onChange={handleAttachmentsChange}
           files={newAttachments}
           multiple={true}
-          existingFiles={attachments}
+          existingFiles={attachments || []}
           onRemoveExisting={removeAttachment}
-          onRemove={(index) => removeAttachment(index + attachments.length)}
+          onRemove={(index) => removeAttachment(index + (attachments?.length || 0))}
         />
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
