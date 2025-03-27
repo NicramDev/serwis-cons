@@ -62,7 +62,7 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
         name: parts[0].trim(),
         color: parts.length > 1 ? parts[1].trim() : 'blue'
       };
-    });
+    }).filter(tag => tag.name); // Filter out empty tags
   };
   
   // Update suggestions when input or available tags change
@@ -96,10 +96,11 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     if (tags.some(tag => tag.name.toLowerCase() === inputValue.toLowerCase())) {
       setInputValue("");
       setStep("name");
+      setIsPopoverOpen(false);
       return;
     }
     
-    const newTag = { name: inputValue, color: selectedColor };
+    const newTag = { name: inputValue.trim(), color: selectedColor };
     const newTags = [...tags, newTag];
     
     setTags(newTags);
@@ -127,6 +128,7 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     setInputValue("");
     setSuggestions([]);
     setStep("name");
+    setIsPopoverOpen(false);
   };
 
   const handleNameSubmit = () => {
