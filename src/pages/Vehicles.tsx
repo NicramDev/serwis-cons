@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices, formatDate } from '../utils/data';
 import { PlusCircle, Search, X, FileText, FileImage, ExternalLink, Maximize } from 'lucide-react';
@@ -79,7 +80,7 @@ const Vehicles = () => {
   const [isDeleteDeviceDialogOpen, setIsDeleteDeviceDialogOpen] = useState(false);
   const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicleForEdit, setSelectedVehicleForEdit] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceRecord | null>(null);
@@ -101,7 +102,7 @@ const Vehicles = () => {
       if (shouldEdit) {
         const vehicle = allVehicles.find(v => v.id === vehicleId);
         if (vehicle) {
-          setSelectedVehicle(vehicle);
+          setSelectedVehicleForEdit(vehicle);
           setIsEditDialogOpen(true);
         }
       }
@@ -135,7 +136,7 @@ const Vehicles = () => {
     )
     .sort((a, b) => a.name.localeCompare(b.name));
   
-  const selectedVehicle = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
+  const selectedVehicleData = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
 
   const selectedVehicleServices = serviceRecords.filter(
     record => record.vehicleId === selectedVehicleId
@@ -166,12 +167,12 @@ const Vehicles = () => {
   };
   
   const handleViewDetails = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
+    setSelectedVehicleForEdit(vehicle);
     setIsDetailsDialogOpen(true);
   };
   
   const handleEditVehicle = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
+    setSelectedVehicleForEdit(vehicle);
     setIsEditDialogOpen(true);
   };
   
@@ -413,7 +414,7 @@ const Vehicles = () => {
               Pełne informacje o pojeździe
             </DialogDescription>
           </DialogHeader>
-          {selectedVehicle && <VehicleDetails vehicle={selectedVehicle} />}
+          {selectedVehicleForEdit && <VehicleDetails vehicle={selectedVehicleForEdit} />}
         </DialogContent>
       </Dialog>
       
@@ -449,9 +450,9 @@ const Vehicles = () => {
               Zaktualizuj informacje o pojeździe
             </DialogDescription>
           </DialogHeader>
-          {selectedVehicle && (
+          {selectedVehicleForEdit && (
             <EditVehicleForm
-              vehicle={selectedVehicle}
+              vehicle={selectedVehicleForEdit}
               onSubmit={handleUpdateVehicle}
               onCancel={() => setIsEditDialogOpen(false)}
             />
@@ -473,7 +474,7 @@ const Vehicles = () => {
               devices={allDevices.filter(device => device.vehicleId === selectedVehicleId)}
               onSubmit={handleSubmitService}
               onCancel={() => setIsServiceDialogOpen(false)}
-              vehicle={selectedVehicle}
+              vehicle={selectedVehicleData}
             />
           )}
         </DialogContent>
@@ -495,7 +496,7 @@ const Vehicles = () => {
               onSubmit={handleUpdateService}
               onCancel={() => setIsEditServiceDialogOpen(false)}
               isEditing={true}
-              vehicle={selectedVehicle}
+              vehicle={selectedVehicleData}
             />
           )}
         </DialogContent>
