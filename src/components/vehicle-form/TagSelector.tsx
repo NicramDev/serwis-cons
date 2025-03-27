@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Check, Plus, X } from "lucide-react";
+import { Check, Palette, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const [inputValue, setInputValue] = useState("");
   const [selectedColor, setSelectedColor] = useState("blue");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverTriggerRef = useRef<HTMLButtonElement>(null);
@@ -92,6 +93,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     setInputValue("");
     setSelectedColor("blue");
     setIsPopoverOpen(false);
+    setIsColorPickerOpen(false);
   };
   
   const handleRemoveTag = (tagToRemove: string) => {
@@ -163,6 +165,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       }
     } else if (e.key === 'Escape') {
       setIsPopoverOpen(false);
+      setIsColorPickerOpen(false);
     }
   };
   
@@ -220,22 +223,46 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 )}
               </div>
               
-              {/* Color selection */}
+              {/* Color selector with popover */}
               <div className="space-y-2">
-                <div className="font-medium text-sm">Wybierz kolor</div>
-                <div className="grid grid-cols-5 gap-1">
-                  {TAG_COLORS.map((color) => (
-                    <button
-                      key={color.name}
-                      type="button"
-                      className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center cursor-pointer ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
-                      onClick={() => setSelectedColor(color.name)}
-                    >
-                      {selectedColor === color.name && (
-                        <Check className="h-4 w-4" />
-                      )}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <div className="font-medium text-sm">Kolor tagu</div>
+                  <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-7 gap-1 px-2"
+                      >
+                        <div className={`w-4 h-4 rounded-full ${getTagColorClass(selectedColor)}`} />
+                        <Palette className="h-3.5 w-3.5" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-52 p-2" align="end">
+                      <div className="grid grid-cols-5 gap-1">
+                        {TAG_COLORS.map((color) => (
+                          <button
+                            key={color.name}
+                            type="button"
+                            className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center cursor-pointer ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
+                            onClick={() => {
+                              setSelectedColor(color.name);
+                              setIsColorPickerOpen(false);
+                            }}
+                          >
+                            {selectedColor === color.name && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                {/* Preview of selected color */}
+                <div className={`w-full h-8 rounded-md ${getTagColorClass(selectedColor)} flex items-center justify-center`}>
+                  {inputValue ? inputValue : "Podgląd tagu"}
                 </div>
               </div>
               
