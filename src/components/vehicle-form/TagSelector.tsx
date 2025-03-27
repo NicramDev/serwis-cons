@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Check, Palette, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +60,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     }
   }, [autoFocus]);
   
-  // Extract unique tag names and colors from available tags
   const extractTagSuggestions = () => {
     const suggestions: { name: string; color: string }[] = [];
     availableTags.forEach(tag => {
@@ -98,7 +96,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     setSelectedTags(newTags);
     onChange(newTags.join(", "));
     
-    // Reset
     setInputValue("");
     setSelectedColor("blue");
     setIsDialogOpen(false);
@@ -157,7 +154,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     return colorMap[colorName] || colorMap.blue;
   };
   
-  // Auto-open the dialog when the component is focused
   const openTagCreator = () => {
     setIsDialogOpen(true);
     setTimeout(() => {
@@ -165,7 +161,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     }, 100);
   };
   
-  // Open color picker
   const openColorPicker = (e?: React.KeyboardEvent) => {
     if (e) {
       e.preventDefault();
@@ -173,7 +168,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     setIsColorPickerOpen(true);
   };
   
-  // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -184,12 +178,10 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       setIsDialogOpen(false);
       setIsColorPickerOpen(false);
     } else if ((e.key === 'c' && (e.ctrlKey || e.metaKey)) || (e.key === 'p' && (e.ctrlKey || e.metaKey))) {
-      // Ctrl+C or Command+C (Mac) or Ctrl+P or Command+P to open color picker
       openColorPicker(e);
     }
   };
   
-  // Handle color button key events
   const handleColorButtonKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -225,7 +217,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
             </DialogHeader>
             
             <div className="space-y-4 py-4">
-              {/* Name input */}
               <div className="space-y-2">
                 <div className="font-medium text-sm">Nazwa tagu</div>
                 <Input
@@ -263,7 +254,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 )}
               </div>
               
-              {/* Color selector with popover */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-sm">Kolor tagu</div>
@@ -281,17 +271,15 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                         <Palette className="h-3.5 w-3.5" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-52 p-2" align="end">
-                      <div 
-                        className="grid grid-cols-5 gap-1" 
-                        role="listbox" 
-                        aria-label="Wybierz kolor"
-                      >
+                    <PopoverContent className="w-auto p-2" align="end">
+                      <div className="flex flex-wrap gap-1" role="listbox" aria-label="Wybierz kolor">
                         {TAG_COLORS.map((color) => (
-                          <button
+                          <Button
                             key={color.name}
                             type="button"
-                            className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center cursor-pointer ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
+                            variant="outline"
+                            size="sm"
+                            className={`h-8 px-2 ${color.value} ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
                             onClick={() => {
                               setSelectedColor(color.name);
                               setIsColorPickerOpen(false);
@@ -307,17 +295,17 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                               }
                             }}
                           >
+                            {color.name}
                             {selectedColor === color.name && (
-                              <Check className="h-4 w-4" />
+                              <Check className="h-4 w-4 ml-1" />
                             )}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </PopoverContent>
                   </Popover>
                 </div>
                 
-                {/* Preview of selected color */}
                 <div className={`w-full h-8 rounded-md ${getTagColorClass(selectedColor)} flex items-center justify-center`}>
                   {inputValue ? inputValue : "Podgląd tagu"}
                 </div>
