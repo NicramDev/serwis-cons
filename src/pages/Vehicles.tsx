@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices, formatDate } from '../utils/data';
 import { PlusCircle, Search, X, FileText, FileImage, ExternalLink, Maximize } from 'lucide-react';
@@ -34,18 +33,41 @@ import {
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [allDevices, setAllDevices] = useState<Device[]>([]);
+  const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
+  
+  useEffect(() => {
     const savedVehicles = localStorage.getItem('vehicles');
-    return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
-  });
-  const [allDevices, setAllDevices] = useState<Device[]>(() => {
+    const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
+    
+    if (!vehiclesData || !Array.isArray(vehiclesData) || vehiclesData.length === 0) {
+      setAllVehicles(initialVehicles);
+      localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
+    } else {
+      setAllVehicles(vehiclesData);
+    }
+    
     const savedDevices = localStorage.getItem('devices');
-    return savedDevices ? JSON.parse(savedDevices) : initialDevices;
-  });
-  const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>(() => {
+    const devicesData = savedDevices ? JSON.parse(savedDevices) : null;
+    
+    if (!devicesData || !Array.isArray(devicesData) || devicesData.length === 0) {
+      setAllDevices(initialDevices);
+      localStorage.setItem('devices', JSON.stringify(initialDevices));
+    } else {
+      setAllDevices(devicesData);
+    }
+    
     const savedRecords = localStorage.getItem('serviceRecords');
-    return savedRecords ? JSON.parse(savedRecords) : [];
-  });
+    const recordsData = savedRecords ? JSON.parse(savedRecords) : null;
+    
+    if (!recordsData || !Array.isArray(recordsData) || recordsData.length === 0) {
+      setServiceRecords([]);
+    } else {
+      setServiceRecords(recordsData);
+    }
+  }, []);
+  
   const [searchParams] = useSearchParams();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
@@ -87,11 +109,15 @@ const Vehicles = () => {
   }, [searchParams, allVehicles]);
   
   useEffect(() => {
-    localStorage.setItem('vehicles', JSON.stringify(allVehicles));
+    if (allVehicles.length > 0) {
+      localStorage.setItem('vehicles', JSON.stringify(allVehicles));
+    }
   }, [allVehicles]);
   
   useEffect(() => {
-    localStorage.setItem('devices', JSON.stringify(allDevices));
+    if (allDevices.length > 0) {
+      localStorage.setItem('devices', JSON.stringify(allDevices));
+    }
   }, [allDevices]);
   
   useEffect(() => {
@@ -302,6 +328,9 @@ const Vehicles = () => {
     setSelectedService(service);
     setIsServiceDetailsDialogOpen(true);
   };
+
+  console.log("Vehicles count:", allVehicles.length);
+  console.log("Devices count:", allDevices.length);
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/30">
@@ -559,4 +588,3 @@ const Vehicles = () => {
 };
 
 export default Vehicles;
-

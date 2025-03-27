@@ -2,15 +2,88 @@
 import { useEffect, useState } from 'react';
 import DashboardCard from '../components/DashboardCard';
 import ServiceItem from '../components/ServiceItem';
-import { devices, getUpcomingServices, serviceRecords, vehicles } from '../utils/data';
+import { devices as initialDevices, getUpcomingServices, serviceRecords as initialServiceRecords, vehicles as initialVehicles } from '../utils/data';
 import { Car, Smartphone, Wrench, AlertTriangle } from 'lucide-react';
+import { Device, ServiceRecord, Vehicle } from '@/utils/types';
 
 const Index = () => {
   const [upcomingServices, setUpcomingServices] = useState<any[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
   
   useEffect(() => {
-    setUpcomingServices(getUpcomingServices());
+    // Załaduj dane z localStorage lub użyj domyślnych danych
+    const loadData = () => {
+      const savedVehicles = localStorage.getItem('vehicles');
+      const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
+      
+      const savedDevices = localStorage.getItem('devices');
+      const devicesData = savedDevices ? JSON.parse(savedDevices) : null;
+      
+      const savedRecords = localStorage.getItem('serviceRecords');
+      const recordsData = savedRecords ? JSON.parse(savedRecords) : null;
+      
+      setVehicles(vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles);
+      setDevices(devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices);
+      setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords);
+      
+      // Zwraca dane do użycia w getUpcomingServices
+      return {
+        vehicles: vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles,
+        devices: devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices
+      };
+    };
+    
+    const data = loadData();
+    
+    // Ręcznie obliczamy nadchodzące serwisy
+    const calculateUpcomingServices = () => {
+      const now = new Date();
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(now.getDate() + 30);
+      
+      const vehicleServices = data.vehicles
+        .filter(v => {
+          const nextService = v.nextService instanceof Date ? 
+            v.nextService : new Date(v.nextService);
+          return nextService >= now && nextService <= thirtyDaysFromNow;
+        })
+        .map(v => ({
+          id: v.id,
+          name: v.name,
+          type: 'vehicle',
+          date: v.nextService,
+          model: v.model
+        }));
+        
+      const deviceServices = data.devices
+        .filter(d => {
+          const nextService = d.nextService instanceof Date ? 
+            d.nextService : new Date(d.nextService);
+          return nextService >= now && nextService <= thirtyDaysFromNow;
+        })
+        .map(d => ({
+          id: d.id,
+          name: d.name,
+          type: 'device',
+          date: d.nextService,
+          model: d.model
+        }));
+        
+      return [...vehicleServices, ...deviceServices].sort((a, b) => {
+        const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+        const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
+      });
+    };
+    
+    setUpcomingServices(calculateUpcomingServices());
   }, []);
+  
+  // Debug
+  console.log("Dashboard - Vehicles:", vehicles.length);
+  console.log("Dashboard - Devices:", devices.length);
   
   const needsAttention = [
     ...vehicles.filter(v => v.status === 'needs-service'),

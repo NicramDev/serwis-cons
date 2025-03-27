@@ -24,14 +24,8 @@ import FullscreenViewer from '../components/FullscreenViewer';
 
 const Devices = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [allDevices, setAllDevices] = useState<Device[]>(() => {
-    const savedDevices = localStorage.getItem('devices');
-    return savedDevices ? JSON.parse(savedDevices) : initialDevices;
-  });
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
-    const savedVehicles = localStorage.getItem('vehicles');
-    return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
-  });
+  const [allDevices, setAllDevices] = useState<Device[]>([]);
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
   const [searchParams] = useSearchParams();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -40,6 +34,28 @@ const Devices = () => {
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const savedDevices = localStorage.getItem('devices');
+    const devicesData = savedDevices ? JSON.parse(savedDevices) : null;
+    
+    if (!devicesData || !Array.isArray(devicesData) || devicesData.length === 0) {
+      setAllDevices(initialDevices);
+      localStorage.setItem('devices', JSON.stringify(initialDevices));
+    } else {
+      setAllDevices(devicesData);
+    }
+    
+    const savedVehicles = localStorage.getItem('vehicles');
+    const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
+    
+    if (!vehiclesData || !Array.isArray(vehiclesData) || vehiclesData.length === 0) {
+      setAllVehicles(initialVehicles);
+      localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
+    } else {
+      setAllVehicles(vehiclesData);
+    }
+  }, []);
   
   useEffect(() => {
     const deviceId = searchParams.get('deviceId');
@@ -59,7 +75,9 @@ const Devices = () => {
   }, [searchParams, allDevices]);
   
   useEffect(() => {
-    localStorage.setItem('devices', JSON.stringify(allDevices));
+    if (allDevices.length > 0) {
+      localStorage.setItem('devices', JSON.stringify(allDevices));
+    }
   }, [allDevices]);
   
   const filteredDevices = allDevices.filter(device => 
