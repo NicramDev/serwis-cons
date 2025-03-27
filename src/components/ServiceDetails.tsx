@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ServiceRecord } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,7 +55,7 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
 
         <TabsContent 
           value="general" 
-          className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4"
+          className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4 bg-white rounded-b-lg"
         >
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-1">
@@ -101,7 +102,7 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
         {hasAttachmentsOrImages && (
           <TabsContent 
             value="files" 
-            className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4"
+            className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4 bg-white rounded-b-lg"
           >
             <FileAttachments 
               attachments={service.attachments} 

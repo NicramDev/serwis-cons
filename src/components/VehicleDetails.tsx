@@ -46,7 +46,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         />
       )}
 
-      <Tabs defaultValue="general">
+      <Tabs defaultValue="general" className="bg-[#ebe9e6] rounded-lg">
         <TabsList className="w-full bg-secondary/50 p-1">
           <TabsTrigger value="general" className="flex-1 rounded-md data-[state=active]:shadow-sm">Informacje ogólne</TabsTrigger>
           <TabsTrigger value="service" className="flex-1 rounded-md data-[state=active]:shadow-sm">Serwis i przeglądy</TabsTrigger>
@@ -55,16 +55,16 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
           )}
         </TabsList>
 
-        <TabsContent value="general" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3">
+        <TabsContent value="general" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-white rounded-b-lg">
           <VehicleBasicInfo vehicle={vehicle} />
         </TabsContent>
 
-        <TabsContent value="service" className="space-y-6 pt-4 animate-in fade-in-50 slide-in-from-bottom-3">
+        <TabsContent value="service" className="space-y-6 pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-white rounded-b-lg">
           <VehicleServiceInfo vehicle={vehicle} />
         </TabsContent>
 
         {hasAttachmentsOrImages && (
-          <TabsContent value="files" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3">
+          <TabsContent value="files" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-white rounded-b-lg">
             <FileAttachments 
               attachments={vehicle.attachments} 
               images={vehicle.images}
