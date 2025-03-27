@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices, formatDate } from '../utils/data';
 import { PlusCircle, Search, X, FileText, FileImage, ExternalLink, Maximize } from 'lucide-react';
@@ -34,6 +33,7 @@ import {
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
@@ -125,15 +125,64 @@ const Vehicles = () => {
     localStorage.setItem('serviceRecords', JSON.stringify(serviceRecords));
   }, [serviceRecords]);
 
+  const extractAllTags = (vehicles: Vehicle[]): string[] => {
+    const allTags: string[] = [];
+    
+    vehicles.forEach(vehicle => {
+      if (vehicle.tags) {
+        const tags = vehicle.tags.split(',').map(tag => tag.trim());
+        allTags.push(...tags);
+      }
+    });
+    
+    return allTags;
+  };
+
+  const handleTagSelect = (tagName: string) => {
+    setSelectedTags(prevTags => {
+      const tagExists = prevTags.some(tag => tag.split(':')[0].trim() === tagName);
+      
+      if (tagExists) {
+        return prevTags.filter(tag => tag.split(':')[0].trim() !== tagName);
+      } else {
+        for (const vehicle of allVehicles) {
+          if (vehicle.tags) {
+            const vehicleTags = vehicle.tags.split(',').map(tag => tag.trim());
+            const matchingTag = vehicleTags.find(tag => tag.split(':')[0].trim() === tagName);
+            if (matchingTag) {
+              return [...prevTags, matchingTag];
+            }
+          }
+        }
+        return [...prevTags, `${tagName}:blue`];
+      }
+    });
+  };
+
   const filteredVehicles = allVehicles
-    .filter(vehicle => 
-      vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
-    )
+    .filter(vehicle => {
+      const textMatch = 
+        vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        vehicle.registrationNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+      
+      let tagMatch = true;
+      if (selectedTags.length > 0) {
+        tagMatch = selectedTags.every(selectedTag => {
+          const selectedTagName = selectedTag.split(':')[0].trim();
+          if (!vehicle.tags) return false;
+          
+          return vehicle.tags.split(',')
+            .map(tag => tag.trim().split(':')[0].trim())
+            .includes(selectedTagName);
+        });
+      }
+      
+      return textMatch && tagMatch;
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
   
   const selectedVehicleData = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
@@ -347,7 +396,10 @@ const Vehicles = () => {
           <VehicleSearchBar 
             searchQuery={searchQuery} 
             onSearchChange={setSearchQuery} 
-            onAddVehicle={() => setIsAddDialogOpen(true)} 
+            onAddVehicle={() => setIsAddDialogOpen(true)}
+            availableTags={extractAllTags(allVehicles)}
+            selectedTags={selectedTags}
+            onTagSelect={handleTagSelect}
           />
         </div>
         
