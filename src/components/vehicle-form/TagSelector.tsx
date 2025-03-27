@@ -35,6 +35,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverTriggerRef = useRef<HTMLButtonElement>(null);
+  const colorButtonRef = useRef<HTMLButtonElement>(null);
   
   useEffect(() => {
     if (value) {
@@ -156,6 +157,14 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     }, 100);
   };
   
+  // Open color picker
+  const openColorPicker = (e?: React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    setIsColorPickerOpen(true);
+  };
+  
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -166,6 +175,17 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     } else if (e.key === 'Escape') {
       setIsPopoverOpen(false);
       setIsColorPickerOpen(false);
+    } else if ((e.key === 'c' && (e.ctrlKey || e.metaKey)) || (e.key === 'p' && (e.ctrlKey || e.metaKey))) {
+      // Ctrl+C or Command+C (Mac) or Ctrl+P or Command+P to open color picker
+      openColorPicker(e);
+    }
+  };
+  
+  // Handle color button key events
+  const handleColorButtonKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setIsColorPickerOpen(!isColorPickerOpen);
     }
   };
   
@@ -186,6 +206,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
               size="sm" 
               className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
               onClick={openTagCreator}
+              aria-label="Dodaj tag"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Dodaj tag</span>
@@ -214,6 +235,14 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                           key={idx}
                           className={`${getTagColorClass(suggestion.color)} cursor-pointer`}
                           onClick={() => handleSelectSuggestion(suggestion)}
+                          tabIndex={0}
+                          role="button"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleSelectSuggestion(suggestion);
+                            }
+                          }}
                         >
                           {suggestion.name}
                         </Badge>
@@ -230,16 +259,23 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                   <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
                     <PopoverTrigger asChild>
                       <Button 
+                        ref={colorButtonRef}
                         variant="outline" 
                         size="sm"
                         className="h-7 gap-1 px-2"
+                        aria-label="Wybierz kolor tagu"
+                        onKeyDown={handleColorButtonKeyDown}
                       >
                         <div className={`w-4 h-4 rounded-full ${getTagColorClass(selectedColor)}`} />
                         <Palette className="h-3.5 w-3.5" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-52 p-2" align="end">
-                      <div className="grid grid-cols-5 gap-1">
+                      <div 
+                        className="grid grid-cols-5 gap-1" 
+                        role="listbox" 
+                        aria-label="Wybierz kolor"
+                      >
                         {TAG_COLORS.map((color) => (
                           <button
                             key={color.name}
@@ -248,6 +284,16 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                             onClick={() => {
                               setSelectedColor(color.name);
                               setIsColorPickerOpen(false);
+                            }}
+                            tabIndex={0}
+                            role="option"
+                            aria-selected={selectedColor === color.name}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setSelectedColor(color.name);
+                                setIsColorPickerOpen(false);
+                              }
                             }}
                           >
                             {selectedColor === color.name && (
@@ -263,6 +309,9 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 {/* Preview of selected color */}
                 <div className={`w-full h-8 rounded-md ${getTagColorClass(selectedColor)} flex items-center justify-center`}>
                   {inputValue ? inputValue : "Podgląd tagu"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Skrót: Ctrl+P lub Command+P aby otworzyć paletę kolorów
                 </div>
               </div>
               
