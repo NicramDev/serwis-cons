@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import DashboardCard from '../components/DashboardCard';
 import ServiceItem from '../components/ServiceItem';
@@ -24,14 +23,40 @@ const Index = () => {
       const savedRecords = localStorage.getItem('serviceRecords');
       const recordsData = savedRecords ? JSON.parse(savedRecords) : null;
       
-      setVehicles(vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles);
-      setDevices(devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices);
+      const parsedVehicles = vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles;
+      const parsedDevices = devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices;
+      
+      // Make sure we convert date strings to Date objects
+      const processedVehicles = parsedVehicles.map((vehicle: any) => ({
+        ...vehicle,
+        lastService: vehicle.lastService instanceof Date ? vehicle.lastService : new Date(vehicle.lastService),
+        nextService: vehicle.nextService instanceof Date ? vehicle.nextService : new Date(vehicle.nextService),
+        purchaseDate: vehicle.purchaseDate ? (vehicle.purchaseDate instanceof Date ? vehicle.purchaseDate : new Date(vehicle.purchaseDate)) : undefined,
+        inspectionExpiryDate: vehicle.inspectionExpiryDate ? (vehicle.inspectionExpiryDate instanceof Date ? vehicle.inspectionExpiryDate : new Date(vehicle.inspectionExpiryDate)) : undefined,
+        serviceExpiryDate: vehicle.serviceExpiryDate ? (vehicle.serviceExpiryDate instanceof Date ? vehicle.serviceExpiryDate : new Date(vehicle.serviceExpiryDate)) : undefined,
+        insuranceExpiryDate: vehicle.insuranceExpiryDate ? (vehicle.insuranceExpiryDate instanceof Date ? vehicle.insuranceExpiryDate : new Date(vehicle.insuranceExpiryDate)) : undefined
+      }));
+      
+      const processedDevices = parsedDevices.map((device: any) => ({
+        ...device,
+        lastService: device.lastService instanceof Date ? device.lastService : new Date(device.lastService),
+        nextService: device.nextService instanceof Date ? device.nextService : new Date(device.nextService),
+        purchaseDate: device.purchaseDate ? (device.purchaseDate instanceof Date ? device.purchaseDate : new Date(device.purchaseDate)) : undefined,
+        serviceExpiryDate: device.serviceExpiryDate ? (device.serviceExpiryDate instanceof Date ? device.serviceExpiryDate : new Date(device.serviceExpiryDate)) : undefined
+      }));
+      
+      setVehicles(processedVehicles);
+      setDevices(processedDevices);
       setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords);
       
-      // Zwraca dane do użycia w getUpcomingServices
+      // Save processed data back to localStorage
+      localStorage.setItem('vehicles', JSON.stringify(processedVehicles));
+      localStorage.setItem('devices', JSON.stringify(processedDevices));
+      
+      // Zwraca dane do użycia w calculateUpcomingServices
       return {
-        vehicles: vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles,
-        devices: devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices
+        vehicles: processedVehicles,
+        devices: processedDevices
       };
     };
     
@@ -78,12 +103,20 @@ const Index = () => {
       });
     };
     
-    setUpcomingServices(calculateUpcomingServices());
+    try {
+      const services = calculateUpcomingServices();
+      console.log("Upcoming services calculated:", services.length);
+      setUpcomingServices(services);
+    } catch (error) {
+      console.error("Error calculating upcoming services:", error);
+    }
+    
   }, []);
   
   // Debug
   console.log("Dashboard - Vehicles:", vehicles.length);
   console.log("Dashboard - Devices:", devices.length);
+  console.log("Dashboard - Upcoming Services:", upcomingServices.length);
   
   const needsAttention = [
     ...vehicles.filter(v => v.status === 'needs-service'),
