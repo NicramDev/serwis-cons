@@ -135,7 +135,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
         />
       )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        {/* Priority field: Vehicle assignment */}
         <FormField
           control={form.control}
           name="vehicleId"
@@ -493,4 +492,3 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
 };
 
 export default AddDeviceForm;
-

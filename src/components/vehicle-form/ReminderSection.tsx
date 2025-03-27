@@ -23,19 +23,21 @@ const ReminderSection = ({ form, type, title, useInputs = false }: ReminderSecti
   
   return (
     <div className="space-y-4 p-4 border border-border rounded-md bg-secondary/30">
-      <VehicleDateField 
-        form={form}
-        name={dateName}
-        label={title}
-      />
-      
-      <ReminderField
-        form={form}
-        name={reminderName}
-        label="Przypomnienie przed wygaśnięciem"
-        tooltipText={reminderLabels[type]}
-        useInput={useInputs}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <VehicleDateField 
+          form={form}
+          name={dateName}
+          label={title}
+        />
+        
+        <ReminderField
+          form={form}
+          name={reminderName}
+          label="Przypomnienie przed wygaśnięciem"
+          tooltipText={reminderLabels[type]}
+          useInput={useInputs}
+        />
+      </div>
     </div>
   );
 };
