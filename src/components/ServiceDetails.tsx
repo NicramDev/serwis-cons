@@ -44,7 +44,7 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
         />
       )}
 
-      <Tabs defaultValue="general">
+      <Tabs defaultValue="general" className="bg-[#ebe9e6] rounded-lg">
         <TabsList className="w-full bg-secondary/50 p-1">
           <TabsTrigger value="general" className="flex-1 rounded-md data-[state=active]:shadow-sm">Informacje ogólne</TabsTrigger>
           {hasAttachmentsOrImages && (
@@ -54,8 +54,7 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
 
         <TabsContent 
           value="general" 
-          className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 rounded-lg p-4"
-          style={{ backgroundColor: '#cccac4' }}
+          className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4"
         >
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-1">
@@ -102,8 +101,7 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
         {hasAttachmentsOrImages && (
           <TabsContent 
             value="files" 
-            className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 rounded-lg p-4"
-            style={{ backgroundColor: '#cccac4' }}
+            className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4"
           >
             <FileAttachments 
               attachments={service.attachments} 
