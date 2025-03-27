@@ -135,6 +135,8 @@ const Vehicles = () => {
     )
     .sort((a, b) => a.name.localeCompare(b.name));
   
+  const selectedVehicle = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
+
   const selectedVehicleServices = serviceRecords.filter(
     record => record.vehicleId === selectedVehicleId
   );
@@ -471,6 +473,7 @@ const Vehicles = () => {
               devices={allDevices.filter(device => device.vehicleId === selectedVehicleId)}
               onSubmit={handleSubmitService}
               onCancel={() => setIsServiceDialogOpen(false)}
+              vehicle={selectedVehicle}
             />
           )}
         </DialogContent>
@@ -492,6 +495,7 @@ const Vehicles = () => {
               onSubmit={handleUpdateService}
               onCancel={() => setIsEditServiceDialogOpen(false)}
               isEditing={true}
+              vehicle={selectedVehicle}
             />
           )}
         </DialogContent>

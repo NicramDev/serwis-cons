@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Device, ServiceRecord } from "../utils/types";
+import { Device, ServiceRecord, Vehicle } from "../utils/types";
 import { X, Calendar, Save, Maximize } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -38,6 +38,7 @@ type ServiceFormProps = {
   devices: Device[];
   initialService?: ServiceRecord;
   isEditing?: boolean;
+  vehicle?: Vehicle;
 };
 
 const ServiceForm = ({ 
@@ -46,7 +47,8 @@ const ServiceForm = ({
   vehicleId, 
   devices, 
   initialService, 
-  isEditing = false 
+  isEditing = false,
+  vehicle
 }: ServiceFormProps) => {
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(
@@ -71,7 +73,7 @@ const ServiceForm = ({
     // Handle the "vehicle" special case
     let deviceName;
     if (values.deviceId === "vehicle") {
-      deviceName = "Pojazd";
+      deviceName = vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd";
     } else {
       const selectedDevice = devices.find(d => d.id === values.deviceId);
       deviceName = selectedDevice?.name;
@@ -145,7 +147,9 @@ const ServiceForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="vehicle">Pojazd</SelectItem>
+                  <SelectItem value="vehicle">
+                    {vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd"}
+                  </SelectItem>
                   {devices.map(device => (
                     <SelectItem key={device.id} value={device.id}>
                       {device.name} - {device.type} ({device.serialNumber})

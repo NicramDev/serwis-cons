@@ -15,7 +15,7 @@ const ServiceItem = ({ name, type, date, model, delay = 0 }: ServiceItemProps) =
   const delayClass = `staggered-delay-${delay}`;
   
   // Ensure date is a proper Date object
-  const dateObj = date instanceof Date ? date : new Date(date);
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   const daysRemaining = Math.ceil((dateObj.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
   
   return (
