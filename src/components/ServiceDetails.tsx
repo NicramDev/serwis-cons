@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ServiceRecord } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,7 +52,11 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
           )}
         </TabsList>
 
-        <TabsContent value="general" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3">
+        <TabsContent 
+          value="general" 
+          className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 rounded-lg p-4"
+          style={{ backgroundColor: '#cccac4' }}
+        >
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
@@ -97,7 +100,11 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
         </TabsContent>
 
         {hasAttachmentsOrImages && (
-          <TabsContent value="files" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3">
+          <TabsContent 
+            value="files" 
+            className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 rounded-lg p-4"
+            style={{ backgroundColor: '#cccac4' }}
+          >
             <FileAttachments 
               attachments={service.attachments} 
               images={service.images}
