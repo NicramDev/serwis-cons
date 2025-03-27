@@ -1,167 +1,156 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X, Plus, Tag } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList 
-} from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
-type TagSelectorProps = {
+const TAG_COLORS = [
+  { name: "blue", value: "bg-blue-100 text-blue-800 hover:bg-blue-200" },
+  { name: "red", value: "bg-red-100 text-red-800 hover:bg-red-200" },
+  { name: "green", value: "bg-green-100 text-green-800 hover:bg-green-200" },
+  { name: "purple", value: "bg-purple-100 text-purple-800 hover:bg-purple-200" },
+  { name: "yellow", value: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" },
+  { name: "indigo", value: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200" },
+  { name: "pink", value: "bg-pink-100 text-pink-800 hover:bg-pink-200" },
+  { name: "orange", value: "bg-orange-100 text-orange-800 hover:bg-orange-200" },
+  { name: "gray", value: "bg-gray-100 text-gray-800 hover:bg-gray-200" },
+  { name: "cyan", value: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200" },
+];
+
+interface TagSelectorProps {
   value: string;
   onChange: (value: string) => void;
   availableTags?: string[];
-};
+  autoFocus?: boolean;
+}
 
-type Tag = {
-  name: string;
-  color: string;
-};
-
-const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) => {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState("blue");
+const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }: TagSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [suggestions, setSuggestions] = useState<Tag[]>([]);
-  const [step, setStep] = useState<"name" | "color" | "complete">("name");
+  const [selectedColor, setSelectedColor] = useState("blue");
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [step, setStep] = useState<"name" | "color" | "confirm">("name");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const popoverTriggerRef = useRef<HTMLButtonElement>(null);
   
-  // Parse current tags when value changes
   useEffect(() => {
     if (value) {
-      const tagArray = value.split(',').map(tagStr => {
-        const parts = tagStr.trim().split(':');
-        return {
-          name: parts[0].trim(),
-          color: parts.length > 1 ? parts[1].trim() : 'blue'
-        };
-      });
-      setTags(tagArray);
+      setSelectedTags(value.split(",").map(tag => tag.trim()).filter(tag => tag !== ""));
     } else {
-      setTags([]);
+      setSelectedTags([]);
     }
   }, [value]);
   
-  // Parse available tags from other vehicles
-  const parseAvailableTags = (): Tag[] => {
-    if (!availableTags || availableTags.length === 0) return [];
-    
-    return availableTags.map(tagInfo => {
-      const parts = tagInfo.trim().split(':');
-      return {
-        name: parts[0].trim(),
-        color: parts.length > 1 ? parts[1].trim() : 'blue'
-      };
-    }).filter(tag => tag.name); // Filter out empty tags
-  };
-  
-  // Update suggestions when input or available tags change
   useEffect(() => {
-    const input = inputValue.toLowerCase();
-    if (!input) {
-      setSuggestions([]);
-      return;
+    if (autoFocus) {
+      setTimeout(() => {
+        openTagCreator();
+      }, 100);
     }
-    
-    const availableTagObjects = parseAvailableTags();
-    
-    // Filter tags that match input and aren't already selected
-    const filtered = availableTagObjects.filter(tag => 
-      tag.name.toLowerCase().includes(input) && 
-      !tags.some(t => t.name.toLowerCase() === tag.name.toLowerCase())
-    );
-    
-    setSuggestions(filtered);
-  }, [inputValue, availableTags, tags]);
+  }, [autoFocus]);
   
-  const updateTagString = (newTags: Tag[]) => {
-    const tagString = newTags.map(tag => `${tag.name}:${tag.color}`).join(',');
-    onChange(tagString);
+  // Extract unique tag names and colors from available tags
+  const extractTagSuggestions = () => {
+    const suggestions: { name: string; color: string }[] = [];
+    availableTags.forEach(tag => {
+      const [name, color] = tag.split(':');
+      if (name && !suggestions.some(s => s.name === name.trim())) {
+        suggestions.push({ 
+          name: name.trim(), 
+          color: color ? color.trim() : 'blue' 
+        });
+      }
+    });
+    return suggestions;
   };
   
-  const addTag = () => {
-    if (!inputValue.trim()) return;
-    
-    // Check if tag already exists
-    if (tags.some(tag => tag.name.toLowerCase() === inputValue.toLowerCase())) {
-      setInputValue("");
+  const tagSuggestions = extractTagSuggestions();
+  
+  const handleAddTag = () => {
+    if (!inputValue.trim()) {
       setStep("name");
-      setIsPopoverOpen(false);
       return;
     }
     
-    const newTag = { name: inputValue.trim(), color: selectedColor };
-    const newTags = [...tags, newTag];
+    const newTag = `${inputValue.trim()}:${selectedColor}`;
     
-    setTags(newTags);
-    updateTagString(newTags);
+    if (selectedTags.some(tag => tag.split(':')[0].trim() === inputValue.trim())) {
+      toast({
+        title: "Tag już istnieje",
+        description: "Ten tag jest już dodany do pojazdu.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newTags = [...selectedTags, newTag];
+    setSelectedTags(newTags);
+    onChange(newTags.join(", "));
+    
+    // Reset
     setInputValue("");
+    setSelectedColor("blue");
     setStep("name");
     setIsPopoverOpen(false);
+  };
+  
+  const handleRemoveTag = (tagToRemove: string) => {
+    const newTags = selectedTags.filter(tag => tag !== tagToRemove);
+    setSelectedTags(newTags);
+    onChange(newTags.join(", "));
+  };
+  
+  const handleSelectSuggestion = (suggestion: { name: string; color: string }) => {
+    setInputValue(suggestion.name);
+    setSelectedColor(suggestion.color);
+    setStep("color");
     
-    // Focus input again after adding
+    // Auto-focus the color selection
     setTimeout(() => {
-      inputRef.current?.focus();
+      setStep("confirm");
     }, 100);
   };
   
-  const removeTag = (index: number) => {
-    const newTags = tags.filter((_, i) => i !== index);
-    setTags(newTags);
-    updateTagString(newTags);
+  const renderTagBadges = () => {
+    return selectedTags.map((tag, index) => {
+      const [name, color] = tag.split(':');
+      const colorClass = getTagColorClass(color || 'blue');
+      
+      return (
+        <Badge 
+          key={index} 
+          className={`${colorClass} rounded-md px-2 py-1 text-xs font-medium mr-1 mb-1`}
+        >
+          {name}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-4 w-4 p-0 ml-1 text-muted-foreground hover:text-foreground"
+            onClick={() => handleRemoveTag(tag)}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      );
+    });
   };
-  
-  const selectSuggestion = (suggestion: Tag) => {
-    const newTags = [...tags, suggestion];
-    setTags(newTags);
-    updateTagString(newTags);
-    setInputValue("");
-    setSuggestions([]);
-    setStep("name");
-    setIsPopoverOpen(false);
-  };
-
-  const handleNameSubmit = () => {
-    if (inputValue.trim()) {
-      setStep("color");
-    }
-  };
-  
-  const colorOptions = [
-    { name: "blue", value: "blue" },
-    { name: "green", value: "green" },
-    { name: "purple", value: "purple" },
-    { name: "yellow", value: "yellow" },
-    { name: "pink", value: "pink" },
-    { name: "red", value: "red" },
-    { name: "orange", value: "orange" },
-    { name: "teal", value: "teal" },
-    { name: "cyan", value: "cyan" },
-    { name: "indigo", value: "indigo" },
-  ];
   
   const getTagColorClass = (colorName: string) => {
     const colorMap: Record<string, string> = {
-      blue: "bg-blue-100 text-blue-800 border-blue-200",
-      green: "bg-green-100 text-green-800 border-green-200",
-      purple: "bg-purple-100 text-purple-800 border-purple-200",
-      yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      pink: "bg-pink-100 text-pink-800 border-pink-200",
-      indigo: "bg-indigo-100 text-indigo-800 border-indigo-200",
-      red: "bg-red-100 text-red-800 border-red-200",
-      orange: "bg-orange-100 text-orange-800 border-orange-200",
-      teal: "bg-teal-100 text-teal-800 border-teal-200",
-      cyan: "bg-cyan-100 text-cyan-800 border-cyan-200"
+      blue: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+      red: "bg-red-100 text-red-800 hover:bg-red-200",
+      green: "bg-green-100 text-green-800 hover:bg-green-200",
+      purple: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+      yellow: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+      indigo: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200",
+      pink: "bg-pink-100 text-pink-800 hover:bg-pink-200",
+      orange: "bg-orange-100 text-orange-800 hover:bg-orange-200",
+      gray: "bg-gray-100 text-gray-800 hover:bg-gray-200",
+      cyan: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
     };
     
     return colorMap[colorName] || colorMap.blue;
@@ -177,35 +166,49 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     }, 100);
   };
   
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (step === "name" && inputValue.trim()) {
+        setStep("color");
+      } else if (step === "color") {
+        setStep("confirm");
+      } else if (step === "confirm") {
+        handleAddTag();
+      }
+    } else if (e.key === 'Escape') {
+      setIsPopoverOpen(false);
+    } else if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      if (step === "name" && inputValue.trim()) {
+        setStep("color");
+      } else if (step === "color") {
+        setStep("confirm");
+      }
+    } else if (e.key === 'Tab' && e.shiftKey) {
+      e.preventDefault();
+      if (step === "confirm") {
+        setStep("color");
+      } else if (step === "color") {
+        setStep("name");
+      }
+    }
+  };
+  
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        {tags.map((tag, index) => (
-          <Badge 
-            key={index} 
-            className={`font-normal shadow-sm ${getTagColorClass(tag.color)}`}
-            variant="outline"
-          >
-            {tag.name}
-            <button 
-              type="button"
-              onClick={() => removeTag(index)} 
-              className="ml-1 rounded-full hover:bg-gray-200/50 p-0.5"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        ))}
+    <div className="space-y-2" onKeyDown={handleKeyDown}>
+      <div className="flex flex-wrap gap-1 border rounded-md p-2 min-h-10">
+        {selectedTags.length > 0 ? (
+          renderTagBadges()
+        ) : (
+          <div className="text-muted-foreground text-sm p-1">Brak tagów</div>
+        )}
         
-        <Popover open={isPopoverOpen} onOpenChange={(open) => {
-          setIsPopoverOpen(open);
-          if (!open) {
-            setStep("name");
-            setInputValue("");
-          }
-        }}>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
             <Button 
+              ref={popoverTriggerRef}
               variant="outline" 
               size="sm" 
               className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
@@ -215,120 +218,118 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
               <span>Dodaj tag</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-3" align="start">
-            <div className="space-y-3">
-              <h4 className="font-medium">Dodaj nowy tag</h4>
-              
-              {step === "name" && (
-                <>
-                  <div className="flex gap-2">
-                    <Input
-                      ref={inputRef}
-                      placeholder="Nazwa tagu..."
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (suggestions.length > 0) {
-                            selectSuggestion(suggestions[0]);
-                          } else if (inputValue.trim()) {
-                            handleNameSubmit();
-                          }
-                        }
-                      }}
-                      className="flex-1"
-                      autoFocus
-                    />
-                    <Button 
-                      type="button" 
-                      size="sm" 
-                      onClick={handleNameSubmit}
-                      disabled={!inputValue.trim()}
-                    >
-                      Dalej
-                    </Button>
-                  </div>
-                  
-                  {suggestions.length > 0 && (
-                    <div className="border rounded-md overflow-hidden mt-1">
-                      <Command>
-                        <CommandList>
-                          <CommandGroup heading="Sugestie">
-                            <ScrollArea className="h-[120px]">
-                              {suggestions.map((suggestion, index) => (
-                                <CommandItem
-                                  key={index}
-                                  onSelect={() => selectSuggestion(suggestion)}
-                                  className="cursor-pointer"
-                                >
-                                  <Badge 
-                                    className={`font-normal shadow-sm ${getTagColorClass(suggestion.color)}`}
-                                    variant="outline"
-                                  >
-                                    {suggestion.name}
-                                  </Badge>
-                                </CommandItem>
-                              ))}
-                            </ScrollArea>
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </div>
-                  )}
-                </>
-              )}
-              
-              {step === "color" && (
-                <>
-                  <div className="flex items-center mb-2">
-                    <Badge 
-                      className={`font-normal shadow-sm mr-2 ${getTagColorClass(selectedColor)}`}
-                      variant="outline"
-                    >
-                      {inputValue}
-                    </Badge>
-                    <Button 
-                      type="button" 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => setStep("name")}
-                      className="ml-auto text-xs h-7"
-                    >
-                      Wróć
-                    </Button>
-                  </div>
+          <PopoverContent className="w-72 p-2" align="start">
+            {step === "name" && (
+              <div className="space-y-2">
+                <div className="font-medium text-sm">Nazwa tagu</div>
+                <Input
+                  ref={inputRef}
+                  placeholder="Wpisz nazwę tagu"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="h-8"
+                  autoFocus
+                />
                 
-                  <div>
-                    <h5 className="text-xs mb-1.5 text-muted-foreground">Wybierz kolor tagu</h5>
-                    <ToggleGroup 
-                      type="single" 
-                      value={selectedColor}
-                      onValueChange={(value) => value && setSelectedColor(value)}
-                      className="flex flex-wrap gap-1 justify-start mb-3"
-                    >
-                      {colorOptions.map((color) => (
-                        <ToggleGroupItem
-                          key={color.value}
-                          value={color.value}
-                          size="sm"
-                          className={`w-6 h-6 p-0 rounded-full ${getTagColorClass(color.value)}`}
-                          aria-label={`Kolor ${color.name}`}
-                        />
+                {tagSuggestions.length > 0 && (
+                  <div className="pt-2">
+                    <div className="text-xs text-muted-foreground mb-1">Sugestie tagów:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {tagSuggestions.slice(0, 6).map((suggestion, idx) => (
+                        <Badge 
+                          key={idx}
+                          className={`${getTagColorClass(suggestion.color)} cursor-pointer`}
+                          onClick={() => handleSelectSuggestion(suggestion)}
+                        >
+                          {suggestion.name}
+                        </Badge>
                       ))}
-                    </ToggleGroup>
-                    
-                    <Button 
-                      type="button" 
-                      onClick={addTag} 
-                      className="w-full mt-1"
-                    >
-                      Dodaj
-                    </Button>
+                    </div>
                   </div>
-                </>
-              )}
-            </div>
+                )}
+                
+                <div className="flex justify-between pt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsPopoverOpen(false)}
+                  >
+                    Anuluj
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => inputValue.trim() ? setStep("color") : null}
+                    disabled={!inputValue.trim()}
+                  >
+                    Dalej
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {step === "color" && (
+              <div className="space-y-2">
+                <div className="font-medium text-sm">Wybierz kolor</div>
+                <div className="grid grid-cols-5 gap-1">
+                  {TAG_COLORS.map((color) => (
+                    <button
+                      key={color.name}
+                      className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center border ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
+                      onClick={() => {
+                        setSelectedColor(color.name);
+                        setStep("confirm");
+                      }}
+                    >
+                      {selectedColor === color.name && (
+                        <Check className="h-4 w-4" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-between pt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setStep("name")}
+                  >
+                    Wstecz
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => setStep("confirm")}
+                  >
+                    Dalej
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {step === "confirm" && (
+              <div className="space-y-3">
+                <div className="font-medium text-sm">Potwierdź tag</div>
+                <div className="flex items-center gap-2">
+                  <div className="text-sm">Podgląd:</div>
+                  <Badge className={`${getTagColorClass(selectedColor)}`}>
+                    {inputValue}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setStep("color")}
+                  >
+                    Wstecz
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={handleAddTag}
+                  >
+                    Dodaj
+                  </Button>
+                </div>
+              </div>
+            )}
           </PopoverContent>
         </Popover>
       </div>

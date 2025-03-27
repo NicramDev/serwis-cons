@@ -154,6 +154,7 @@ const VehicleBasicFields = ({ form, availableTags = [], autoFocusTagSelector = f
                 value={field.value || ""} 
                 onChange={field.onChange}
                 availableTags={availableTags} 
+                autoFocus={autoFocusTagSelector}
               />
             </FormControl>
             <FormMessage />
