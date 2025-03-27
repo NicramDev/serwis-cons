@@ -2,7 +2,7 @@
 import { Vehicle } from '../../utils/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Info, MapPin, Tag, Gauge, User } from 'lucide-react';
+import { Info, MapPin, Gauge, User } from 'lucide-react';
 
 interface VehicleBasicInfoProps {
   vehicle: Vehicle;
@@ -35,6 +35,30 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
     }
   };
 
+  // Function to get tag color based on tag content
+  const getTagColor = (tag: string) => {
+    // Simple hash function to distribute tags to different colors
+    const colors = [
+      "bg-blue-100 text-blue-800 border-blue-200",
+      "bg-green-100 text-green-800 border-green-200",
+      "bg-purple-100 text-purple-800 border-purple-200",
+      "bg-yellow-100 text-yellow-800 border-yellow-200",
+      "bg-pink-100 text-pink-800 border-pink-200",
+      "bg-indigo-100 text-indigo-800 border-indigo-200",
+      "bg-red-100 text-red-800 border-red-200",
+      "bg-orange-100 text-orange-800 border-orange-200",
+      "bg-teal-100 text-teal-800 border-teal-200",
+      "bg-cyan-100 text-cyan-800 border-cyan-200"
+    ];
+    
+    let sum = 0;
+    for (let i = 0; i < tag.length; i++) {
+      sum += tag.charCodeAt(i);
+    }
+    
+    return colors[sum % colors.length];
+  };
+
   return (
     <>
       <div className="flex justify-between items-start mb-4">
@@ -44,7 +68,11 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
         </div>
         <div className="flex flex-wrap gap-1.5">
           {vehicle.tags && vehicle.tags.split(',').map((tag, index) => (
-            <Badge key={index} variant="secondary" className="font-normal shadow-sm">
+            <Badge 
+              key={index} 
+              className={`font-normal shadow-sm ${getTagColor(tag)}`}
+              variant="outline"
+            >
               {tag.trim()}
             </Badge>
           ))}
