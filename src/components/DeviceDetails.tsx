@@ -4,7 +4,6 @@ import { Device } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FullscreenViewer from './FullscreenViewer';
 import { formatDate } from '../utils/data';
-import { Badge } from '@/components/ui/badge';
 import FileAttachments from './FileAttachments';
 
 interface DeviceDetailsProps {
@@ -80,22 +79,6 @@ const DeviceDetails = ({ device }: DeviceDetailsProps) => {
                 <p className="text-sm text-muted-foreground">Rok produkcji</p>
                 <p className="font-medium">{device.year || '-'}</p>
               </div>
-              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium">
-                  <Badge variant={
-                    device.status === 'ok' ? 'outline' :
-                    device.status === 'needs-service' ? 'secondary' : 
-                    device.status === 'in-service' ? 'default' : 
-                    'destructive'
-                  }>
-                    {device.status === 'ok' ? 'OK' :
-                    device.status === 'needs-service' ? 'Wymaga serwisu' : 
-                    device.status === 'in-service' ? 'W serwisie' : 
-                    'Problem'}
-                  </Badge>
-                </p>
-              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -150,3 +133,4 @@ const DeviceDetails = ({ device }: DeviceDetailsProps) => {
 };
 
 export default DeviceDetails;
+
