@@ -167,6 +167,16 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     return colorMap[colorName] || colorMap.blue;
   };
   
+  // Auto-open the popover when the component is focused
+  const openTagCreator = () => {
+    setIsPopoverOpen(true);
+    setStep("name");
+    setInputValue("");
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  };
+  
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-1.5">
@@ -199,6 +209,7 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
               variant="outline" 
               size="sm" 
               className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
+              onClick={openTagCreator}
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Dodaj tag</span>

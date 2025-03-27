@@ -5,13 +5,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import VehicleDateField from "./VehicleDateField";
 import TagSelector from "./TagSelector";
+import { useEffect } from "react";
 
 interface VehicleBasicFieldsProps {
   form: UseFormReturn<any>;
   availableTags?: string[];
+  autoFocusTagSelector?: boolean;
 }
 
-const VehicleBasicFields = ({ form, availableTags = [] }: VehicleBasicFieldsProps) => {
+const VehicleBasicFields = ({ form, availableTags = [], autoFocusTagSelector = false }: VehicleBasicFieldsProps) => {
+  console.log("Available tags in VehicleBasicFields:", availableTags);
+  
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
