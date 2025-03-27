@@ -2,37 +2,13 @@
 import { Vehicle } from '../../utils/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Car, Info, MapPin, Tag, Truck, Gauge, User } from 'lucide-react';
+import { Info, MapPin, Tag, Gauge, User } from 'lucide-react';
 
 interface VehicleBasicInfoProps {
   vehicle: Vehicle;
 }
 
 const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
-  const getVehicleTypeText = () => {
-    switch (vehicle.vehicleType) {
-      case 'car':
-        return "Samochód";
-      case 'truck':
-        return "Ciężarówka";
-      case 'motorcycle':
-        return "Motocykl";
-      default:
-        return "Inny";
-    }
-  };
-
-  const getVehicleIcon = () => {
-    switch (vehicle.vehicleType) {
-      case 'car':
-        return <Car className="h-5 w-5" />;
-      case 'truck':
-        return <Truck className="h-5 w-5" />;
-      default:
-        return <Car className="h-5 w-5" />;
-    }
-  };
-  
   const getStatusText = () => {
     switch (vehicle.status) {
       case 'ok':
@@ -66,14 +42,12 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
           <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{vehicle.name}</h2>
           <p className="text-muted-foreground">{vehicle.brand || 'Brak marki'}</p>
         </div>
-        <div className="flex space-x-2">
-          <Badge variant="outline" className="flex items-center gap-1 px-2.5 py-1 rounded-lg shadow-sm">
-            {getVehicleIcon()}
-            {getVehicleTypeText()}
-          </Badge>
-          <Badge variant="outline" className={`px-2.5 py-1 rounded-lg ${getStatusClass()} shadow-sm`}>
-            {getStatusText()}
-          </Badge>
+        <div className="flex flex-wrap gap-1.5">
+          {vehicle.tags && vehicle.tags.split(',').map((tag, index) => (
+            <Badge key={index} variant="secondary" className="font-normal shadow-sm">
+              {tag.trim()}
+            </Badge>
+          ))}
         </div>
       </div>
 
@@ -125,22 +99,6 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
             <div>
               <p className="text-sm font-medium text-foreground/80">Numer systemu GPS</p>
               <p className="font-medium">{vehicle.gpsSystemNumber}</p>
-            </div>
-          </div>
-        )}
-        
-        {vehicle.tags && (
-          <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-            <Tag className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-foreground/80">Tagi</p>
-              <div className="flex flex-wrap gap-1.5 mt-1.5">
-                {vehicle.tags.split(',').map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="font-normal shadow-sm">
-                    {tag.trim()}
-                  </Badge>
-                ))}
-              </div>
             </div>
           </div>
         )}
