@@ -1,11 +1,9 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import VehicleDateField from "./VehicleDateField";
 import TagSelector from "./TagSelector";
-import { useEffect } from "react";
 
 interface VehicleBasicFieldsProps {
   form: UseFormReturn<any>;

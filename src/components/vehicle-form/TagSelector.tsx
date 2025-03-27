@@ -108,11 +108,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     setInputValue(suggestion.name);
     setSelectedColor(suggestion.color);
     setStep("color");
-    
-    // Auto-focus the color selection
-    setTimeout(() => {
-      setStep("confirm");
-    }, 100);
   };
   
   const renderTagBadges = () => {
@@ -159,6 +154,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   // Auto-open the popover when the component is focused
   const openTagCreator = () => {
     setIsPopoverOpen(true);
+    // Show both steps simultaneously
     setStep("name");
     setInputValue("");
     setTimeout(() => {
@@ -170,29 +166,11 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (step === "name" && inputValue.trim()) {
-        setStep("color");
-      } else if (step === "color") {
-        setStep("confirm");
-      } else if (step === "confirm") {
+      if (inputValue.trim()) {
         handleAddTag();
       }
     } else if (e.key === 'Escape') {
       setIsPopoverOpen(false);
-    } else if (e.key === 'Tab' && !e.shiftKey) {
-      e.preventDefault();
-      if (step === "name" && inputValue.trim()) {
-        setStep("color");
-      } else if (step === "color") {
-        setStep("confirm");
-      }
-    } else if (e.key === 'Tab' && e.shiftKey) {
-      e.preventDefault();
-      if (step === "confirm") {
-        setStep("color");
-      } else if (step === "color") {
-        setStep("name");
-      }
     }
   };
   
@@ -219,7 +197,8 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-72 p-2" align="start">
-            {step === "name" && (
+            <div className="space-y-4">
+              {/* Name and color selection in one view */}
               <div className="space-y-2">
                 <div className="font-medium text-sm">Nazwa tagu</div>
                 <Input
@@ -247,27 +226,8 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                     </div>
                   </div>
                 )}
-                
-                <div className="flex justify-between pt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsPopoverOpen(false)}
-                  >
-                    Anuluj
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => inputValue.trim() ? setStep("color") : null}
-                    disabled={!inputValue.trim()}
-                  >
-                    Dalej
-                  </Button>
-                </div>
               </div>
-            )}
-            
-            {step === "color" && (
+              
               <div className="space-y-2">
                 <div className="font-medium text-sm">Wybierz kolor</div>
                 <div className="grid grid-cols-5 gap-1">
@@ -275,10 +235,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                     <button
                       key={color.name}
                       className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center border ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
-                      onClick={() => {
-                        setSelectedColor(color.name);
-                        setStep("confirm");
-                      }}
+                      onClick={() => setSelectedColor(color.name)}
                     >
                       {selectedColor === color.name && (
                         <Check className="h-4 w-4" />
@@ -286,50 +243,25 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                     </button>
                   ))}
                 </div>
-                <div className="flex justify-between pt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setStep("name")}
-                  >
-                    Wstecz
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => setStep("confirm")}
-                  >
-                    Dalej
-                  </Button>
-                </div>
               </div>
-            )}
-            
-            {step === "confirm" && (
-              <div className="space-y-3">
-                <div className="font-medium text-sm">Potwierdź tag</div>
-                <div className="flex items-center gap-2">
-                  <div className="text-sm">Podgląd:</div>
-                  <Badge className={`${getTagColorClass(selectedColor)}`}>
-                    {inputValue}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setStep("color")}
-                  >
-                    Wstecz
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={handleAddTag}
-                  >
-                    Dodaj
-                  </Button>
-                </div>
+              
+              <div className="flex justify-between pt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsPopoverOpen(false)}
+                >
+                  Anuluj
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={handleAddTag}
+                  disabled={!inputValue.trim()}
+                >
+                  Stwórz tag
+                </Button>
               </div>
-            )}
+            </div>
           </PopoverContent>
         </Popover>
       </div>
