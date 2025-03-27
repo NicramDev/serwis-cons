@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Tag } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { 
   Command, 
@@ -28,13 +28,12 @@ type Tag = {
 };
 
 const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) => {
-  console.log("TagSelector received availableTags:", availableTags);
-  
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState("blue");
   const [inputValue, setInputValue] = useState("");
   const [tags, setTags] = useState<Tag[]>([]);
   const [suggestions, setSuggestions] = useState<Tag[]>([]);
+  const [step, setStep] = useState<"name" | "color" | "complete">("name");
   const inputRef = useRef<HTMLInputElement>(null);
   
   // Parse current tags when value changes
@@ -75,7 +74,6 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     }
     
     const availableTagObjects = parseAvailableTags();
-    console.log("Available tag objects:", availableTagObjects);
     
     // Filter tags that match input and aren't already selected
     const filtered = availableTagObjects.filter(tag => 
@@ -97,6 +95,7 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     // Check if tag already exists
     if (tags.some(tag => tag.name.toLowerCase() === inputValue.toLowerCase())) {
       setInputValue("");
+      setStep("name");
       return;
     }
     
@@ -106,6 +105,7 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     setTags(newTags);
     updateTagString(newTags);
     setInputValue("");
+    setStep("name");
     setIsPopoverOpen(false);
     
     // Focus input again after adding
@@ -126,6 +126,13 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     updateTagString(newTags);
     setInputValue("");
     setSuggestions([]);
+    setStep("name");
+  };
+
+  const handleNameSubmit = () => {
+    if (inputValue.trim()) {
+      setStep("color");
+    }
   };
   
   const colorOptions = [
@@ -158,9 +165,6 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     return colorMap[colorName] || colorMap.blue;
   };
   
-  console.log("Available tags:", availableTags);
-  console.log("Current suggestions:", suggestions);
-  
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-1.5">
@@ -181,7 +185,13 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
           </Badge>
         ))}
         
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <Popover open={isPopoverOpen} onOpenChange={(open) => {
+          setIsPopoverOpen(open);
+          if (!open) {
+            setStep("name");
+            setInputValue("");
+          }
+        }}>
           <PopoverTrigger asChild>
             <Button 
               variant="outline" 
@@ -195,75 +205,116 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
           <PopoverContent className="w-80 p-3" align="start">
             <div className="space-y-3">
               <h4 className="font-medium">Dodaj nowy tag</h4>
-              <div className="flex gap-2">
-                <Input
-                  ref={inputRef}
-                  placeholder="Nazwa tagu..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (suggestions.length > 0) {
-                        selectSuggestion(suggestions[0]);
-                      } else {
-                        addTag();
-                      }
-                    }
-                  }}
-                  className="flex-1"
-                />
-                <Button type="button" size="sm" onClick={addTag}>
-                  Dodaj
-                </Button>
-              </div>
               
-              {suggestions.length > 0 && (
-                <div className="border rounded-md overflow-hidden mt-1">
-                  <Command>
-                    <CommandList>
-                      <CommandGroup heading="Sugestie">
-                        <ScrollArea className="h-[120px]">
-                          {suggestions.map((suggestion, index) => (
-                            <CommandItem
-                              key={index}
-                              onSelect={() => selectSuggestion(suggestion)}
-                              className="cursor-pointer"
-                            >
-                              <Badge 
-                                className={`font-normal shadow-sm ${getTagColorClass(suggestion.color)}`}
-                                variant="outline"
-                              >
-                                {suggestion.name}
-                              </Badge>
-                            </CommandItem>
-                          ))}
-                        </ScrollArea>
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </div>
+              {step === "name" && (
+                <>
+                  <div className="flex gap-2">
+                    <Input
+                      ref={inputRef}
+                      placeholder="Nazwa tagu..."
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (suggestions.length > 0) {
+                            selectSuggestion(suggestions[0]);
+                          } else if (inputValue.trim()) {
+                            handleNameSubmit();
+                          }
+                        }
+                      }}
+                      className="flex-1"
+                      autoFocus
+                    />
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      onClick={handleNameSubmit}
+                      disabled={!inputValue.trim()}
+                    >
+                      Dalej
+                    </Button>
+                  </div>
+                  
+                  {suggestions.length > 0 && (
+                    <div className="border rounded-md overflow-hidden mt-1">
+                      <Command>
+                        <CommandList>
+                          <CommandGroup heading="Sugestie">
+                            <ScrollArea className="h-[120px]">
+                              {suggestions.map((suggestion, index) => (
+                                <CommandItem
+                                  key={index}
+                                  onSelect={() => selectSuggestion(suggestion)}
+                                  className="cursor-pointer"
+                                >
+                                  <Badge 
+                                    className={`font-normal shadow-sm ${getTagColorClass(suggestion.color)}`}
+                                    variant="outline"
+                                  >
+                                    {suggestion.name}
+                                  </Badge>
+                                </CommandItem>
+                              ))}
+                            </ScrollArea>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </div>
+                  )}
+                </>
               )}
               
-              <div>
-                <h5 className="text-xs mb-1.5 text-muted-foreground">Kolor tagu</h5>
-                <ToggleGroup 
-                  type="single" 
-                  value={selectedColor}
-                  onValueChange={(value) => value && setSelectedColor(value)}
-                  className="flex flex-wrap gap-1 justify-start"
-                >
-                  {colorOptions.map((color) => (
-                    <ToggleGroupItem
-                      key={color.value}
-                      value={color.value}
-                      size="sm"
-                      className={`w-6 h-6 p-0 rounded-full ${getTagColorClass(color.value)}`}
-                      aria-label={`Kolor ${color.name}`}
-                    />
-                  ))}
-                </ToggleGroup>
-              </div>
+              {step === "color" && (
+                <>
+                  <div className="flex items-center mb-2">
+                    <Badge 
+                      className={`font-normal shadow-sm mr-2 ${getTagColorClass(selectedColor)}`}
+                      variant="outline"
+                    >
+                      {inputValue}
+                    </Badge>
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => setStep("name")}
+                      className="ml-auto text-xs h-7"
+                    >
+                      Wróć
+                    </Button>
+                  </div>
+                
+                  <div>
+                    <h5 className="text-xs mb-1.5 text-muted-foreground">Wybierz kolor tagu</h5>
+                    <ToggleGroup 
+                      type="single" 
+                      value={selectedColor}
+                      onValueChange={(value) => value && setSelectedColor(value)}
+                      className="flex flex-wrap gap-1 justify-start mb-3"
+                    >
+                      {colorOptions.map((color) => (
+                        <ToggleGroupItem
+                          key={color.value}
+                          value={color.value}
+                          size="sm"
+                          className={`w-6 h-6 p-0 rounded-full ${getTagColorClass(color.value)}`}
+                          aria-label={`Kolor ${color.name}`}
+                        />
+                      ))}
+                    </ToggleGroup>
+                    
+                    <Button 
+                      type="button" 
+                      onClick={addTag} 
+                      className="w-full mt-1"
+                    >
+                      Dodaj
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </PopoverContent>
         </Popover>
