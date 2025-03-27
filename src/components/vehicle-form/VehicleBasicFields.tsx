@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import VehicleDateField from "./VehicleDateField";
+import TagSelector from "./TagSelector";
 
 interface VehicleBasicFieldsProps {
   form: UseFormReturn<any>;
@@ -142,9 +143,12 @@ const VehicleBasicFields = ({ form }: VehicleBasicFieldsProps) => {
         name="tags"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Tagi (oddzielone przecinkami)</FormLabel>
+            <FormLabel>Tagi</FormLabel>
             <FormControl>
-              <Input placeholder="np. VIP, serwis, leasing" {...field} />
+              <TagSelector 
+                value={field.value || ""} 
+                onChange={field.onChange} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

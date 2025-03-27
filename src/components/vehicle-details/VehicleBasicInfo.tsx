@@ -37,7 +37,30 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
 
   // Function to get tag color based on tag content
   const getTagColor = (tag: string) => {
-    // Simple hash function to distribute tags to different colors
+    // Check if the tag has a color component
+    const parts = tag.trim().split(':');
+    const tagName = parts[0].trim();
+    const tagColor = parts.length > 1 ? parts[1].trim() : null;
+    
+    // If there's a specified color, use it
+    if (tagColor) {
+      const colorMap: Record<string, string> = {
+        blue: "bg-blue-100 text-blue-800 border-blue-200",
+        green: "bg-green-100 text-green-800 border-green-200",
+        purple: "bg-purple-100 text-purple-800 border-purple-200",
+        yellow: "bg-yellow-100 text-yellow-800 border-yellow-200",
+        pink: "bg-pink-100 text-pink-800 border-pink-200",
+        indigo: "bg-indigo-100 text-indigo-800 border-indigo-200",
+        red: "bg-red-100 text-red-800 border-red-200",
+        orange: "bg-orange-100 text-orange-800 border-orange-200",
+        teal: "bg-teal-100 text-teal-800 border-teal-200",
+        cyan: "bg-cyan-100 text-cyan-800 border-cyan-200"
+      };
+      
+      return colorMap[tagColor] || colorMap.blue;
+    }
+    
+    // Fallback to the hash-based approach for legacy tags
     const colors = [
       "bg-blue-100 text-blue-800 border-blue-200",
       "bg-green-100 text-green-800 border-green-200",
@@ -59,6 +82,12 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
     return colors[sum % colors.length];
   };
 
+  // Function to extract the tag name without the color information
+  const getTagName = (tag: string) => {
+    const parts = tag.trim().split(':');
+    return parts[0].trim();
+  };
+
   return (
     <>
       <div className="flex justify-between items-start mb-4">
@@ -73,7 +102,7 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
               className={`font-normal shadow-sm ${getTagColor(tag)}`}
               variant="outline"
             >
-              {tag.trim()}
+              {getTagName(tag)}
             </Badge>
           ))}
         </div>
