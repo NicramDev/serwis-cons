@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { toast } from "sonner";
 import { Vehicle } from "../utils/types";
 import VehicleBasicFields from "./vehicle-form/VehicleBasicFields";
 import ReminderSection from "./vehicle-form/ReminderSection";
@@ -25,9 +26,9 @@ const vehicleSchema = z.object({
   driverName: z.string().optional(),
   tags: z.string().optional(),
   notes: z.string().optional(),
-  insuranceReminderDays: z.coerce.number().min(0).max(90).default(30),
-  inspectionReminderDays: z.coerce.number().min(0).max(90).default(30),
-  serviceReminderDays: z.coerce.number().min(0).max(90).default(30),
+  insuranceReminderDays: z.number().min(0).max(90).default(30),
+  inspectionReminderDays: z.number().min(0).max(90).default(30),
+  serviceReminderDays: z.number().min(0).max(90).default(30),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -40,10 +41,10 @@ type EditVehicleFormProps = {
 };
 
 const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: EditVehicleFormProps) => {
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [existingAttachments, setExistingAttachments] = useState(vehicle.attachments || []);
-  const [images, setImages] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState(vehicle.images || []);
+  const [attachments, setAttachments] = useState<any[]>(vehicle.attachments || []);
+  const [images, setImages] = useState<string[]>(vehicle.images || []);
+  const [newAttachments, setNewAttachments] = useState<File[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
@@ -62,16 +63,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
     setAvailableTags(uniqueTags);
   }, [allVehicles]);
 
-  const convertToDate = (dateInput: any) => {
-    if (!dateInput) return undefined;
-    try {
-      if (dateInput instanceof Date) return dateInput;
-      return new Date(dateInput);
-    } catch {
-      return undefined;
-    }
-  };
-
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
@@ -80,10 +71,10 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
       year: vehicle.year,
       vin: vehicle.vin || "",
       registrationNumber: vehicle.registrationNumber,
-      purchaseDate: convertToDate(vehicle.purchaseDate),
-      inspectionExpiryDate: convertToDate(vehicle.inspectionExpiryDate),
-      serviceExpiryDate: convertToDate(vehicle.serviceExpiryDate),
-      insuranceExpiryDate: convertToDate(vehicle.insuranceExpiryDate),
+      purchaseDate: vehicle.purchaseDate ? new Date(vehicle.purchaseDate) : undefined,
+      inspectionExpiryDate: vehicle.inspectionExpiryDate ? new Date(vehicle.inspectionExpiryDate) : undefined,
+      serviceExpiryDate: vehicle.serviceExpiryDate ? new Date(vehicle.serviceExpiryDate) : undefined,
+      insuranceExpiryDate: vehicle.insuranceExpiryDate ? new Date(vehicle.insuranceExpiryDate) : undefined,
       fuelCardNumber: vehicle.fuelCardNumber || "",
       gpsSystemNumber: vehicle.gpsSystemNumber || "",
       driverName: vehicle.driverName || "",
@@ -99,48 +90,83 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
     const updatedVehicle: Vehicle = {
       ...vehicle,
       ...values,
-      images: [
-        ...existingImages,
-        ...images.map(img => URL.createObjectURL(img))
-      ],
       attachments: [
-        ...existingAttachments,
-        ...attachments.map(file => ({
+        ...attachments,
+        ...newAttachments.map(file => ({
           name: file.name,
           type: file.type,
           size: file.size,
           url: URL.createObjectURL(file)
         }))
       ],
-      lastService: vehicle.lastService,
-      nextService: values.serviceExpiryDate || vehicle.nextService
+      images: [
+        ...images,
+        ...newImages.map(img => URL.createObjectURL(img))
+      ],
     };
     
     onSubmit(updatedVehicle);
+    toast.success("Pojazd został zaktualizowany pomyślnie");
   };
 
   const handleImagesChange = (newFiles: File[]) => {
-    setImages(newFiles);
+    setNewImages(newFiles);
   };
 
   const handleAttachmentsChange = (newFiles: File[]) => {
-    setAttachments(prev => [...prev, ...newFiles]);
+    setNewAttachments(prev => [...prev, ...newFiles]);
   };
 
   const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const removeExistingAttachment = (index: number) => {
-    setExistingAttachments(prev => prev.filter((_, i) => i !== index));
+    if (index < attachments.length) {
+      setAttachments(prev => prev.filter((_, i) => i !== index));
+    } else {
+      const newIndex = index - attachments.length;
+      setNewAttachments(prev => prev.filter((_, i) => i !== newIndex));
+    }
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    if (index < images.length) {
+      setImages(prev => prev.filter((_, i) => i !== index));
+    } else {
+      const newIndex = index - images.length;
+      setNewImages(prev => prev.filter((_, i) => i !== newIndex));
+    }
   };
 
-  const removeExistingImage = (index: number) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  const getAllAttachments = () => {
+    const existingAttachmentFiles = attachments.map(att => ({
+      ...att,
+      preview: att.url
+    }));
+    
+    const newAttachmentFiles = newAttachments.map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      preview: URL.createObjectURL(file)
+    }));
+    
+    return [...existingAttachmentFiles, ...newAttachmentFiles];
+  };
+
+  const getAllImages = () => {
+    const existingImageFiles = images.map((url, index) => ({
+      name: `image-${index}.jpg`,
+      preview: url,
+      type: 'image/jpeg',
+      size: 0
+    }));
+    
+    const newImageFiles = newImages.map(file => ({
+      name: file.name,
+      preview: URL.createObjectURL(file),
+      type: file.type,
+      size: file.size
+    }));
+    
+    return [...existingImageFiles, ...newImageFiles];
   };
 
   return (
@@ -152,36 +178,26 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
           form={form} 
           type="insurance" 
           title="Ubezpieczenie OC/AC ważne do" 
-          useInputs={true}
         />
         
         <ReminderSection 
           form={form} 
           type="inspection" 
           title="Przegląd ważny do" 
-          useInputs={true}
         />
         
         <ReminderSection 
           form={form} 
           type="service" 
           title="Serwis ważny do" 
-          useInputs={true}
         />
         
         <FileUploadField 
           label="Zdjęcia pojazdu"
           onChange={handleImagesChange}
-          files={images}
+          files={getAllImages()}
           accept="image/*"
           multiple={true}
-          existingFiles={existingImages.map((url, i) => ({
-            name: `Zdjęcie ${i+1}`,
-            type: "image/jpeg",
-            size: 0,
-            url
-          }))}
-          onRemoveExisting={removeExistingImage}
           onRemove={removeImage}
           isImage={true}
         />
@@ -189,10 +205,8 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
         <FileUploadField 
           label="Załączniki"
           onChange={handleAttachmentsChange}
-          files={attachments}
+          files={getAllAttachments()}
           multiple={true}
-          existingFiles={existingAttachments}
-          onRemoveExisting={removeExistingAttachment}
           onRemove={removeAttachment}
         />
         
