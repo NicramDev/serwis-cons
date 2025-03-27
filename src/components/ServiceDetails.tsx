@@ -45,8 +45,8 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
         />
       )}
 
-      <Tabs defaultValue="general" className="bg-[#ebe9e6] rounded-lg">
-        <TabsList className="w-full bg-secondary/50 p-1">
+      <Tabs defaultValue="general">
+        <TabsList className="w-full bg-[#ebe9e6] p-1">
           <TabsTrigger value="general" className="flex-1 rounded-md data-[state=active]:shadow-sm">Informacje ogólne</TabsTrigger>
           {hasAttachmentsOrImages && (
             <TabsTrigger value="files" className="flex-1 rounded-md data-[state=active]:shadow-sm">Dokumenty i zdjęcia</TabsTrigger>

@@ -46,8 +46,8 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         />
       )}
 
-      <Tabs defaultValue="general" className="bg-[#ebe9e6] rounded-lg">
-        <TabsList className="w-full bg-secondary/50 p-1">
+      <Tabs defaultValue="general">
+        <TabsList className="w-full bg-[#ebe9e6] p-1">
           <TabsTrigger value="general" className="flex-1 rounded-md data-[state=active]:shadow-sm">Informacje ogólne</TabsTrigger>
           <TabsTrigger value="service" className="flex-1 rounded-md data-[state=active]:shadow-sm">Serwis i przeglądy</TabsTrigger>
           {hasAttachmentsOrImages && (

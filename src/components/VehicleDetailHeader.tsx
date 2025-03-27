@@ -35,7 +35,7 @@ const VehicleDetailHeader = ({
             }
           }}
         >
-          <TabsList className="grid grid-cols-2">
+          <TabsList className="grid grid-cols-2 bg-[#ebe9e6]">
             <TabsTrigger 
               value="service" 
               className={`flex items-center gap-1 ${showingServiceRecords ? 'bg-primary text-primary-foreground' : ''}`}
