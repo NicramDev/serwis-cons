@@ -454,6 +454,7 @@ const Vehicles = () => {
           <AddVehicleForm 
             onSubmit={handleAddVehicle} 
             onCancel={() => setIsAddDialogOpen(false)} 
+            allVehicles={allVehicles}
           />
         </DialogContent>
       </Dialog>

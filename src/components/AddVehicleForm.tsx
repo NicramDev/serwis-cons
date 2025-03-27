@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,11 +36,29 @@ type VehicleFormValues = z.infer<typeof vehicleSchema>;
 type AddVehicleFormProps = {
   onSubmit: (vehicle: Partial<Vehicle>) => void;
   onCancel: () => void;
+  allVehicles?: Vehicle[];
 };
 
-const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
+const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [] }: AddVehicleFormProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Extract all unique tags from all vehicles
+    const allTags: string[] = [];
+    
+    allVehicles.forEach(v => {
+      if (v.tags) {
+        const tags = v.tags.split(',').map(tag => tag.trim());
+        allTags.push(...tags);
+      }
+    });
+    
+    // Remove duplicates
+    const uniqueTags = Array.from(new Set(allTags));
+    setAvailableTags(uniqueTags);
+  }, [allVehicles]);
 
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
@@ -96,7 +114,7 @@ const AddVehicleForm = ({ onSubmit, onCancel }: AddVehicleFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        <VehicleBasicFields form={form} />
+        <VehicleBasicFields form={form} availableTags={availableTags} />
         
         <ReminderSection 
           form={form} 

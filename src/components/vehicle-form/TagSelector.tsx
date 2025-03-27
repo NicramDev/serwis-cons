@@ -3,7 +3,7 @@ import { useState, useRef, KeyboardEvent, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Plus, Check } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { 
   Command, 
@@ -55,7 +55,7 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
   
   // Parse available tags from other vehicles
   const parseAvailableTags = (): Tag[] => {
-    if (!availableTags) return [];
+    if (!availableTags || availableTags.length === 0) return [];
     
     return availableTags.map(tagInfo => {
       const parts = tagInfo.trim().split(':');
@@ -138,6 +138,9 @@ const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) 
     
     return colorMap[colorName] || colorMap.blue;
   };
+  
+  console.log("Available tags:", availableTags);
+  console.log("Current suggestions:", suggestions);
   
   return (
     <div className="space-y-3">
