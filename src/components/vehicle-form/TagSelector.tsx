@@ -1,11 +1,10 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "@/components/ui/use-toast";
 
 const TAG_COLORS = [
@@ -32,7 +31,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const [inputValue, setInputValue] = useState("");
   const [selectedColor, setSelectedColor] = useState("blue");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [step, setStep] = useState<"name" | "color" | "confirm">("name");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverTriggerRef = useRef<HTMLButtonElement>(null);
@@ -72,7 +70,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   
   const handleAddTag = () => {
     if (!inputValue.trim()) {
-      setStep("name");
       return;
     }
     
@@ -94,7 +91,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     // Reset
     setInputValue("");
     setSelectedColor("blue");
-    setStep("name");
     setIsPopoverOpen(false);
   };
   
@@ -107,7 +103,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const handleSelectSuggestion = (suggestion: { name: string; color: string }) => {
     setInputValue(suggestion.name);
     setSelectedColor(suggestion.color);
-    setStep("color");
   };
   
   const renderTagBadges = () => {
@@ -154,9 +149,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   // Auto-open the popover when the component is focused
   const openTagCreator = () => {
     setIsPopoverOpen(true);
-    // Show both steps simultaneously
-    setStep("name");
-    setInputValue("");
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
@@ -198,7 +190,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
           </PopoverTrigger>
           <PopoverContent className="w-72 p-2" align="start">
             <div className="space-y-4">
-              {/* Name and color selection in one view */}
+              {/* Name input */}
               <div className="space-y-2">
                 <div className="font-medium text-sm">Nazwa tagu</div>
                 <Input
@@ -228,13 +220,15 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 )}
               </div>
               
+              {/* Color selection */}
               <div className="space-y-2">
                 <div className="font-medium text-sm">Wybierz kolor</div>
                 <div className="grid grid-cols-5 gap-1">
                   {TAG_COLORS.map((color) => (
                     <button
                       key={color.name}
-                      className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center border ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
+                      type="button"
+                      className={`w-8 h-8 rounded-md ${color.value} flex items-center justify-center cursor-pointer ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
                       onClick={() => setSelectedColor(color.name)}
                     >
                       {selectedColor === color.name && (
@@ -245,8 +239,10 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 </div>
               </div>
               
+              {/* Action buttons */}
               <div className="flex justify-between pt-2">
                 <Button 
+                  type="button"
                   variant="outline" 
                   size="sm"
                   onClick={() => setIsPopoverOpen(false)}
@@ -254,6 +250,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                   Anuluj
                 </Button>
                 <Button 
+                  type="button"
                   size="sm"
                   onClick={handleAddTag}
                   disabled={!inputValue.trim()}
