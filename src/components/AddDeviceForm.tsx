@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,6 +15,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import FullscreenViewer from "./FullscreenViewer";
+import ReminderSection from "./vehicle-form/ReminderSection";
 
 const deviceSchema = z.object({
   vehicleId: z.string().optional(),
@@ -134,177 +136,197 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
           type="auto"
         />
       )}
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        <FormField
-          control={form.control}
-          name="vehicleId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Przypisz do pojazdu</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {vehicles.map(vehicle => (
-                    <SelectItem key={vehicle.id} value={vehicle.id}>
-                      {vehicle.name} ({vehicle.registrationNumber})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 gap-6">
           <FormField
             control={form.control}
-            name="name"
+            name="vehicleId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nazwa własna urządzenia</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz nazwę urządzenia" {...field} />
-                </FormControl>
+                <FormLabel>Przypisz do pojazdu</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {vehicles.map(vehicle => (
+                      <SelectItem key={vehicle.id} value={vehicle.id}>
+                        {vehicle.name} ({vehicle.registrationNumber})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="brand"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Marka urządzenia</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz markę urządzenia" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Typ urządzenia</FormLabel>
-                <FormControl>
-                  <Input placeholder="Np. GPS, OBD, Lokalizator" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nazwa własna urządzenia</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wpisz nazwę urządzenia" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="brand"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Marka urządzenia</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wpisz markę urządzenia" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           
-          <FormField
-            control={form.control}
-            name="serialNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Numer seryjny</FormLabel>
-                <FormControl>
-                  <Input placeholder="Wpisz numer seryjny" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="year"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rok produkcji</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Typ urządzenia</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Np. GPS, OBD, Lokalizator" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="serialNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Numer seryjny</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wpisz numer seryjny" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           
-          <FormField
-            control={form.control}
-            name="purchasePrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Koszt zakupu (PLN)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="serviceExpiryDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Wymagany serwis data</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "dd.MM.yyyy")
-                        ) : (
-                          <span>Wybierz datę</span>
-                        )}
-                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="year"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rok produkcji</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="purchasePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Koszt zakupu (PLN)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="serviceExpiryDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Wymagany serwis data</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "dd.MM.yyyy")
+                          ) : (
+                            <span>Wybierz datę</span>
+                          )}
+                          <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="serviceReminderDays"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Przypomnienie (dni przed terminem)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="30"
+                      min={0}
+                      max={365}
+                      {...field} 
+                      onChange={e => field.onChange(parseInt(e.target.value))}
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           
           <FormField
             control={form.control}
-            name="serviceReminderDays"
+            name="notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Przypomnienie (dni przed terminem)</FormLabel>
+                <FormLabel>Notatki</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="30"
-                    min={0}
-                    max={365}
+                  <Textarea 
+                    placeholder="Dodatkowe informacje o urządzeniu" 
                     {...field} 
-                    onChange={e => field.onChange(parseInt(e.target.value))}
+                    className="min-h-[100px]"
                   />
                 </FormControl>
                 <FormMessage />
@@ -313,25 +335,7 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
           />
         </div>
         
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notatki</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Dodatkowe informacje o urządzeniu" 
-                  {...field} 
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="space-y-2">
+        <div className="space-y-4">
           <FormLabel>Zdjęcia urządzenia</FormLabel>
           <Input 
             type="file" 
