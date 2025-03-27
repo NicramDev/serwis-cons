@@ -135,40 +135,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
     }
   };
 
-  const getAllAttachments = () => {
-    const existingAttachmentFiles = attachments.map(att => ({
-      ...att,
-      preview: att.url
-    }));
-    
-    const newAttachmentFiles = newAttachments.map(file => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      preview: URL.createObjectURL(file)
-    }));
-    
-    return [...existingAttachmentFiles, ...newAttachmentFiles];
-  };
-
-  const getAllImages = () => {
-    const existingImageFiles = images.map((url, index) => ({
-      name: `image-${index}.jpg`,
-      preview: url,
-      type: 'image/jpeg',
-      size: 0
-    }));
-    
-    const newImageFiles = newImages.map(file => ({
-      name: file.name,
-      preview: URL.createObjectURL(file),
-      type: file.type,
-      size: file.size
-    }));
-    
-    return [...existingImageFiles, ...newImageFiles];
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
@@ -195,19 +161,28 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
         <FileUploadField 
           label="Zdjęcia pojazdu"
           onChange={handleImagesChange}
-          files={getAllImages()}
+          files={newImages}
           accept="image/*"
           multiple={true}
-          onRemove={removeImage}
+          existingFiles={images.map((url, index) => ({
+            name: `image-${index}.jpg`,
+            type: 'image/jpeg',
+            size: 0,
+            url: url
+          }))}
+          onRemoveExisting={removeImage}
+          onRemove={(index) => removeImage(index + images.length)}
           isImage={true}
         />
         
         <FileUploadField 
           label="Załączniki"
           onChange={handleAttachmentsChange}
-          files={getAllAttachments()}
+          files={newAttachments}
           multiple={true}
-          onRemove={removeAttachment}
+          existingFiles={attachments}
+          onRemoveExisting={removeAttachment}
+          onRemove={(index) => removeAttachment(index + attachments.length)}
         />
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
