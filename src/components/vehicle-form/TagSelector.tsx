@@ -5,6 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 
 const TAG_COLORS = [
@@ -30,7 +38,7 @@ interface TagSelectorProps {
 const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }: TagSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
   const [selectedColor, setSelectedColor] = useState("blue");
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -93,7 +101,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     // Reset
     setInputValue("");
     setSelectedColor("blue");
-    setIsPopoverOpen(false);
+    setIsDialogOpen(false);
     setIsColorPickerOpen(false);
   };
   
@@ -149,9 +157,9 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     return colorMap[colorName] || colorMap.blue;
   };
   
-  // Auto-open the popover when the component is focused
+  // Auto-open the dialog when the component is focused
   const openTagCreator = () => {
-    setIsPopoverOpen(true);
+    setIsDialogOpen(true);
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
@@ -173,7 +181,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
         handleAddTag();
       }
     } else if (e.key === 'Escape') {
-      setIsPopoverOpen(false);
+      setIsDialogOpen(false);
       setIsColorPickerOpen(false);
     } else if ((e.key === 'c' && (e.ctrlKey || e.metaKey)) || (e.key === 'p' && (e.ctrlKey || e.metaKey))) {
       // Ctrl+C or Command+C (Mac) or Ctrl+P or Command+P to open color picker
@@ -198,22 +206,25 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
           <div className="text-muted-foreground text-sm p-1">Brak tagów</div>
         )}
         
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button 
-              ref={popoverTriggerRef}
-              variant="outline" 
-              size="sm" 
-              className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
-              onClick={openTagCreator}
-              aria-label="Dodaj tag"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Dodaj tag</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-72 p-2" align="start">
-            <div className="space-y-4">
+        <Button 
+          ref={popoverTriggerRef}
+          variant="outline" 
+          size="sm" 
+          className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
+          onClick={openTagCreator}
+          aria-label="Dodaj tag"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span>Dodaj tag</span>
+        </Button>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Stwórz nowy tag</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
               {/* Name input */}
               <div className="space-y-2">
                 <div className="font-medium text-sm">Nazwa tagu</div>
@@ -314,29 +325,24 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                   Skrót: Ctrl+P lub Command+P aby otworzyć paletę kolorów
                 </div>
               </div>
-              
-              {/* Action buttons */}
-              <div className="flex justify-between pt-2">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setIsPopoverOpen(false)}
-                >
+            </div>
+            
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
                   Anuluj
                 </Button>
-                <Button 
-                  type="button"
-                  size="sm"
-                  onClick={handleAddTag}
-                  disabled={!inputValue.trim()}
-                >
-                  Stwórz tag
-                </Button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+              </DialogClose>
+              <Button 
+                type="button"
+                onClick={handleAddTag}
+                disabled={!inputValue.trim()}
+              >
+                Stwórz tag
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
