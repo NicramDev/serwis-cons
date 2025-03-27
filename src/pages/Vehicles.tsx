@@ -507,6 +507,7 @@ const Vehicles = () => {
               vehicle={selectedVehicleForEdit}
               onSubmit={handleUpdateVehicle}
               onCancel={() => setIsEditDialogOpen(false)}
+              allVehicles={allVehicles}
             />
           )}
         </DialogContent>

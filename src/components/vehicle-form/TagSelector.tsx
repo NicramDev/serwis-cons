@@ -1,10 +1,19 @@
 
-import { useState, useRef, KeyboardEvent } from "react";
+import { useState, useRef, KeyboardEvent, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Check } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { 
+  Command, 
+  CommandEmpty, 
+  CommandGroup, 
+  CommandInput, 
+  CommandItem, 
+  CommandList 
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Tag {
   name: string;
@@ -14,12 +23,15 @@ interface Tag {
 interface TagSelectorProps {
   value: string;
   onChange: (value: string) => void;
+  availableTags?: string[];
 }
 
-const TagSelector = ({ value, onChange }: TagSelectorProps) => {
+const TagSelector = ({ value, onChange, availableTags = [] }: TagSelectorProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState("");
   const [selectedColor, setSelectedColor] = useState("blue");
+  const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<Tag[]>([]);
   
   // Parse the comma-separated string into an array of tag objects
   const parseTags = (tagsString: string): Tag[] => {
@@ -40,6 +52,38 @@ const TagSelector = ({ value, onChange }: TagSelectorProps) => {
   };
   
   const tags = parseTags(value);
+  
+  // Parse available tags from other vehicles
+  const parseAvailableTags = (): Tag[] => {
+    if (!availableTags) return [];
+    
+    return availableTags.map(tagInfo => {
+      const parts = tagInfo.trim().split(':');
+      return {
+        name: parts[0].trim(),
+        color: parts.length > 1 ? parts[1].trim() : 'blue'
+      };
+    });
+  };
+  
+  // Filter out tags that are already selected
+  const getUnusedTags = (): Tag[] => {
+    const existingTagNames = tags.map(tag => tag.name.toLowerCase());
+    return parseAvailableTags().filter(tag => 
+      !existingTagNames.includes(tag.name.toLowerCase()) && 
+      tag.name.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  };
+  
+  // Update suggestions when input changes
+  useEffect(() => {
+    if (inputValue.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+    
+    setSuggestions(getUnusedTags());
+  }, [inputValue, availableTags, value]);
   
   const handleAddTag = () => {
     if (!inputValue.trim()) return;
@@ -69,6 +113,13 @@ const TagSelector = ({ value, onChange }: TagSelectorProps) => {
       e.preventDefault();
       handleAddTag();
     }
+  };
+  
+  const handleSelectSuggestion = (tag: Tag) => {
+    const newTags = [...tags, tag];
+    onChange(stringifyTags(newTags));
+    setInputValue("");
+    setOpen(false);
   };
   
   const getTagColorClasses = (colorName: string) => {
@@ -127,25 +178,55 @@ const TagSelector = ({ value, onChange }: TagSelectorProps) => {
           <ToggleGroupItem value="cyan" className={`${getTagColorClasses('cyan')} h-6 w-6 p-0 rounded-full`} />
         </ToggleGroup>
         
-        <div className="flex gap-2">
-          <Input
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Wpisz nazwę tagu..."
-            className="flex-1"
-          />
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="icon"
-            onClick={handleAddTag}
-            disabled={!inputValue.trim()}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+        <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
+          <div className="flex gap-2">
+            <PopoverTrigger asChild>
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Wpisz nazwę tagu..."
+                className="flex-1"
+                onClick={() => setOpen(true)}
+              />
+            </PopoverTrigger>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="icon"
+              onClick={handleAddTag}
+              disabled={!inputValue.trim()}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <PopoverContent className="w-full p-0" align="start">
+            <Command>
+              <CommandList>
+                <CommandEmpty>Brak sugestii tagów</CommandEmpty>
+                <CommandGroup heading="Istniejące tagi">
+                  {suggestions.map((tag, index) => (
+                    <CommandItem
+                      key={index}
+                      value={tag.name}
+                      onSelect={() => handleSelectSuggestion(tag)}
+                      className="cursor-pointer"
+                    >
+                      <Badge 
+                        variant="outline" 
+                        className={`mr-2 ${getTagColorClasses(tag.color)}`}
+                      >
+                        {tag.name}
+                      </Badge>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

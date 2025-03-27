@@ -8,9 +8,10 @@ import TagSelector from "./TagSelector";
 
 interface VehicleBasicFieldsProps {
   form: UseFormReturn<any>;
+  availableTags?: string[];
 }
 
-const VehicleBasicFields = ({ form }: VehicleBasicFieldsProps) => {
+const VehicleBasicFields = ({ form, availableTags = [] }: VehicleBasicFieldsProps) => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +148,8 @@ const VehicleBasicFields = ({ form }: VehicleBasicFieldsProps) => {
             <FormControl>
               <TagSelector 
                 value={field.value || ""} 
-                onChange={field.onChange} 
+                onChange={field.onChange}
+                availableTags={availableTags} 
               />
             </FormControl>
             <FormMessage />

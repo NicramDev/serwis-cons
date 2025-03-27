@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,13 +36,31 @@ type EditVehicleFormProps = {
   vehicle: Vehicle;
   onSubmit: (vehicle: Vehicle) => void;
   onCancel: () => void;
+  allVehicles?: Vehicle[];
 };
 
-const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) => {
+const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: EditVehicleFormProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState(vehicle.attachments || []);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState(vehicle.images || []);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Extract all unique tags from all vehicles
+    const allTags: string[] = [];
+    
+    allVehicles.forEach(v => {
+      if (v.tags) {
+        const tags = v.tags.split(',').map(tag => tag.trim());
+        allTags.push(...tags);
+      }
+    });
+    
+    // Remove duplicates
+    const uniqueTags = Array.from(new Set(allTags));
+    setAvailableTags(uniqueTags);
+  }, [allVehicles]);
 
   const convertToDate = (dateInput: any) => {
     if (!dateInput) return undefined;
@@ -128,7 +146,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel }: EditVehicleFormProps) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        <VehicleBasicFields form={form} />
+        <VehicleBasicFields form={form} availableTags={availableTags} />
         
         <ReminderSection 
           form={form} 
