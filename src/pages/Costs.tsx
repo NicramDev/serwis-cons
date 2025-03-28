@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ServiceRecord, Vehicle, Device } from '../utils/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Costs = () => {
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
@@ -40,6 +49,7 @@ const Costs = () => {
   const [vehicleDevices, setVehicleDevices] = useState<Device[]>([]);
   const [showMultipleDevices, setShowMultipleDevices] = useState<boolean>(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false);
+  const [treatVehicleAsDevice, setTreatVehicleAsDevice] = useState<boolean>(false);
 
   useEffect(() => {
     const savedVehicles = localStorage.getItem('vehicles');
@@ -56,8 +66,10 @@ const Costs = () => {
       const devicesForVehicle = allDevices.filter(device => device.vehicleId === selectedVehicleId);
       setVehicleDevices(devicesForVehicle);
       
+      // Reset selections when vehicle changes
       setSelectedDeviceIds([]);
       setSelectedDeviceId(null);
+      setTreatVehicleAsDevice(false);
     } else {
       setVehicleDevices([]);
     }
@@ -69,14 +81,22 @@ const Costs = () => {
       
       if (selectedVehicleId) {
         filtered = filtered.filter(record => record.vehicleId === selectedVehicleId);
+        
+        // When vehicle is treated as a device, we need to include records that don't have a deviceId
+        // These are the records directly for the vehicle
+        if (treatVehicleAsDevice) {
+          filtered = filtered.filter(record => !record.deviceId || record.deviceId === '');
+        }
       }
       
-      if (!showMultipleDevices && selectedDeviceId) {
-        filtered = filtered.filter(record => record.deviceId === selectedDeviceId);
-      }
-      
-      if (showMultipleDevices && selectedDeviceIds.length > 0) {
-        filtered = filtered.filter(record => selectedDeviceIds.includes(record.deviceId || ''));
+      if (!treatVehicleAsDevice) {
+        if (!showMultipleDevices && selectedDeviceId) {
+          filtered = filtered.filter(record => record.deviceId === selectedDeviceId);
+        }
+        
+        if (showMultipleDevices && selectedDeviceIds.length > 0) {
+          filtered = filtered.filter(record => selectedDeviceIds.includes(record.deviceId || ''));
+        }
       }
       
       if (dateFrom) {
@@ -94,7 +114,7 @@ const Costs = () => {
       const total = filtered.reduce((sum, record) => sum + record.cost, 0);
       setTotalCost(total);
     }
-  }, [selectedVehicleId, selectedDeviceId, selectedDeviceIds, dateFrom, dateTo, serviceRecords, showMultipleDevices]);
+  }, [selectedVehicleId, selectedDeviceId, selectedDeviceIds, dateFrom, dateTo, serviceRecords, showMultipleDevices, treatVehicleAsDevice]);
 
   const handleClearFilters = () => {
     setSelectedVehicleId(null);
@@ -103,6 +123,7 @@ const Costs = () => {
     setDateFrom(undefined);
     setDateTo(undefined);
     setShowMultipleDevices(false);
+    setTreatVehicleAsDevice(false);
   };
 
   const toggleDeviceSelection = (deviceId: string) => {
@@ -117,6 +138,14 @@ const Costs = () => {
 
   const toggleMultipleDevicesMode = () => {
     setShowMultipleDevices(!showMultipleDevices);
+    setSelectedDeviceId(null);
+    setSelectedDeviceIds([]);
+    setTreatVehicleAsDevice(false);
+  };
+
+  const toggleTreatVehicleAsDevice = () => {
+    setTreatVehicleAsDevice(!treatVehicleAsDevice);
+    setShowMultipleDevices(false);
     setSelectedDeviceId(null);
     setSelectedDeviceIds([]);
   };
@@ -184,8 +213,11 @@ const Costs = () => {
                 <div class="report-info">
                   <p><strong>Pojazd:</strong> ${selectedVehicle}</p>
                   <p><strong>Zakres dat:</strong> ${dateRange}</p>
-                  ${selectedDeviceId 
+                  ${selectedDeviceId && !treatVehicleAsDevice
                     ? `<p><strong>Urządzenie:</strong> ${allDevices.find(d => d.id === selectedDeviceId)?.name || 'Nieznane'}</p>` 
+                    : ''}
+                  ${treatVehicleAsDevice 
+                    ? `<p><strong>Pokazuję koszty samego pojazdu (bez urządzeń)</strong></p>` 
                     : ''}
                   ${showMultipleDevices && selectedDeviceIds.length > 0
                     ? `<p><strong>Wybrane urządzenia:</strong> ${selectedDeviceIds.length} z ${vehicleDevices.length}</p>`
@@ -233,8 +265,10 @@ const Costs = () => {
                       <div class="cost-item-header">
                         <div>
                           <div class="cost-item-title">
-                            ${record.deviceName}
-                            ${record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) 
+                            ${treatVehicleAsDevice 
+                              ? allVehicles.find(v => v.id === record.vehicleId)?.name || 'Pojazd'
+                              : record.deviceName}
+                            ${!treatVehicleAsDevice && record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) 
                               ? ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}` 
                               : ''}
                           </div>
@@ -317,22 +351,40 @@ const Costs = () => {
               </div>
               
               {selectedVehicleId && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="multipleDevices" 
-                    checked={showMultipleDevices}
-                    onCheckedChange={toggleMultipleDevicesMode}
-                  />
-                  <label
-                    htmlFor="multipleDevices"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Wybierz wiele urządzeń
-                  </label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="treatVehicleAsDevice" 
+                      checked={treatVehicleAsDevice}
+                      onCheckedChange={toggleTreatVehicleAsDevice}
+                    />
+                    <label
+                      htmlFor="treatVehicleAsDevice"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Pokaż koszty samego pojazdu (bez urządzeń)
+                    </label>
+                  </div>
+                  
+                  {!treatVehicleAsDevice && (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="multipleDevices" 
+                        checked={showMultipleDevices}
+                        onCheckedChange={toggleMultipleDevicesMode}
+                      />
+                      <label
+                        htmlFor="multipleDevices"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Wybierz wiele urządzeń
+                      </label>
+                    </div>
+                  )}
                 </div>
               )}
               
-              {selectedVehicleId && !showMultipleDevices && (
+              {selectedVehicleId && !treatVehicleAsDevice && !showMultipleDevices && (
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground mb-1">Urządzenie</label>
                   <Select 
@@ -354,7 +406,7 @@ const Costs = () => {
                 </div>
               )}
               
-              {selectedVehicleId && showMultipleDevices && vehicleDevices.length > 0 && (
+              {selectedVehicleId && !treatVehicleAsDevice && showMultipleDevices && vehicleDevices.length > 0 && (
                 <div className="border p-3 rounded-md space-y-2">
                   <label className="block text-sm font-medium text-muted-foreground mb-1">Wybierz urządzenia:</label>
                   <div className="max-h-40 overflow-y-auto space-y-2">
@@ -501,8 +553,10 @@ const Costs = () => {
                           <div className="flex justify-between items-center">
                             <div>
                               <div className="font-medium">
-                                {record.deviceName}
-                                {record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
+                                {treatVehicleAsDevice 
+                                  ? allVehicles.find(v => v.id === record.vehicleId)?.name || 'Pojazd'
+                                  : record.deviceName}
+                                {!treatVehicleAsDevice && record.vehicleId && allVehicles.find(v => v.id === record.vehicleId) && 
                                   ` - ${allVehicles.find(v => v.id === record.vehicleId)?.name}`}
                               </div>
                               <div className="text-sm text-muted-foreground">
@@ -540,4 +594,3 @@ const Costs = () => {
 };
 
 export default Costs;
-
