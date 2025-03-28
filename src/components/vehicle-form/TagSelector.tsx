@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +24,16 @@ interface TagSelectorProps {
   onChange: (value: string) => void;
   availableTags?: string[];
   autoFocus?: boolean;
+  onRemoveTagFromDatabase?: (tagName: string) => void;
 }
 
-const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }: TagSelectorProps) => {
+const TagSelector = ({ 
+  value, 
+  onChange, 
+  availableTags = [], 
+  autoFocus = false,
+  onRemoveTagFromDatabase 
+}: TagSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [colorIndex, setColorIndex] = useState(0);
@@ -108,6 +115,15 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     setSelectedTags(newTags);
     onChange(newTags.join(", "));
   };
+
+  const handleRemoveTagFromDatabase = (tagName: string) => {
+    if (onRemoveTagFromDatabase) {
+      onRemoveTagFromDatabase(tagName);
+      toast.success(`Tag "${tagName}" został usunięty z bazy tagów`, {
+        description: "Tag nie będzie więcej dostępny do wyboru."
+      });
+    }
+  };
   
   const renderTagBadges = () => {
     return selectedTags.map((tag, index) => {
@@ -164,21 +180,37 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
             <div className="text-xs text-muted-foreground mb-1">Wybierz tag:</div>
             <div className="flex flex-wrap gap-1">
               {tagSuggestions.map((suggestion, idx) => (
-                <Badge 
-                  key={idx}
-                  className={`${getTagColorClass(suggestion.color)} cursor-pointer`}
-                  onClick={() => handleSelectSuggestion(suggestion)}
-                  tabIndex={0}
-                  role="button"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleSelectSuggestion(suggestion);
-                    }
-                  }}
-                >
-                  {suggestion.name}
-                </Badge>
+                <div key={idx} className="flex items-center">
+                  <Badge 
+                    className={`${getTagColorClass(suggestion.color)} cursor-pointer`}
+                    onClick={() => handleSelectSuggestion(suggestion)}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectSuggestion(suggestion);
+                      }
+                    }}
+                  >
+                    {suggestion.name}
+                  </Badge>
+                  {onRemoveTagFromDatabase && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 ml-1 text-red-500 hover:text-red-700 hover:bg-red-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveTagFromDatabase(suggestion.name);
+                      }}
+                      title="Usuń tag z bazy danych"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           </div>

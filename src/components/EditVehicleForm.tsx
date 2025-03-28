@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,9 +37,10 @@ type EditVehicleFormProps = {
   onSubmit: (vehicle: Vehicle) => void;
   onCancel: () => void;
   allVehicles?: Vehicle[];
+  onRemoveTag?: (tagName: string) => void;
 };
 
-const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: EditVehicleFormProps) => {
+const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [], onRemoveTag }: EditVehicleFormProps) => {
   const [attachments, setAttachments] = useState<any[]>(vehicle.attachments || []);
   const [images, setImages] = useState<string[]>(vehicle.images || []);
   const [newAttachments, setNewAttachments] = useState<File[]>([]);
@@ -48,7 +48,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
   const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
-    // Extract all unique tags from all vehicles
     const allTags: string[] = [];
     
     allVehicles.forEach(v => {
@@ -58,7 +57,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
       }
     });
     
-    // Remove duplicates
     const uniqueTags = Array.from(new Set(allTags));
     setAvailableTags(uniqueTags);
   }, [allVehicles]);
@@ -138,7 +136,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        <VehicleBasicFields form={form} availableTags={availableTags} />
+        <VehicleBasicFields form={form} availableTags={availableTags} onRemoveTag={onRemoveTag} />
         
         <ReminderSection 
           form={form} 

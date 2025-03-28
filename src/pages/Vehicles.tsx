@@ -193,6 +193,32 @@ const Vehicles = () => {
     });
   };
 
+  const handleRemoveTag = (tagNameToRemove: string) => {
+    const updatedVehicles = allVehicles.map(vehicle => {
+      if (vehicle.tags) {
+        const vehicleTags = vehicle.tags.split(',').map(tag => tag.trim());
+        const filteredTags = vehicleTags.filter(tag => {
+          const tagName = tag.split(':')[0].trim();
+          return tagName !== tagNameToRemove;
+        });
+        
+        return {
+          ...vehicle,
+          tags: filteredTags.join(', ')
+        };
+      }
+      return vehicle;
+    });
+    
+    setAllVehicles(updatedVehicles);
+    
+    setSelectedTags(prevTags => 
+      prevTags.filter(tag => tag.split(':')[0].trim() !== tagNameToRemove)
+    );
+    
+    toast.success(`Tag "${tagNameToRemove}" został usunięty ze wszystkich pojazdów`);
+  };
+
   const filteredVehicles = allVehicles
     .filter(vehicle => {
       const textMatch = 
@@ -489,6 +515,7 @@ const Vehicles = () => {
             onSubmit={handleAddVehicle} 
             onCancel={() => setIsAddDialogOpen(false)} 
             allVehicles={allVehicles}
+            onRemoveTag={handleRemoveTag}
           />
         </DialogContent>
       </Dialog>
@@ -543,6 +570,7 @@ const Vehicles = () => {
               onSubmit={handleUpdateVehicle}
               onCancel={() => setIsEditDialogOpen(false)}
               allVehicles={allVehicles}
+              onRemoveTag={handleRemoveTag}
             />
           )}
         </DialogContent>

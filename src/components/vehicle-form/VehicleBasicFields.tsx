@@ -10,9 +10,15 @@ interface VehicleBasicFieldsProps {
   form: UseFormReturn<any>;
   availableTags?: string[];
   autoFocusTagSelector?: boolean;
+  onRemoveTag?: (tagName: string) => void;
 }
 
-const VehicleBasicFields = ({ form, availableTags = [], autoFocusTagSelector = false }: VehicleBasicFieldsProps) => {
+const VehicleBasicFields = ({ 
+  form, 
+  availableTags = [], 
+  autoFocusTagSelector = false,
+  onRemoveTag
+}: VehicleBasicFieldsProps) => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -152,6 +158,7 @@ const VehicleBasicFields = ({ form, availableTags = [], autoFocusTagSelector = f
                 onChange={field.onChange}
                 availableTags={availableTags} 
                 autoFocus={autoFocusTagSelector}
+                onRemoveTagFromDatabase={onRemoveTag}
               />
             </FormControl>
             <FormMessage />
