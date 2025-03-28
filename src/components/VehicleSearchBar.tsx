@@ -48,7 +48,8 @@ const VehicleSearchBar = ({
       red: "bg-red-100 text-red-800 border-red-200",
       orange: "bg-orange-100 text-orange-800 border-orange-200",
       teal: "bg-teal-100 text-teal-800 border-teal-200",
-      cyan: "bg-cyan-100 text-cyan-800 border-cyan-200"
+      cyan: "bg-cyan-100 text-cyan-800 border-cyan-200",
+      gray: "bg-gray-100 text-gray-800 border-gray-200",
     };
     
     return colorMap[colorName] || colorMap.blue;

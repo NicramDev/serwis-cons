@@ -16,8 +16,8 @@ const TAG_COLORS = [
   { name: "indigo", value: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200" },
   { name: "pink", value: "bg-pink-100 text-pink-800 hover:bg-pink-200" },
   { name: "orange", value: "bg-orange-100 text-orange-800 hover:bg-orange-200" },
-  { name: "gray", value: "bg-gray-100 text-gray-800 hover:bg-gray-200" },
   { name: "cyan", value: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200" },
+  { name: "gray", value: "bg-gray-100 text-gray-800 hover:bg-gray-200" },
 ];
 
 interface TagSelectorProps {
@@ -32,6 +32,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const [selectedColor, setSelectedColor] = useState("blue");
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [colorIndex, setColorIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
@@ -39,6 +40,12 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       setSelectedTags(value.split(",").map(tag => tag.trim()).filter(tag => tag !== ""));
     } else {
       setSelectedTags([]);
+    }
+    
+    // Set initial color index based on how many tags already exist
+    if (value) {
+      const tagsCount = value.split(",").filter(tag => tag.trim() !== "").length;
+      setColorIndex(tagsCount % TAG_COLORS.length);
     }
   }, [value]);
   
@@ -58,12 +65,21 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   
   const tagSuggestions = extractTagSuggestions();
   
+  // Get the next color in the rotation
+  const getNextColor = () => {
+    const nextColor = TAG_COLORS[colorIndex].name;
+    setColorIndex((colorIndex + 1) % TAG_COLORS.length);
+    return nextColor;
+  };
+  
   const handleAddTag = () => {
     if (!inputValue.trim()) {
       return;
     }
     
-    const newTag = `${inputValue.trim()}:${selectedColor}`;
+    // Use the currently selected color or get the next one in rotation
+    const tagColor = isColorPickerOpen ? selectedColor : getNextColor();
+    const newTag = `${inputValue.trim()}:${tagColor}`;
     
     if (selectedTags.some(tag => tag.split(':')[0].trim() === inputValue.trim())) {
       toast("Tag już istnieje", {
