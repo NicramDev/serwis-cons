@@ -5,14 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose
-} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const TAG_COLORS = [
@@ -38,7 +30,6 @@ interface TagSelectorProps {
 const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }: TagSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
   const [selectedColor, setSelectedColor] = useState("blue");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,14 +41,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       setSelectedTags([]);
     }
   }, [value]);
-  
-  useEffect(() => {
-    if (autoFocus) {
-      setTimeout(() => {
-        openTagCreator();
-      }, 100);
-    }
-  }, [autoFocus]);
   
   const extractTagSuggestions = () => {
     const suggestions: { name: string; color: string }[] = [];
@@ -95,7 +78,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     
     setInputValue("");
     setSelectedColor("blue");
-    setIsDialogOpen(false);
     setIsColorPickerOpen(false);
   };
   
@@ -106,8 +88,15 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   };
   
   const handleSelectSuggestion = (suggestion: { name: string; color: string }) => {
-    setInputValue(suggestion.name);
-    setSelectedColor(suggestion.color);
+    const newTag = `${suggestion.name}:${suggestion.color}`;
+    
+    if (selectedTags.some(tag => tag.split(':')[0].trim() === suggestion.name)) {
+      return;
+    }
+    
+    const newTags = [...selectedTags, newTag];
+    setSelectedTags(newTags);
+    onChange(newTags.join(", "));
   };
   
   const renderTagBadges = () => {
@@ -151,36 +140,8 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     return colorMap[colorName] || colorMap.blue;
   };
   
-  const openTagCreator = () => {
-    setIsDialogOpen(true);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-  };
-  
-  const openColorPicker = (e?: React.KeyboardEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    setIsColorPickerOpen(true);
-  };
-  
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (inputValue.trim()) {
-        handleAddTag();
-      }
-    } else if (e.key === 'Escape') {
-      setIsDialogOpen(false);
-      setIsColorPickerOpen(false);
-    } else if ((e.key === 'c' && (e.ctrlKey || e.metaKey)) || (e.key === 'p' && (e.ctrlKey || e.metaKey))) {
-      openColorPicker(e);
-    }
-  };
-  
   return (
-    <div className="space-y-2" onKeyDown={handleKeyDown}>
+    <div className="space-y-2">
       <div className="flex flex-wrap gap-1 border rounded-md p-2 min-h-10">
         {selectedTags.length > 0 ? (
           renderTagBadges()
@@ -188,137 +149,104 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
           <div className="text-muted-foreground text-sm p-1">Brak tagów</div>
         )}
         
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
-          onClick={openTagCreator}
-          aria-label="Dodaj tag"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span>Dodaj tag</span>
-        </Button>
-      </div>
-      
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Stwórz nowy tag</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <div className="font-medium text-sm">Nazwa tagu</div>
-              <Input
-                ref={inputRef}
-                placeholder="Wpisz nazwę tagu"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="h-8"
-                autoFocus
-              />
-              
-              {tagSuggestions.length > 0 && (
-                <div className="pt-2">
-                  <div className="text-xs text-muted-foreground mb-1">Sugestie tagów:</div>
-                  <div className="flex flex-wrap gap-1">
-                    {tagSuggestions.slice(0, 6).map((suggestion, idx) => (
-                      <Badge 
-                        key={idx}
-                        className={`${getTagColorClass(suggestion.color)} cursor-pointer`}
-                        onClick={() => handleSelectSuggestion(suggestion)}
-                        tabIndex={0}
-                        role="button"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleSelectSuggestion(suggestion);
-                          }
-                        }}
-                      >
-                        {suggestion.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="font-medium text-sm">Kolor tagu</div>
-                <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="h-7 gap-1 px-2"
-                      aria-label="Wybierz kolor tagu"
-                    >
-                      <div className={`w-4 h-4 rounded-full ${getTagColorClass(selectedColor)}`} />
-                      <Palette className="h-3.5 w-3.5" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-2" align="end">
-                    <div className="flex flex-wrap gap-1" role="listbox" aria-label="Wybierz kolor">
-                      {TAG_COLORS.map((color) => (
-                        <Button
-                          key={color.name}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className={`h-8 px-2 ${color.value} ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
-                          onClick={() => {
-                            setSelectedColor(color.name);
-                            setIsColorPickerOpen(false);
-                          }}
-                          tabIndex={0}
-                          role="option"
-                          aria-selected={selectedColor === color.name}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              setSelectedColor(color.name);
-                              setIsColorPickerOpen(false);
-                            }
-                          }}
-                        >
-                          {color.name}
-                          {selectedColor === color.name && (
-                            <Check className="h-4 w-4 ml-1" />
-                          )}
-                        </Button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className={`w-full h-8 rounded-md ${getTagColorClass(selectedColor)} flex items-center justify-center`}>
-                {inputValue ? inputValue : "Podgląd tagu"}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Skrót: Ctrl+P lub Command+P aby otworzyć paletę kolorów
-              </div>
+        {tagSuggestions.length > 0 && (
+          <div className="w-full mt-2">
+            <div className="text-xs text-muted-foreground mb-1">Wybierz tag:</div>
+            <div className="flex flex-wrap gap-1">
+              {tagSuggestions.map((suggestion, idx) => (
+                <Badge 
+                  key={idx}
+                  className={`${getTagColorClass(suggestion.color)} cursor-pointer`}
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  tabIndex={0}
+                  role="button"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelectSuggestion(suggestion);
+                    }
+                  }}
+                >
+                  {suggestion.name}
+                </Badge>
+              ))}
             </div>
           </div>
+        )}
+        
+        <div className="w-full flex items-center mt-2 gap-2">
+          <Input
+            ref={inputRef}
+            placeholder="Wpisz nazwę tagu"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            className="h-8 flex-grow"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && inputValue.trim()) {
+                e.preventDefault();
+                handleAddTag();
+              }
+            }}
+          />
           
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Anuluj
+          <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-8 gap-1 px-2"
+                aria-label="Wybierz kolor tagu"
+              >
+                <div className={`w-4 h-4 rounded-full ${getTagColorClass(selectedColor)}`} />
+                <Palette className="h-3.5 w-3.5" />
               </Button>
-            </DialogClose>
-            <Button 
-              type="button"
-              onClick={handleAddTag}
-              disabled={!inputValue.trim()}
-            >
-              Stwórz tag
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="end">
+              <div className="flex flex-wrap gap-1" role="listbox" aria-label="Wybierz kolor">
+                {TAG_COLORS.map((color) => (
+                  <Button
+                    key={color.name}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 px-2 ${color.value} ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
+                    onClick={() => {
+                      setSelectedColor(color.name);
+                      setIsColorPickerOpen(false);
+                    }}
+                    tabIndex={0}
+                    role="option"
+                    aria-selected={selectedColor === color.name}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedColor(color.name);
+                        setIsColorPickerOpen(false);
+                      }
+                    }}
+                  >
+                    {color.name}
+                    {selectedColor === color.name && (
+                      <Check className="h-4 w-4 ml-1" />
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          <Button 
+            type="button"
+            size="sm"
+            className="h-8"
+            onClick={handleAddTag}
+            disabled={!inputValue.trim()}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Dodaj
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
