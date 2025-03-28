@@ -40,32 +40,66 @@ const Vehicles = () => {
   
   useEffect(() => {
     const savedVehicles = localStorage.getItem('vehicles');
-    const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
     
-    if (!vehiclesData || !Array.isArray(vehiclesData) || vehiclesData.length === 0) {
+    if (!savedVehicles) {
+      console.log("Loading initial vehicles data");
       setAllVehicles(initialVehicles);
       localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
     } else {
-      setAllVehicles(vehiclesData);
+      try {
+        const vehiclesData = JSON.parse(savedVehicles);
+        if (Array.isArray(vehiclesData) && vehiclesData.length > 0) {
+          console.log(`Loading ${vehiclesData.length} vehicles from localStorage`);
+          setAllVehicles(vehiclesData);
+        } else {
+          console.log("Invalid or empty vehicles data, loading initial data");
+          setAllVehicles(initialVehicles);
+          localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
+        }
+      } catch (error) {
+        console.error("Error parsing vehicles data:", error);
+        setAllVehicles(initialVehicles);
+        localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
+      }
     }
     
     const savedDevices = localStorage.getItem('devices');
-    const devicesData = savedDevices ? JSON.parse(savedDevices) : null;
     
-    if (!devicesData || !Array.isArray(devicesData) || devicesData.length === 0) {
+    if (!savedDevices) {
       setAllDevices(initialDevices);
       localStorage.setItem('devices', JSON.stringify(initialDevices));
     } else {
-      setAllDevices(devicesData);
+      try {
+        const devicesData = JSON.parse(savedDevices);
+        if (Array.isArray(devicesData) && devicesData.length > 0) {
+          setAllDevices(devicesData);
+        } else {
+          setAllDevices(initialDevices);
+          localStorage.setItem('devices', JSON.stringify(initialDevices));
+        }
+      } catch (error) {
+        console.error("Error parsing devices data:", error);
+        setAllDevices(initialDevices);
+        localStorage.setItem('devices', JSON.stringify(initialDevices));
+      }
     }
     
     const savedRecords = localStorage.getItem('serviceRecords');
-    const recordsData = savedRecords ? JSON.parse(savedRecords) : null;
     
-    if (!recordsData || !Array.isArray(recordsData) || recordsData.length === 0) {
+    if (!savedRecords) {
       setServiceRecords([]);
     } else {
-      setServiceRecords(recordsData);
+      try {
+        const recordsData = JSON.parse(savedRecords);
+        if (Array.isArray(recordsData)) {
+          setServiceRecords(recordsData);
+        } else {
+          setServiceRecords([]);
+        }
+      } catch (error) {
+        console.error("Error parsing service records:", error);
+        setServiceRecords([]);
+      }
     }
   }, []);
   
