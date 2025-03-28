@@ -1,10 +1,9 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Check, Palette, Plus, Tag, X } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 
 const TAG_COLORS = [
@@ -29,8 +28,6 @@ interface TagSelectorProps {
 
 const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }: TagSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
-  const [selectedColor, setSelectedColor] = useState("blue");
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [colorIndex, setColorIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,8 +74,8 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       return;
     }
     
-    // Use the currently selected color or get the next one in rotation
-    const tagColor = isColorPickerOpen ? selectedColor : getNextColor();
+    // Get the next color in rotation
+    const tagColor = getNextColor();
     const newTag = `${inputValue.trim()}:${tagColor}`;
     
     if (selectedTags.some(tag => tag.split(':')[0].trim() === inputValue.trim())) {
@@ -93,8 +90,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     onChange(newTags.join(", "));
     
     setInputValue("");
-    setSelectedColor("blue");
-    setIsColorPickerOpen(false);
   };
   
   const handleRemoveTag = (tagToRemove: string) => {
@@ -205,45 +200,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
             }}
             autoFocus={autoFocus}
           />
-          
-          <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
-            <PopoverTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="h-8 gap-1 px-2"
-                aria-label="Wybierz kolor tagu"
-              >
-                <div className={`w-4 h-4 rounded-full ${getTagColorClass(selectedColor)}`} />
-                <Palette className="h-3.5 w-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2" align="end">
-              <div className="grid grid-cols-5 gap-1" role="listbox" aria-label="Wybierz kolor">
-                {TAG_COLORS.map((color) => (
-                  <Button
-                    key={color.name}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className={`h-8 w-8 p-0 flex items-center justify-center ${color.value} ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
-                    onClick={() => {
-                      setSelectedColor(color.name);
-                      setIsColorPickerOpen(false);
-                    }}
-                    tabIndex={0}
-                    role="option"
-                    aria-selected={selectedColor === color.name}
-                    title={color.name}
-                  >
-                    {selectedColor === color.name && (
-                      <Check className="h-4 w-4" />
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
           
           <Button 
             type="button"
