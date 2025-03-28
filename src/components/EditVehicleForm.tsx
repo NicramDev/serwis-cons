@@ -63,11 +63,6 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [] }: Edit
     setAvailableTags(uniqueTags);
   }, [allVehicles]);
 
-  // Log available tags for debugging
-  useEffect(() => {
-    console.log("Available tags for edit form:", availableTags);
-  }, [availableTags]);
-
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
