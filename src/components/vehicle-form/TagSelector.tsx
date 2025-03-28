@@ -1,8 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const TAG_COLORS = [
@@ -26,8 +27,10 @@ interface TagSelectorProps {
 }
 
 const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }: TagSelectorProps) => {
+  const [inputValue, setInputValue] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [colorIndex, setColorIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     if (value) {
@@ -58,10 +61,31 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   
   const tagSuggestions = extractTagSuggestions();
   
-  const getNextColor = () => {
-    const nextColor = TAG_COLORS[colorIndex].name;
-    setColorIndex((colorIndex + 1) % TAG_COLORS.length);
-    return nextColor;
+  const getRandomColor = () => {
+    const randomIndex = Math.floor(Math.random() * TAG_COLORS.length);
+    return TAG_COLORS[randomIndex].name;
+  };
+  
+  const handleAddTag = () => {
+    if (!inputValue.trim()) {
+      return;
+    }
+    
+    const tagColor = getRandomColor();
+    const newTag = `${inputValue.trim()}:${tagColor}`;
+    
+    if (selectedTags.some(tag => tag.split(':')[0].trim() === inputValue.trim())) {
+      toast("Tag już istnieje", {
+        description: "Ten tag jest już dodany do pojazdu.",
+      });
+      return;
+    }
+    
+    const newTags = [...selectedTags, newTag];
+    setSelectedTags(newTags);
+    onChange(newTags.join(", "));
+    
+    setInputValue("");
   };
   
   const handleRemoveTag = (tagToRemove: string) => {
@@ -135,7 +159,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
           <div className="text-muted-foreground text-sm p-1">Brak tagów</div>
         )}
         
-        {tagSuggestions.length > 0 ? (
+        {tagSuggestions.length > 0 && (
           <div className="w-full mt-2">
             <div className="text-xs text-muted-foreground mb-1">Wybierz tag:</div>
             <div className="flex flex-wrap gap-1">
@@ -158,11 +182,35 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
               ))}
             </div>
           </div>
-        ) : (
-          <div className="w-full mt-2 text-sm text-muted-foreground">
-            Brak dostępnych tagów do wyboru
-          </div>
         )}
+        
+        <div className="w-full flex items-center mt-2 gap-2">
+          <Input
+            ref={inputRef}
+            placeholder="Wpisz nazwę tagu"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            className="h-8 flex-grow"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && inputValue.trim()) {
+                e.preventDefault();
+                handleAddTag();
+              }
+            }}
+            autoFocus={autoFocus}
+          />
+          
+          <Button 
+            type="button"
+            size="sm"
+            className="h-8"
+            onClick={handleAddTag}
+            disabled={!inputValue.trim()}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Dodaj
+          </Button>
+        </div>
       </div>
     </div>
   );
