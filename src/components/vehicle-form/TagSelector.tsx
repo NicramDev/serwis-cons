@@ -42,8 +42,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const popoverTriggerRef = useRef<HTMLButtonElement>(null);
-  const colorButtonRef = useRef<HTMLButtonElement>(null);
   
   useEffect(() => {
     if (value) {
@@ -181,13 +179,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
     }
   };
   
-  const handleColorButtonKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setIsColorPickerOpen(!isColorPickerOpen);
-    }
-  };
-  
   return (
     <div className="space-y-2" onKeyDown={handleKeyDown}>
       <div className="flex flex-wrap gap-1 border rounded-md p-2 min-h-10">
@@ -198,7 +189,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
         )}
         
         <Button 
-          ref={popoverTriggerRef}
           variant="outline" 
           size="sm" 
           className="h-6 text-xs px-2 rounded-full border-dashed border-muted-foreground/50 gap-1"
@@ -260,12 +250,10 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
                   <PopoverTrigger asChild>
                     <Button 
-                      ref={colorButtonRef}
                       variant="outline" 
                       size="sm"
                       className="h-7 gap-1 px-2"
                       aria-label="Wybierz kolor tagu"
-                      onKeyDown={handleColorButtonKeyDown}
                     >
                       <div className={`w-4 h-4 rounded-full ${getTagColorClass(selectedColor)}`} />
                       <Palette className="h-3.5 w-3.5" />
