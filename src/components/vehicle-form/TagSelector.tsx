@@ -187,6 +187,7 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                 handleAddTag();
               }
             }}
+            autoFocus={autoFocus}
           />
           
           <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
@@ -202,14 +203,14 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-2" align="end">
-              <div className="flex flex-wrap gap-1" role="listbox" aria-label="Wybierz kolor">
+              <div className="grid grid-cols-5 gap-1" role="listbox" aria-label="Wybierz kolor">
                 {TAG_COLORS.map((color) => (
                   <Button
                     key={color.name}
                     type="button"
                     variant="outline"
                     size="sm"
-                    className={`h-8 px-2 ${color.value} ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
+                    className={`h-8 w-8 p-0 flex items-center justify-center ${color.value} ${selectedColor === color.name ? 'ring-2 ring-primary' : ''}`}
                     onClick={() => {
                       setSelectedColor(color.name);
                       setIsColorPickerOpen(false);
@@ -217,17 +218,10 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
                     tabIndex={0}
                     role="option"
                     aria-selected={selectedColor === color.name}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedColor(color.name);
-                        setIsColorPickerOpen(false);
-                      }
-                    }}
+                    title={color.name}
                   >
-                    {color.name}
                     {selectedColor === color.name && (
-                      <Check className="h-4 w-4 ml-1" />
+                      <Check className="h-4 w-4" />
                     )}
                   </Button>
                 ))}
