@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import DashboardCard from '../components/DashboardCard';
 import ServiceItem from '../components/ServiceItem';
@@ -23,6 +24,7 @@ const Index = () => {
       const savedRecords = localStorage.getItem('serviceRecords');
       const recordsData = savedRecords ? JSON.parse(savedRecords) : null;
       
+      // If no vehicles in localStorage or empty array, use initialVehicles
       const parsedVehicles = vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles;
       const parsedDevices = devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices;
       
@@ -49,9 +51,10 @@ const Index = () => {
       setDevices(processedDevices);
       setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords);
       
-      // Save processed data back to localStorage
+      // Reset localStorage with the initial data to ensure it's always properly loaded
       localStorage.setItem('vehicles', JSON.stringify(processedVehicles));
       localStorage.setItem('devices', JSON.stringify(processedDevices));
+      localStorage.setItem('serviceRecords', JSON.stringify(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords));
       
       // Zwraca dane do użycia w calculateUpcomingServices
       return {

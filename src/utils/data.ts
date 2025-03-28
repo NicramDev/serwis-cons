@@ -1,4 +1,3 @@
-
 import { Device, ServiceRecord, Vehicle } from './types';
 
 // Sample data for our application
