@@ -1,6 +1,5 @@
-
 import { useState, useRef, useEffect } from "react";
-import { Check, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +38,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       setSelectedTags([]);
     }
     
-    // Set initial color index based on how many tags already exist
     if (value) {
       const tagsCount = value.split(",").filter(tag => tag.trim() !== "").length;
       setColorIndex(tagsCount % TAG_COLORS.length);
@@ -62,7 +60,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
   
   const tagSuggestions = extractTagSuggestions();
   
-  // Get the next color in the rotation
   const getNextColor = () => {
     const nextColor = TAG_COLORS[colorIndex].name;
     setColorIndex((colorIndex + 1) % TAG_COLORS.length);
@@ -74,7 +71,6 @@ const TagSelector = ({ value, onChange, availableTags = [], autoFocus = false }:
       return;
     }
     
-    // Get the next color in rotation
     const tagColor = getNextColor();
     const newTag = `${inputValue.trim()}:${tagColor}`;
     
