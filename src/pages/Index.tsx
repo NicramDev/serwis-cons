@@ -13,7 +13,7 @@ const Index = () => {
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
   
   useEffect(() => {
-    // Załaduj dane z localStorage lub użyj domyślnych danych
+    // Load data from localStorage or use default data
     const loadData = () => {
       const savedVehicles = localStorage.getItem('vehicles');
       const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
@@ -47,6 +47,7 @@ const Index = () => {
         serviceExpiryDate: device.serviceExpiryDate ? (device.serviceExpiryDate instanceof Date ? device.serviceExpiryDate : new Date(device.serviceExpiryDate)) : undefined
       }));
       
+      // Set state with processed data
       setVehicles(processedVehicles);
       setDevices(processedDevices);
       setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords);
@@ -56,7 +57,7 @@ const Index = () => {
       localStorage.setItem('devices', JSON.stringify(processedDevices));
       localStorage.setItem('serviceRecords', JSON.stringify(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords));
       
-      // Zwraca dane do użycia w calculateUpcomingServices
+      // Return data for use in calculateUpcomingServices
       return {
         vehicles: processedVehicles,
         devices: processedDevices
@@ -65,7 +66,7 @@ const Index = () => {
     
     const data = loadData();
     
-    // Ręcznie obliczamy nadchodzące serwisy
+    // Manually calculate upcoming services
     const calculateUpcomingServices = () => {
       const now = new Date();
       const thirtyDaysFromNow = new Date();
