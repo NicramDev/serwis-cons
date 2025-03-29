@@ -114,6 +114,7 @@ const Vehicles = () => {
   const [isDeleteDeviceDialogOpen, setIsDeleteDeviceDialogOpen] = useState(false);
   const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
+  const [isDeviceServiceDialogOpen, setIsDeviceServiceDialogOpen] = useState(false);
   const [selectedVehicleForEdit, setSelectedVehicleForEdit] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
@@ -336,6 +337,7 @@ const Vehicles = () => {
     } else {
       setSelectedVehicleId(vehicleId);
       setShowingServiceRecords(false);
+      setSelectedDeviceId(null);
     }
   };
   
@@ -464,6 +466,18 @@ const Vehicles = () => {
     setIsServiceDetailsDialogOpen(true);
   };
 
+  const handleAddDeviceService = (deviceId: string) => {
+    setSelectedDeviceId(deviceId);
+    setSelectedDevice(allDevices.find(d => d.id === deviceId) || null);
+    setIsDeviceServiceDialogOpen(true);
+  };
+  
+  const handleSubmitDeviceService = (serviceRecord: ServiceRecord) => {
+    setServiceRecords(prev => [...prev, serviceRecord]);
+    setIsDeviceServiceDialogOpen(false);
+    toast.success("Serwis/naprawa urządzenia została dodana pomyślnie");
+  };
+
   console.log("Vehicles count:", allVehicles.length);
   console.log("Devices count:", allDevices.length);
 
@@ -531,7 +545,76 @@ const Vehicles = () => {
               
               {selectedDeviceId && selectedDeviceData && (
                 <div className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5 rounded-lg p-6">
-                  <DeviceDetails device={selectedDeviceData} />
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">{selectedDeviceData.name}</h2>
+                    <Button 
+                      onClick={() => handleAddDeviceService(selectedDeviceId)}
+                      size="sm"
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      Dodaj serwis
+                    </Button>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="mb-4 w-full"
+                    onClick={() => handleViewDevice(selectedDeviceData)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Zobacz szczegóły urządzenia
+                  </Button>
+                  
+                  <div className="mt-4">
+                    <h3 className="text-md font-semibold mb-2">Historia serwisowa</h3>
+                    {serviceRecords.filter(s => s.deviceId === selectedDeviceId).length > 0 ? (
+                      <div className="space-y-2">
+                        {serviceRecords
+                          .filter(s => s.deviceId === selectedDeviceId)
+                          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                          .map((service) => (
+                            <div 
+                              key={service.id} 
+                              className="p-3 border rounded-md hover:bg-secondary/10 transition-colors"
+                              onClick={() => handleViewService(service)}
+                            >
+                              <div className="flex justify-between">
+                                <div>
+                                  <p className="font-medium">{formatDate(service.date)}</p>
+                                  <p className="text-sm text-muted-foreground">{service.type === 'repair' ? 'Naprawa' : service.type === 'maintenance' ? 'Serwis' : 'Przegląd'}</p>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button 
+                                    className="h-6 w-6 p-0" 
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditService(service);
+                                    }}
+                                    variant="secondary"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  
+                                  <Button 
+                                    className="h-6 w-6 p-0" 
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteService(service);
+                                    }}
+                                    variant="destructive"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-4">Brak historii serwisowej dla tego urządzenia</p>
+                    )}
+                  </div>
                 </div>
               )}
               
@@ -746,6 +829,26 @@ const Vehicles = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isDeviceServiceDialogOpen} onOpenChange={setIsDeviceServiceDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Dodaj serwis/naprawę urządzenia</DialogTitle>
+            <DialogDescription>
+              Dodaj informacje o serwisie lub naprawie urządzenia {selectedDevice?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDeviceId && (
+            <ServiceForm
+              deviceId={selectedDeviceId}
+              devices={allDevices}
+              onSubmit={handleSubmitDeviceService}
+              onCancel={() => setIsDeviceServiceDialogOpen(false)}
+              isForDevice={true}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

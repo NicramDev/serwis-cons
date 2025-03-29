@@ -1,7 +1,10 @@
 
+import { useState } from 'react';
 import { Vehicle, Device } from "../utils/types";
 import VehicleCard from './VehicleCard';
 import DeviceCard from './DeviceCard';
+import { Button } from './ui/button';
+import { PlusCircle } from 'lucide-react';
 
 interface VehicleListProps {
   vehicles: Vehicle[];
@@ -16,6 +19,7 @@ interface VehicleListProps {
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
+  onAddDeviceService?: (deviceId: string) => void;
 }
 
 const VehicleList = ({ 
@@ -30,10 +34,19 @@ const VehicleList = ({
   onView,
   onEditDevice,
   onDeleteDevice,
-  onViewDevice
+  onViewDevice,
+  onAddDeviceService
 }: VehicleListProps) => {
   // Combine vehicles and devices for display
   const hasItems = vehicles.length > 0 || devices.length > 0;
+  
+  // Track which device's service menu is open
+  const [expandedDeviceId, setExpandedDeviceId] = useState<string | null>(null);
+  
+  const toggleDeviceMenu = (deviceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedDeviceId(expandedDeviceId === deviceId ? null : deviceId);
+  };
   
   if (!hasItems) {
     return (
@@ -62,17 +75,33 @@ const VehicleList = ({
       
       {/* Display devices */}
       {devices.map((device, index) => (
-        <DeviceCard 
-          key={`device-${device.id}`}
-          device={device}
-          delay={(index + vehicles.length) % 5 + 1}
-          onEdit={onEditDevice ? () => onEditDevice(device) : undefined}
-          onDelete={onDeleteDevice ? () => onDeleteDevice(device) : undefined}
-          onViewDetails={onViewDevice ? () => onViewDevice(device) : undefined}
-          isSelected={selectedDeviceId === device.id}
-          onClick={onDeviceClick ? () => onDeviceClick(device.id) : () => {}}
-          inVehicleList={true}
-        />
+        <div key={`device-${device.id}`} className="relative">
+          <DeviceCard 
+            device={device}
+            delay={(index + vehicles.length) % 5 + 1}
+            onEdit={onEditDevice ? () => onEditDevice(device) : undefined}
+            onDelete={onDeleteDevice ? () => onDeleteDevice(device) : undefined}
+            onViewDetails={onViewDevice ? () => onViewDevice(device) : undefined}
+            isSelected={selectedDeviceId === device.id}
+            onClick={onDeviceClick ? () => onDeviceClick(device.id) : () => {}}
+            inVehicleList={true}
+          />
+          {onAddDeviceService && (
+            <div className="absolute right-0 -top-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-6 w-6 rounded-full shadow-sm bg-primary text-primary-foreground hover:bg-primary/80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddDeviceService(device.id);
+                }}
+              >
+                <PlusCircle className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+        </div>
       ))}
     </div>
   );

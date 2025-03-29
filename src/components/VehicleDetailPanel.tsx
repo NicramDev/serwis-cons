@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
 import VehicleDetailHeader from './VehicleDetailHeader';
-import VehicleSummaryInfo from './VehicleSummaryInfo';
 import VehicleDeviceSection from './VehicleDeviceSection';
 import VehicleServiceSection from './VehicleServiceSection';
 import NoVehicleSelected from './NoVehicleSelected';
@@ -83,8 +82,6 @@ const VehicleDetailPanel = ({
               onServiceClick={onServiceClick}
               onReportClick={handleReportClick}
             />
-            
-            <VehicleSummaryInfo vehicle={vehicle} />
             
             <div className="pt-4 border-t border-border/50">
               {!showingServiceRecords && !showingReports ? (

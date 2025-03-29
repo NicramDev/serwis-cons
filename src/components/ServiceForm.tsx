@@ -34,21 +34,25 @@ type ServiceFormValues = z.infer<typeof serviceSchema>;
 type ServiceFormProps = {
   onSubmit: (service: ServiceRecord) => void;
   onCancel: () => void;
-  vehicleId: string;
-  devices: Device[];
+  vehicleId?: string;
+  devices?: Device[];
   initialService?: ServiceRecord;
   isEditing?: boolean;
   vehicle?: Vehicle;
+  deviceId?: string;
+  isForDevice?: boolean;
 };
 
 const ServiceForm = ({ 
   onSubmit, 
   onCancel, 
   vehicleId, 
-  devices, 
+  devices = [], 
   initialService, 
   isEditing = false,
-  vehicle
+  vehicle,
+  deviceId,
+  isForDevice = false
 }: ServiceFormProps) => {
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(
@@ -59,7 +63,7 @@ const ServiceForm = ({
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
-      deviceId: initialService?.deviceId || "vehicle",
+      deviceId: initialService?.deviceId || (isForDevice ? deviceId : "vehicle"),
       date: initialService?.date ? new Date(initialService.date) : new Date(),
       location: initialService?.location || "",
       description: initialService?.description || "",
@@ -70,11 +74,23 @@ const ServiceForm = ({
   });
 
   const handleSubmit = (values: ServiceFormValues) => {
-    // Handle the "vehicle" special case
+    // Handle the "vehicle" special case or direct device
     let deviceName;
-    if (values.deviceId === "vehicle") {
+    let targetVehicleId = vehicleId;
+    
+    if (isForDevice && deviceId) {
+      // If servicing a device directly
+      const selectedDevice = devices.find(d => d.id === deviceId);
+      deviceName = selectedDevice?.name;
+      // For a device, we need to use its vehicleId if available
+      if (selectedDevice?.vehicleId) {
+        targetVehicleId = selectedDevice.vehicleId;
+      }
+    } else if (values.deviceId === "vehicle") {
+      // If servicing a vehicle
       deviceName = vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd";
     } else {
+      // If servicing a vehicle's device
       const selectedDevice = devices.find(d => d.id === values.deviceId);
       deviceName = selectedDevice?.name;
     }
@@ -82,7 +98,7 @@ const ServiceForm = ({
     const serviceRecord: ServiceRecord = {
       id: initialService?.id || uuidv4(),
       date: values.date,
-      vehicleId: vehicleId,
+      vehicleId: targetVehicleId || "",
       deviceId: values.deviceId === "vehicle" ? undefined : values.deviceId,
       deviceName,
       location: values.location,
@@ -134,33 +150,35 @@ const ServiceForm = ({
         />
       )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 pr-2 overflow-y-auto max-h-[65vh]">
-        <FormField
-          control={form.control}
-          name="deviceId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Urządzenie</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz urządzenie" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="vehicle">
-                    {vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd"}
-                  </SelectItem>
-                  {devices.map(device => (
-                    <SelectItem key={device.id} value={device.id}>
-                      {device.name} - {device.type} ({device.serialNumber})
+        {!isForDevice && (
+          <FormField
+            control={form.control}
+            name="deviceId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Urządzenie</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz urządzenie" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="vehicle">
+                      {vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd"}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                    {devices.map(device => (
+                      <SelectItem key={device.id} value={device.id}>
+                        {device.name} - {device.type} ({device.serialNumber})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <ServiceFormFields control={form.control} />
         
