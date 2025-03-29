@@ -141,8 +141,8 @@ const VehicleReportForm = ({ vehicle, devices, services, onClose }: VehicleRepor
                     <td>${formatDate(service.date)}</td>
                     <td>${service.type}</td>
                     <td>${service.description || '-'}</td>
-                    <td>${service.technician || '-'}</td>
-                    <td>${service.cost ? `${service.cost} PLN` : '-'}</td>
+                    <td>${service.technicianName || '-'}</td>
+                    <td>${service.cost ? `${service.cost} ${service.currency || 'PLN'}` : '-'}</td>
                   </tr>
                 `).join('')}
               </tbody>
