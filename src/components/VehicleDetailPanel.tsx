@@ -95,7 +95,7 @@ const VehicleDetailPanel = ({
                 </button>
                 
                 <button
-                  onClick={() => setShowingServiceRecords(false)}
+                  onClick={onServiceClick}
                   className={`px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${
                     !showingServiceRecords
                       ? "bg-primary text-primary-foreground"
