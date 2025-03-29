@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
-import { FileText } from 'lucide-react'; // Using FileText instead of previous icons
+import { Wrench, Cpu, FileText } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import VehicleDetailHeader from './VehicleDetailHeader';
@@ -51,7 +51,6 @@ const VehicleDetailPanel = ({
 }: VehicleDetailPanelProps) => {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   
-  // Function to open attachments in a new tab/window
   const handleAttachmentOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
   };
