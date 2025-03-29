@@ -1,14 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
-import { Wrench, Cpu } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VehicleDetailHeader from './VehicleDetailHeader';
 import VehicleSummaryInfo from './VehicleSummaryInfo';
 import VehicleDeviceSection from './VehicleDeviceSection';
 import VehicleServiceSection from './VehicleServiceSection';
 import NoVehicleSelected from './NoVehicleSelected';
+import VehicleReportForm from './VehicleReportForm';
 
 interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
@@ -49,9 +48,17 @@ const VehicleDetailPanel = ({
   onSaveService,
   onView
 }: VehicleDetailPanelProps) => {
+  const [showingReports, setShowingReports] = useState(false);
+  const [reportFormOpen, setReportFormOpen] = useState(false);
+
   // Function to open attachments in a new tab/window
   const handleAttachmentOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
+  };
+
+  const handleReportClick = () => {
+    setShowingReports(!showingReports);
+    setReportFormOpen(!reportFormOpen);
   };
 
   if (!selectedVehicleId) {
@@ -62,43 +69,61 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
+  const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
   
   return (
-    <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          <VehicleDetailHeader 
-            vehicle={vehicle} 
-            showingServiceRecords={showingServiceRecords} 
-            onServiceClick={onServiceClick} 
-          />
-          
-          <VehicleSummaryInfo vehicle={vehicle} />
-          
-          <div className="pt-4 border-t border-border/50">
-            {!showingServiceRecords ? (
-              <VehicleDeviceSection 
-                devices={selectedVehicleDevices}
-                onAddDevice={onAddDevice}
-                onEditDevice={onEditDevice}
-                onDeleteDevice={onDeleteDevice}
-                onViewDevice={onViewDevice}
-                onOpenAttachment={handleAttachmentOpen}
-              />
-            ) : (
-              <VehicleServiceSection 
-                services={services}
-                onAddService={onAddService}
-                onEditService={onEditService}
-                onDeleteService={onDeleteService}
-                onViewService={onViewService}
-                onOpenAttachment={handleAttachmentOpen}
-              />
-            )}
+    <>
+      <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            <VehicleDetailHeader 
+              vehicle={vehicle} 
+              showingServiceRecords={showingServiceRecords}
+              showingReports={showingReports}
+              onServiceClick={onServiceClick}
+              onReportClick={handleReportClick}
+            />
+            
+            <VehicleSummaryInfo vehicle={vehicle} />
+            
+            <div className="pt-4 border-t border-border/50">
+              {!showingServiceRecords && !showingReports ? (
+                <VehicleDeviceSection 
+                  devices={selectedVehicleDevices}
+                  onAddDevice={onAddDevice}
+                  onEditDevice={onEditDevice}
+                  onDeleteDevice={onDeleteDevice}
+                  onViewDevice={onViewDevice}
+                  onOpenAttachment={handleAttachmentOpen}
+                />
+              ) : showingServiceRecords && !showingReports ? (
+                <VehicleServiceSection 
+                  services={selectedVehicleServices}
+                  onAddService={onAddService}
+                  onEditService={onEditService}
+                  onDeleteService={onDeleteService}
+                  onViewService={onViewService}
+                  onOpenAttachment={handleAttachmentOpen}
+                />
+              ) : null}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {reportFormOpen && (
+        <VehicleReportForm 
+          open={reportFormOpen}
+          onClose={() => {
+            setReportFormOpen(false);
+            setShowingReports(false);
+          }}
+          vehicle={vehicle}
+          devices={selectedVehicleDevices}
+          services={selectedVehicleServices}
+        />
+      )}
+    </>
   );
 };
 
