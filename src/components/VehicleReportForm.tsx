@@ -1,160 +1,229 @@
 
-// First we need to fix the technicianName reference and the currency issue
-// This is a guess at what the VehicleReportForm component looks like based on the error messages
-import React, { useState, useRef } from 'react';
-import { Vehicle, Device, ServiceRecord } from '../utils/types';
+import React, { useState } from 'react';
+import { Device, ServiceRecord, Vehicle } from '../utils/types';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { formatDate } from '../utils/data';
-import { Printer } from 'lucide-react';
+import { Printer, FileText } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface VehicleReportFormProps {
+  open: boolean;
+  onClose: () => void;
   vehicle: Vehicle;
   devices: Device[];
   services: ServiceRecord[];
-  onClose: () => void;
 }
 
-const VehicleReportForm = ({ vehicle, devices, services, onClose }: VehicleReportFormProps) => {
-  const [reportType, setReportType] = useState<'devices' | 'services'>('devices');
-  const printContentRef = useRef<HTMLDivElement>(null);
+const reportFormSchema = z.object({
+  reportType: z.enum(['devices', 'services']),
+});
 
-  const handlePrint = () => {
-    if (printContentRef.current) {
+type ReportFormValues = z.infer<typeof reportFormSchema>;
+
+const VehicleReportForm = ({
+  open,
+  onClose,
+  vehicle,
+  devices,
+  services
+}: VehicleReportFormProps) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const form = useForm<ReportFormValues>({
+    resolver: zodResolver(reportFormSchema),
+    defaultValues: {
+      reportType: 'devices',
+    },
+  });
+
+  const handleGenerateReport = (values: ReportFormValues) => {
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      // Here we'd normally send the data to a server endpoint
+      // Instead, we'll generate a simple printable view
       const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Zestawienie dla pojazdu ${vehicle.name}</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                h1, h2, h3 { margin-bottom: 10px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-                .header { margin-bottom: 20px; }
-                .footer { margin-top: 40px; font-size: 12px; text-align: center; color: #666; }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <h1>Zestawienie dla pojazdu: ${vehicle.name}</h1>
-                <p>Nr rejestracyjny: ${vehicle.registrationNumber}</p>
-                <p>Wygenerowano: ${formatDate(new Date())}</p>
-              </div>
-              ${printContentRef.current.innerHTML}
-              <div class="footer">
-                <p>© ${new Date().getFullYear()} System Zarządzania Flotą</p>
-              </div>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
+      if (!printWindow) return;
+      
+      const reportTitle = values.reportType === 'devices' 
+        ? 'Zestawienie urządzeń' 
+        : 'Zestawienie serwisów';
+        
+      let reportContent = '';
+      
+      if (values.reportType === 'devices') {
+        reportContent = `
+          <h2>Lista urządzeń dla pojazdu: ${vehicle.name}</h2>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr style="background-color: #f2f2f2;">
+                <th>Nazwa</th>
+                <th>Typ</th>
+                <th>Numer seryjny</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${devices.map(device => `
+                <tr>
+                  <td>${device.name}</td>
+                  <td>${device.type}</td>
+                  <td>${device.serialNumber}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } else {
+        reportContent = `
+          <h2>Historia serwisowa dla pojazdu: ${vehicle.name}</h2>
+          <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead>
+              <tr style="background-color: #f2f2f2;">
+                <th>Data</th>
+                <th>Typ</th>
+                <th>Opis</th>
+                <th>Technik</th>
+                <th>Koszt</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${services.map(service => `
+                <tr>
+                  <td>${new Date(service.date).toLocaleDateString()}</td>
+                  <td>${service.type === 'repair' ? 'Naprawa' : 
+                        service.type === 'maintenance' ? 'Konserwacja' : 'Przegląd'}</td>
+                  <td>${service.description}</td>
+                  <td>${service.technician}</td>
+                  <td>${service.cost.toFixed(2)} PLN</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
       }
-    }
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${reportTitle} - ${vehicle.name}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #333; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th { background-color: #f2f2f2; text-align: left; padding: 8px; }
+              td { padding: 8px; border: 1px solid #ddd; }
+              .header { display: flex; justify-content: space-between; align-items: center; }
+              .header-left { flex: 1; }
+              .header-right { text-align: right; }
+              @media print {
+                button.no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="header-left">
+                <h1>${reportTitle}</h1>
+                <p>Pojazd: ${vehicle.name} (${vehicle.registrationNumber})</p>
+                <p>Data wygenerowania: ${new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+            ${reportContent}
+            <button class="no-print" style="margin-top: 20px; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 5px; cursor: pointer;" onclick="window.print(); return false;">
+              Drukuj raport
+            </button>
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      
+      setIsGenerating(false);
+      onClose();
+    }, 1000);
   };
 
   return (
-    <div className="space-y-6">
-      <RadioGroup
-        defaultValue={reportType}
-        onValueChange={(value) => setReportType(value as 'devices' | 'services')}
-        className="grid grid-cols-2 gap-2"
-      >
-        <div>
-          <RadioGroupItem value="devices" id="devices" className="peer sr-only" />
-          <Label
-            htmlFor="devices"
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-          >
-            Urządzenia
-          </Label>
-        </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Generuj zestawienie</DialogTitle>
+        </DialogHeader>
         
-        <div>
-          <RadioGroupItem value="services" id="services" className="peer sr-only" />
-          <Label
-            htmlFor="services"
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-          >
-            Serwisy
-          </Label>
-        </div>
-      </RadioGroup>
-      
-      <div ref={printContentRef} className="hidden">
-        {reportType === 'devices' ? (
-          <div>
-            <h2>Zestawienie urządzeń dla pojazdu {vehicle.name}</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>LP</th>
-                  <th>Nazwa urządzenia</th>
-                  <th>Typ</th>
-                  <th>Numer seryjny</th>
-                </tr>
-              </thead>
-              <tbody>
-                {devices.map((device, index) => (
-                  <tr key={device.id}>
-                    <td>{index + 1}</td>
-                    <td>{device.name}</td>
-                    <td>{device.type}</td>
-                    <td>{device.serialNumber}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div>
-            <h2>Zestawienie serwisów dla pojazdu {vehicle.name}</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>LP</th>
-                  <th>Data</th>
-                  <th>Typ</th>
-                  <th>Opis</th>
-                  <th>Technik</th>
-                  <th>Koszt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {services.map((service, index) => (
-                  <tr key={service.id}>
-                    <td>{index + 1}</td>
-                    <td>{formatDate(service.date)}</td>
-                    <td>
-                      {service.type === 'repair' ? 'Naprawa' :
-                       service.type === 'maintenance' ? 'Przegląd' : 'Inspekcja'}
-                    </td>
-                    <td>{service.description}</td>
-                    <td>{service.technician}</td>
-                    <td>{service.cost} PLN</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>
-          Anuluj
-        </Button>
-        <Button onClick={handlePrint}>
-          <Printer className="mr-2 h-4 w-4" />
-          Drukuj
-        </Button>
-      </div>
-    </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleGenerateReport)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="reportType"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Typ zestawienia</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="devices" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Zestawienie urządzeń
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="services" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Zestawienie serwisów
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Anuluj
+              </Button>
+              <Button type="submit" disabled={isGenerating}>
+                {isGenerating ? (
+                  <>Generowanie...</>
+                ) : (
+                  <>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Generuj
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
