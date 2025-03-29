@@ -1,23 +1,16 @@
 
 import React, { useState } from 'react';
-import { Search, Tag, PlusCircle, ChevronDown, Laptop } from 'lucide-react';
+import { Search, Tag, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface VehicleSearchBarProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   onAddVehicle: () => void;
-  onAddDevice?: () => void;
   availableTags?: string[];
   selectedTags?: string[];
   onTagSelect?: (tag: string) => void;
@@ -27,7 +20,6 @@ const VehicleSearchBar = ({
   searchQuery, 
   onSearchChange, 
   onAddVehicle,
-  onAddDevice,
   availableTags = [],
   selectedTags = [],
   onTagSelect
@@ -140,27 +132,13 @@ const VehicleSearchBar = ({
         </Popover>
       )}
       
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button className="flex items-center justify-center space-x-2 shadow-sm">
-            <PlusCircle className="h-5 w-5" />
-            <span>Dodaj</span>
-            <ChevronDown className="h-4 w-4 ml-1" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onAddVehicle} className="cursor-pointer">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            <span>Dodaj Pojazd</span>
-          </DropdownMenuItem>
-          {onAddDevice && (
-            <DropdownMenuItem onClick={onAddDevice} className="cursor-pointer">
-              <Laptop className="h-4 w-4 mr-2" />
-              <span>Dodaj Urządzenie</span>
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button 
+        className="flex items-center justify-center space-x-2 shadow-sm"
+        onClick={onAddVehicle}
+      >
+        <PlusCircle className="h-5 w-5" />
+        <span>Dodaj Pojazd</span>
+      </Button>
     </div>
   );
 };

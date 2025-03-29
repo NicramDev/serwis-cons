@@ -114,10 +114,8 @@ const Vehicles = () => {
   const [isDeleteDeviceDialogOpen, setIsDeleteDeviceDialogOpen] = useState(false);
   const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
-  const [isDeviceServiceDialogOpen, setIsDeviceServiceDialogOpen] = useState(false);
   const [selectedVehicleForEdit, setSelectedVehicleForEdit] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceRecord | null>(null);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
@@ -247,17 +245,7 @@ const Vehicles = () => {
     })
     .sort((a, b) => a.name.localeCompare(b.name));
   
-  const filteredDevices = allDevices
-    .filter(device => {
-      return device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (device.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-        device.type.toLowerCase().includes(searchQuery.toLowerCase());
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
-  
   const selectedVehicleData = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
-  const selectedDeviceData = selectedDeviceId ? allDevices.find(d => d.id === selectedDeviceId) : null;
 
   const selectedVehicleServices = serviceRecords.filter(
     record => record.vehicleId === selectedVehicleId
@@ -337,16 +325,6 @@ const Vehicles = () => {
     } else {
       setSelectedVehicleId(vehicleId);
       setShowingServiceRecords(false);
-      setSelectedDeviceId(null);
-    }
-  };
-  
-  const handleDeviceClick = (deviceId: string) => {
-    if (selectedDeviceId === deviceId) {
-      setSelectedDeviceId(null);
-    } else {
-      setSelectedDeviceId(deviceId);
-      setSelectedVehicleId(null);
     }
   };
   
@@ -395,18 +373,15 @@ const Vehicles = () => {
   };
 
   const handleSubmitDevice = (deviceData: Partial<Device>) => {
-    const now = new Date();
-    const nextServiceDate = new Date(now);
-    nextServiceDate.setMonth(now.getMonth() + 6);
-    
     const newDevice: Device = {
       id: uuidv4(),
       name: deviceData.name || '',
       type: deviceData.type || '',
       serialNumber: deviceData.serialNumber || '',
       status: 'ok',
-      lastService: now,
-      nextService: deviceData.serviceExpiryDate || nextServiceDate,
+      lastService: new Date(),
+      nextService: deviceData.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6)),
+      vehicleId: selectedVehicleId || undefined,
       ...deviceData
     };
     
@@ -466,18 +441,6 @@ const Vehicles = () => {
     setIsServiceDetailsDialogOpen(true);
   };
 
-  const handleAddDeviceService = (deviceId: string) => {
-    setSelectedDeviceId(deviceId);
-    setSelectedDevice(allDevices.find(d => d.id === deviceId) || null);
-    setIsDeviceServiceDialogOpen(true);
-  };
-  
-  const handleSubmitDeviceService = (serviceRecord: ServiceRecord) => {
-    setServiceRecords(prev => [...prev, serviceRecord]);
-    setIsDeviceServiceDialogOpen(false);
-    toast.success("Serwis/naprawa urządzenia została dodana pomyślnie");
-  };
-
   console.log("Vehicles count:", allVehicles.length);
   console.log("Devices count:", allDevices.length);
 
@@ -494,133 +457,45 @@ const Vehicles = () => {
             searchQuery={searchQuery} 
             onSearchChange={setSearchQuery} 
             onAddVehicle={() => setIsAddDialogOpen(true)}
-            onAddDevice={handleAddDevice}
             availableTags={extractAllTags(allVehicles)}
             selectedTags={selectedTags}
             onTagSelect={handleTagSelect}
           />
         </div>
         
-        {filteredVehicles.length > 0 || filteredDevices.length > 0 ? (
+        {filteredVehicles.length > 0 ? (
           <div className="flex">
             <div className="w-1/3 pr-4">
               <VehicleList 
                 vehicles={filteredVehicles}
-                devices={filteredDevices}
                 selectedVehicleId={selectedVehicleId}
-                selectedDeviceId={selectedDeviceId}
                 onVehicleClick={handleVehicleClick}
-                onDeviceClick={handleDeviceClick}
                 onEdit={handleEditVehicle}
                 onDelete={handleDeleteVehicle}
                 onView={handleViewDetails}
-                onEditDevice={handleEditDevice}
-                onDeleteDevice={handleDeleteDevice}
-                onViewDevice={handleViewDevice}
               />
             </div>
             
             <div className="w-2/3 pl-4">
-              {selectedVehicleId && (
-                <VehicleDetailPanel 
-                  selectedVehicleId={selectedVehicleId}
-                  vehicles={allVehicles}
-                  devices={allDevices}
-                  services={selectedVehicleServices}
-                  showingServiceRecords={showingServiceRecords}
-                  onServiceClick={handleServiceClick}
-                  onEdit={handleEditVehicle}
-                  onAddService={handleAddService}
-                  onAddDevice={handleAddDevice}
-                  onEditDevice={handleEditDevice}
-                  onDeleteDevice={handleDeleteDevice}
-                  onViewDevice={handleViewDevice}
-                  onEditService={handleEditService}
-                  onDeleteService={handleDeleteService}
-                  onViewService={handleViewService}
-                  onSaveService={handleSaveServiceChanges}
-                  onView={handleViewDetails}
-                />
-              )}
-              
-              {selectedDeviceId && selectedDeviceData && (
-                <div className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5 rounded-lg p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">{selectedDeviceData.name}</h2>
-                    <Button 
-                      onClick={() => handleAddDeviceService(selectedDeviceId)}
-                      size="sm"
-                    >
-                      <PlusCircle className="h-4 w-4 mr-1" />
-                      Dodaj serwis
-                    </Button>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    className="mb-4 w-full"
-                    onClick={() => handleViewDevice(selectedDeviceData)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Zobacz szczegóły urządzenia
-                  </Button>
-                  
-                  <div className="mt-4">
-                    <h3 className="text-md font-semibold mb-2">Historia serwisowa</h3>
-                    {serviceRecords.filter(s => s.deviceId === selectedDeviceId).length > 0 ? (
-                      <div className="space-y-2">
-                        {serviceRecords
-                          .filter(s => s.deviceId === selectedDeviceId)
-                          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                          .map((service) => (
-                            <div 
-                              key={service.id} 
-                              className="p-3 border rounded-md hover:bg-secondary/10 transition-colors"
-                              onClick={() => handleViewService(service)}
-                            >
-                              <div className="flex justify-between">
-                                <div>
-                                  <p className="font-medium">{formatDate(service.date)}</p>
-                                  <p className="text-sm text-muted-foreground">{service.type === 'repair' ? 'Naprawa' : service.type === 'maintenance' ? 'Serwis' : 'Przegląd'}</p>
-                                </div>
-                                <div className="flex gap-1">
-                                  <Button 
-                                    className="h-6 w-6 p-0" 
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditService(service);
-                                    }}
-                                    variant="secondary"
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  
-                                  <Button 
-                                    className="h-6 w-6 p-0" 
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteService(service);
-                                    }}
-                                    variant="destructive"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-4">Brak historii serwisowej dla tego urządzenia</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {!selectedVehicleId && !selectedDeviceId && (
-                <NoVehiclesFound />
-              )}
+              <VehicleDetailPanel 
+                selectedVehicleId={selectedVehicleId}
+                vehicles={allVehicles}
+                devices={allDevices}
+                services={selectedVehicleServices}
+                showingServiceRecords={showingServiceRecords}
+                onServiceClick={handleServiceClick}
+                onEdit={handleEditVehicle}
+                onAddService={handleAddService}
+                onAddDevice={handleAddDevice}
+                onEditDevice={handleEditDevice}
+                onDeleteDevice={handleDeleteDevice}
+                onViewDevice={handleViewDevice}
+                onEditService={handleEditService}
+                onDeleteService={handleDeleteService}
+                onViewService={handleViewService}
+                onSaveService={handleSaveServiceChanges}
+                onView={handleViewDetails}
+              />
             </div>
           </div>
         ) : (
@@ -748,7 +623,7 @@ const Vehicles = () => {
           <DialogHeader>
             <DialogTitle>Dodaj nowe urządzenie</DialogTitle>
             <DialogDescription>
-              Wypełnij formularz, aby dodać nowe urządzenie
+              Wypełnij formularz, aby dodać nowe urządzenie do pojazdu
             </DialogDescription>
           </DialogHeader>
           <AddDeviceForm 
@@ -829,26 +704,6 @@ const Vehicles = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Dialog open={isDeviceServiceDialogOpen} onOpenChange={setIsDeviceServiceDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Dodaj serwis/naprawę urządzenia</DialogTitle>
-            <DialogDescription>
-              Dodaj informacje o serwisie lub naprawie urządzenia {selectedDevice?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedDeviceId && (
-            <ServiceForm
-              deviceId={selectedDeviceId}
-              devices={allDevices}
-              onSubmit={handleSubmitDeviceService}
-              onCancel={() => setIsDeviceServiceDialogOpen(false)}
-              isForDevice={true}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
