@@ -1,14 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
-import { Wrench, Cpu } from 'lucide-react';
+import { Wrench, Cpu, FileText } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import VehicleDetailHeader from './VehicleDetailHeader';
 import VehicleSummaryInfo from './VehicleSummaryInfo';
 import VehicleDeviceSection from './VehicleDeviceSection';
 import VehicleServiceSection from './VehicleServiceSection';
 import NoVehicleSelected from './NoVehicleSelected';
+import VehicleReportForm from './VehicleReportForm';
 
 interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
@@ -49,6 +51,8 @@ const VehicleDetailPanel = ({
   onSaveService,
   onView
 }: VehicleDetailPanelProps) => {
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  
   // Function to open attachments in a new tab/window
   const handleAttachmentOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
@@ -64,41 +68,96 @@ const VehicleDetailPanel = ({
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
   
   return (
-    <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          <VehicleDetailHeader 
-            vehicle={vehicle} 
-            showingServiceRecords={showingServiceRecords} 
-            onServiceClick={onServiceClick} 
-          />
-          
-          <VehicleSummaryInfo vehicle={vehicle} />
-          
-          <div className="pt-4 border-t border-border/50">
-            {!showingServiceRecords ? (
-              <VehicleDeviceSection 
-                devices={selectedVehicleDevices}
-                onAddDevice={onAddDevice}
-                onEditDevice={onEditDevice}
-                onDeleteDevice={onDeleteDevice}
-                onViewDevice={onViewDevice}
-                onOpenAttachment={handleAttachmentOpen}
-              />
-            ) : (
-              <VehicleServiceSection 
-                services={services}
-                onAddService={onAddService}
-                onEditService={onEditService}
-                onDeleteService={onDeleteService}
-                onViewService={onViewService}
-                onOpenAttachment={handleAttachmentOpen}
-              />
-            )}
+    <>
+      <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            <VehicleDetailHeader 
+              vehicle={vehicle} 
+              showingServiceRecords={showingServiceRecords} 
+              onServiceClick={onServiceClick} 
+            />
+            
+            <VehicleSummaryInfo vehicle={vehicle} />
+            
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-border/50">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={onServiceClick}
+                  className={`px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${
+                    showingServiceRecords
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary hover:bg-secondary/80"
+                  }`}
+                >
+                  <Wrench className="h-4 w-4" />
+                  Serwisy
+                </button>
+                
+                <button
+                  onClick={() => setShowingServiceRecords(false)}
+                  className={`px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${
+                    !showingServiceRecords
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary hover:bg-secondary/80"
+                  }`}
+                >
+                  <Cpu className="h-4 w-4" />
+                  Urządzenia
+                </button>
+                
+                <button
+                  onClick={() => setIsReportDialogOpen(true)}
+                  className="px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors bg-secondary hover:bg-secondary/80"
+                >
+                  <FileText className="h-4 w-4" />
+                  Zestawienia
+                </button>
+              </div>
+            </div>
+            
+            <div className="pt-4">
+              {!showingServiceRecords ? (
+                <VehicleDeviceSection 
+                  devices={selectedVehicleDevices}
+                  onAddDevice={onAddDevice}
+                  onEditDevice={onEditDevice}
+                  onDeleteDevice={onDeleteDevice}
+                  onViewDevice={onViewDevice}
+                  onOpenAttachment={handleAttachmentOpen}
+                />
+              ) : (
+                <VehicleServiceSection 
+                  services={services}
+                  onAddService={onAddService}
+                  onEditService={onEditService}
+                  onDeleteService={onDeleteService}
+                  onViewService={onViewService}
+                  onOpenAttachment={handleAttachmentOpen}
+                />
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      
+      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Zestawienie dla pojazdu {vehicle.name}</DialogTitle>
+            <DialogDescription>
+              Wybierz rodzaj zestawienia, które chcesz wygenerować.
+            </DialogDescription>
+          </DialogHeader>
+          <VehicleReportForm 
+            vehicle={vehicle} 
+            devices={selectedVehicleDevices} 
+            services={services}
+            onClose={() => setIsReportDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
