@@ -18,7 +18,6 @@ import FullscreenViewer from "./FullscreenViewer";
 import ReminderSection from "./vehicle-form/ReminderSection";
 
 const deviceSchema = z.object({
-  vehicleId: z.string().optional(),
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
   type: z.string().min(1, "Typ urządzenia jest wymagany"),
@@ -50,7 +49,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
   const form = useForm<DeviceFormValues>({
     resolver: zodResolver(deviceSchema),
     defaultValues: {
-      vehicleId: initialDevice?.vehicleId || undefined,
       name: initialDevice?.name || "",
       brand: initialDevice?.brand || "",
       type: initialDevice?.type || "",
@@ -138,31 +136,6 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
       )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
         <div className="grid grid-cols-1 gap-6">
-          <FormField
-            control={form.control}
-            name="vehicleId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Przypisz do pojazdu</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {vehicles.map(vehicle => (
-                      <SelectItem key={vehicle.id} value={vehicle.id}>
-                        {vehicle.name} ({vehicle.registrationNumber})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
