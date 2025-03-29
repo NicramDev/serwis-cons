@@ -116,6 +116,7 @@ const Vehicles = () => {
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
   const [selectedVehicleForEdit, setSelectedVehicleForEdit] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceRecord | null>(null);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
@@ -245,7 +246,17 @@ const Vehicles = () => {
     })
     .sort((a, b) => a.name.localeCompare(b.name));
   
+  const filteredDevices = allDevices
+    .filter(device => {
+      return device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (device.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        device.type.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+  
   const selectedVehicleData = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
+  const selectedDeviceData = selectedDeviceId ? allDevices.find(d => d.id === selectedDeviceId) : null;
 
   const selectedVehicleServices = serviceRecords.filter(
     record => record.vehicleId === selectedVehicleId
@@ -373,15 +384,18 @@ const Vehicles = () => {
   };
 
   const handleSubmitDevice = (deviceData: Partial<Device>) => {
+    const now = new Date();
+    const nextServiceDate = new Date(now);
+    nextServiceDate.setMonth(now.getMonth() + 6);
+    
     const newDevice: Device = {
       id: uuidv4(),
       name: deviceData.name || '',
       type: deviceData.type || '',
       serialNumber: deviceData.serialNumber || '',
       status: 'ok',
-      lastService: new Date(),
-      nextService: deviceData.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6)),
-      vehicleId: selectedVehicleId || undefined,
+      lastService: now,
+      nextService: deviceData.serviceExpiryDate || nextServiceDate,
       ...deviceData
     };
     
@@ -464,39 +478,57 @@ const Vehicles = () => {
           />
         </div>
         
-        {filteredVehicles.length > 0 ? (
+        {filteredVehicles.length > 0 || filteredDevices.length > 0 ? (
           <div className="flex">
             <div className="w-1/3 pr-4">
               <VehicleList 
                 vehicles={filteredVehicles}
+                devices={filteredDevices}
                 selectedVehicleId={selectedVehicleId}
+                selectedDeviceId={selectedDeviceId}
                 onVehicleClick={handleVehicleClick}
+                onDeviceClick={handleDeviceClick}
                 onEdit={handleEditVehicle}
                 onDelete={handleDeleteVehicle}
                 onView={handleViewDetails}
+                onEditDevice={handleEditDevice}
+                onDeleteDevice={handleDeleteDevice}
+                onViewDevice={handleViewDevice}
               />
             </div>
             
             <div className="w-2/3 pl-4">
-              <VehicleDetailPanel 
-                selectedVehicleId={selectedVehicleId}
-                vehicles={allVehicles}
-                devices={allDevices}
-                services={selectedVehicleServices}
-                showingServiceRecords={showingServiceRecords}
-                onServiceClick={handleServiceClick}
-                onEdit={handleEditVehicle}
-                onAddService={handleAddService}
-                onAddDevice={handleAddDevice}
-                onEditDevice={handleEditDevice}
-                onDeleteDevice={handleDeleteDevice}
-                onViewDevice={handleViewDevice}
-                onEditService={handleEditService}
-                onDeleteService={handleDeleteService}
-                onViewService={handleViewService}
-                onSaveService={handleSaveServiceChanges}
-                onView={handleViewDetails}
-              />
+              {selectedVehicleId && (
+                <VehicleDetailPanel 
+                  selectedVehicleId={selectedVehicleId}
+                  vehicles={allVehicles}
+                  devices={allDevices}
+                  services={selectedVehicleServices}
+                  showingServiceRecords={showingServiceRecords}
+                  onServiceClick={handleServiceClick}
+                  onEdit={handleEditVehicle}
+                  onAddService={handleAddService}
+                  onAddDevice={handleAddDevice}
+                  onEditDevice={handleEditDevice}
+                  onDeleteDevice={handleDeleteDevice}
+                  onViewDevice={handleViewDevice}
+                  onEditService={handleEditService}
+                  onDeleteService={handleDeleteService}
+                  onViewService={handleViewService}
+                  onSaveService={handleSaveServiceChanges}
+                  onView={handleViewDetails}
+                />
+              )}
+              
+              {selectedDeviceId && selectedDeviceData && (
+                <div className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5 rounded-lg p-6">
+                  <DeviceDetails device={selectedDeviceData} />
+                </div>
+              )}
+              
+              {!selectedVehicleId && !selectedDeviceId && (
+                <NoVehiclesFound />
+              )}
             </div>
           </div>
         ) : (
@@ -624,7 +656,7 @@ const Vehicles = () => {
           <DialogHeader>
             <DialogTitle>Dodaj nowe urządzenie</DialogTitle>
             <DialogDescription>
-              Wypełnij formularz, aby dodać nowe urządzenie do pojazdu
+              Wypełnij formularz, aby dodać nowe urządzenie
             </DialogDescription>
           </DialogHeader>
           <AddDeviceForm 
