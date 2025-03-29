@@ -457,6 +457,7 @@ const Vehicles = () => {
             searchQuery={searchQuery} 
             onSearchChange={setSearchQuery} 
             onAddVehicle={() => setIsAddDialogOpen(true)}
+            onAddDevice={handleAddDevice}
             availableTags={extractAllTags(allVehicles)}
             selectedTags={selectedTags}
             onTagSelect={handleTagSelect}
