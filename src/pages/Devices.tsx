@@ -208,9 +208,9 @@ const Devices = () => {
                 key={device.id} 
                 device={device} 
                 delay={index % 5 + 1} 
-                onEdit={handleEditDevice}
-                onDelete={handleDeleteDevice}
-                onViewDetails={handleViewDeviceDetails}
+                onEdit={() => handleEditDevice(device)}
+                onDelete={() => handleDeleteDevice(device)}
+                onViewDetails={() => handleViewDeviceDetails(device)}
               />
             ))}
           </div>

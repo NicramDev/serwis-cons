@@ -135,9 +135,9 @@ const DeviceCard = ({
               SN: {device.serialNumber}
             </Badge>
             <Badge variant={
-              device.status === 'ok' ? 'success' : 
-              device.status === 'needs-service' ? 'warning' : 
-              device.status === 'in-service' ? 'default' : 
+              device.status === 'ok' ? 'secondary' : 
+              device.status === 'needs-service' ? 'default' : 
+              device.status === 'in-service' ? 'outline' : 
               'destructive'
             }>
               {device.status === 'ok' ? 'Sprawne' : 

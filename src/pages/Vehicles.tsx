@@ -339,6 +339,15 @@ const Vehicles = () => {
     }
   };
   
+  const handleDeviceClick = (deviceId: string) => {
+    if (selectedDeviceId === deviceId) {
+      setSelectedDeviceId(null);
+    } else {
+      setSelectedDeviceId(deviceId);
+      setSelectedVehicleId(null);
+    }
+  };
+  
   const handleServiceClick = () => {
     setShowingServiceRecords(!showingServiceRecords);
   };
