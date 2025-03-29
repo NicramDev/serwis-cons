@@ -18,7 +18,7 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FilePrinter, FileText } from 'lucide-react';
+import { Printer, FileText } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -214,7 +214,7 @@ const VehicleReportForm = ({
                   <>Generowanie...</>
                 ) : (
                   <>
-                    <FilePrinter className="mr-2 h-4 w-4" />
+                    <Printer className="mr-2 h-4 w-4" />
                     Generuj
                   </>
                 )}
