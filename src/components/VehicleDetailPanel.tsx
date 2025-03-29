@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
-import { Wrench, Cpu, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react'; // Using FileText instead of previous icons
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import VehicleDetailHeader from './VehicleDetailHeader';
 import VehicleSummaryInfo from './VehicleSummaryInfo';
@@ -66,6 +64,7 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
+  const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
   
   return (
     <>
@@ -152,7 +151,7 @@ const VehicleDetailPanel = ({
           <VehicleReportForm 
             vehicle={vehicle} 
             devices={selectedVehicleDevices} 
-            services={services}
+            services={selectedVehicleServices}
             onClose={() => setIsReportDialogOpen(false)}
           />
         </DialogContent>
