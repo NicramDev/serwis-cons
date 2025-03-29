@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
-import { Wrench, Cpu, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import VehicleDetailHeader from './VehicleDetailHeader';
@@ -81,59 +81,13 @@ const VehicleDetailPanel = ({
             <div className="flex items-center justify-between gap-4 pt-4 border-t border-border/50">
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={onServiceClick}
-                  className={`px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${
-                    showingServiceRecords
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary hover:bg-secondary/80"
-                  }`}
-                >
-                  <Wrench className="h-4 w-4" />
-                  Serwisy
-                </button>
-                
-                <button
-                  onClick={onServiceClick}
-                  className={`px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${
-                    !showingServiceRecords
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary hover:bg-secondary/80"
-                  }`}
-                >
-                  <Cpu className="h-4 w-4" />
-                  Urządzenia
-                </button>
-                
-                <button
                   onClick={() => setIsReportDialogOpen(true)}
-                  className="px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors bg-secondary hover:bg-secondary/80"
+                  className="px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors bg-primary text-primary-foreground"
                 >
                   <FileText className="h-4 w-4" />
                   Zestawienia
                 </button>
               </div>
-            </div>
-            
-            <div className="pt-4">
-              {!showingServiceRecords ? (
-                <VehicleDeviceSection 
-                  devices={selectedVehicleDevices}
-                  onAddDevice={onAddDevice}
-                  onEditDevice={onEditDevice}
-                  onDeleteDevice={onDeleteDevice}
-                  onViewDevice={onViewDevice}
-                  onOpenAttachment={handleAttachmentOpen}
-                />
-              ) : (
-                <VehicleServiceSection 
-                  services={services}
-                  onAddService={onAddService}
-                  onEditService={onEditService}
-                  onDeleteService={onDeleteService}
-                  onViewService={onViewService}
-                  onOpenAttachment={handleAttachmentOpen}
-                />
-              )}
             </div>
           </div>
         </CardContent>
