@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,7 +50,6 @@ const VehicleDetailPanel = ({
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
 
-  // Function to open attachments in a new tab/window
   const handleAttachmentOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
   };
@@ -95,6 +93,7 @@ const VehicleDetailPanel = ({
                   onDeleteDevice={onDeleteDevice}
                   onViewDevice={onViewDevice}
                   onOpenAttachment={handleAttachmentOpen}
+                  selectedVehicleId={selectedVehicleId}
                 />
               ) : showingServiceRecords && !showingReports ? (
                 <VehicleServiceSection 

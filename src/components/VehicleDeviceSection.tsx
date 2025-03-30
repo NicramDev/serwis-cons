@@ -12,6 +12,7 @@ interface VehicleDeviceSectionProps {
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
   onOpenAttachment: (url: string) => void;
+  selectedVehicleId?: string | null;
 }
 
 const VehicleDeviceSection = ({
@@ -20,7 +21,8 @@ const VehicleDeviceSection = ({
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
-  onOpenAttachment
+  onOpenAttachment,
+  selectedVehicleId
 }: VehicleDeviceSectionProps) => {
   return (
     <>

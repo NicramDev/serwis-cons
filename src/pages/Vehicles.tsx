@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices, formatDate } from '../utils/data';
 import { PlusCircle, Search, X, FileText, FileImage, ExternalLink, Maximize, Eye, Edit, Trash2 } from 'lucide-react';
@@ -382,7 +381,7 @@ const Vehicles = () => {
       status: 'ok',
       lastService: new Date(),
       nextService: deviceData.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6)),
-      vehicleId: selectedVehicleId || undefined,
+      vehicleId: deviceData.vehicleId || selectedVehicleId || undefined,
       ...deviceData
     };
     
@@ -631,6 +630,7 @@ const Vehicles = () => {
             vehicles={allVehicles}
             onSubmit={handleSubmitDevice}
             onCancel={() => setIsAddDeviceDialogOpen(false)}
+            selectedVehicleId={selectedVehicleId}
           />
         </DialogContent>
       </Dialog>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,9 +37,17 @@ type AddDeviceFormProps = {
   vehicles: Vehicle[];
   initialDevice?: Device;
   isEditing?: boolean;
+  selectedVehicleId?: string | null;
 };
 
-const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing = false }: AddDeviceFormProps) => {
+const AddDeviceForm = ({ 
+  onSubmit, 
+  onCancel, 
+  vehicles, 
+  initialDevice, 
+  isEditing = false, 
+  selectedVehicleId 
+}: AddDeviceFormProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(initialDevice?.images || []);
@@ -50,7 +57,7 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
   const form = useForm<DeviceFormValues>({
     resolver: zodResolver(deviceSchema),
     defaultValues: {
-      vehicleId: initialDevice?.vehicleId || undefined,
+      vehicleId: initialDevice?.vehicleId || selectedVehicleId || undefined,
       name: initialDevice?.name || "",
       brand: initialDevice?.brand || "",
       type: initialDevice?.type || "",
@@ -144,7 +151,11 @@ const AddDeviceForm = ({ onSubmit, onCancel, vehicles, initialDevice, isEditing 
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Przypisz do pojazdu</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={field.value || ''}
+                  defaultValue={selectedVehicleId || undefined}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
