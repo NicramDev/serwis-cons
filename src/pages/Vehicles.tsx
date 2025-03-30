@@ -1,6 +1,7 @@
+
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles, devices as initialDevices, formatDate } from '../utils/data';
-import { PlusCircle, Search, X, FileText, FileImage, ExternalLink, Maximize } from 'lucide-react';
+import { PlusCircle, Search, X, FileText, FileImage, ExternalLink, Maximize, Eye, Edit, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import AddVehicleForm from '../components/AddVehicleForm';
