@@ -83,13 +83,13 @@ const VehicleCard = ({
   
   return (
     <div 
-      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-[160px] overflow-hidden`}
+      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-auto`}
       onClick={onClick}
     >
-      <div className="flex flex-col h-full justify-between">
-        <div className="flex items-start gap-4 w-full">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-4 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-[100px] w-[100px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -97,26 +97,28 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[100px] w-[100px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
-              <Car className="h-12 w-12 text-muted-foreground" />
+            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+              <Car className="h-14 w-14 text-muted-foreground" />
             </div>
           )}
-          <div className="flex flex-col h-full flex-grow truncate">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold truncate">{vehicle.name}</h3>
-              {getStatusIcon()}
-            </div>
-            <p className="text-base text-muted-foreground truncate">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
-            <div className="flex items-center whitespace-nowrap text-base text-muted-foreground mt-2">
-              <span className="truncate">Następny serwis: {nextServiceFormatted}</span>
+          <div className="flex flex-col justify-between h-[88px] flex-grow">
+            <div>
+              <h3 className="text-xs font-semibold">{vehicle.name}</h3>
+              <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+              <div className="flex items-center whitespace-nowrap text-xs text-muted-foreground mt-1">
+                <span>Następny serwis: {nextServiceFormatted}</span>
+              </div>
             </div>
           </div>
         </div>
-        
-        <div className="flex justify-end items-center gap-2 mt-2">
+        {getStatusIcon()}
+      </div>
+      
+      <div className="flex justify-end items-center mt-2">
+        <div className="flex gap-1">
           {onView && (
             <Button 
-              className="h-9 w-9 p-0" 
+              className="h-6 w-6 p-0" 
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
@@ -124,12 +126,12 @@ const VehicleCard = ({
               }}
               variant="outline"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3 w-3" />
             </Button>
           )}
           
           <Button 
-            className="h-9 w-9 p-0" 
+            className="h-6 w-6 p-0" 
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
@@ -137,11 +139,11 @@ const VehicleCard = ({
             }}
             variant="secondary"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3 w-3" />
           </Button>
           
           <Button 
-            className="h-9 w-9 p-0" 
+            className="h-6 w-6 p-0" 
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
@@ -149,7 +151,7 @@ const VehicleCard = ({
             }}
             variant="destructive"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </div>
