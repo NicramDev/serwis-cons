@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -7,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Device, Vehicle } from "../utils/types";
-import { X, Calendar, Maximize } from "lucide-react";
+import { X, Calendar, Maximize, Image, Smartphone } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -53,6 +54,8 @@ const AddDeviceForm = ({
   const [existingImages, setExistingImages] = useState<string[]>(initialDevice?.images || []);
   const [existingAttachments, setExistingAttachments] = useState(initialDevice?.attachments || []);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
+  const [thumbnail, setThumbnail] = useState<string | null>(initialDevice?.thumbnail || null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
   const form = useForm<DeviceFormValues>({
     resolver: zodResolver(deviceSchema),
@@ -74,6 +77,7 @@ const AddDeviceForm = ({
     const updatedDevice: Partial<Device> = {
       ...initialDevice,
       ...values,
+      thumbnail: thumbnailFile ? URL.createObjectURL(thumbnailFile) : thumbnail,
       images: [
         ...existingImages,
         ...images.map(img => URL.createObjectURL(img))
@@ -107,6 +111,14 @@ const AddDeviceForm = ({
     }
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      setThumbnail(URL.createObjectURL(file));
+    }
+  };
+
   const removeAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
@@ -121,6 +133,11 @@ const AddDeviceForm = ({
 
   const removeExistingAttachment = (index: number) => {
     setExistingAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeThumbnail = () => {
+    setThumbnail(null);
+    setThumbnailFile(null);
   };
 
   const openFullscreen = (url: string, e?: React.MouseEvent) => {
@@ -144,6 +161,43 @@ const AddDeviceForm = ({
         />
       )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border/50 relative">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              {thumbnail ? (
+                <div className="h-20 w-20 rounded-lg overflow-hidden border border-border/50 bg-background">
+                  <img src={thumbnail} alt="Miniatura urządzenia" className="h-full w-full object-cover" />
+                  <button 
+                    type="button" 
+                    onClick={removeThumbnail}
+                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                  >
+                    <span>×</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="h-20 w-20 rounded-lg border border-dashed border-border flex items-center justify-center bg-background/50">
+                  <Smartphone className="h-10 w-10 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div>
+              <h4 className="text-sm font-medium mb-2">Miniatura urządzenia</h4>
+              <Button type="button" size="sm" variant="outline" className="relative" onClick={() => document.getElementById('thumbnail-input')?.click()}>
+                <Image className="mr-1 h-4 w-4" />
+                Załącz miniaturkę
+                <input 
+                  id="thumbnail-input"
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleThumbnailChange} 
+                  className="sr-only"
+                />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 gap-6">
           <FormField
             control={form.control}

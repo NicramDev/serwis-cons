@@ -1,3 +1,4 @@
+
 export interface Vehicle {
   id: string;
   name: string;
@@ -50,6 +51,7 @@ export interface Device {
   notes?: string; // Added for device description/notes
   status: 'ok' | 'needs-service' | 'in-service' | 'error';
   images?: string[];
+  thumbnail?: string | null; // Added thumbnail property
   attachments?: {
     name: string;
     type: string;

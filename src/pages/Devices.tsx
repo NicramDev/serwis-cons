@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { devices as initialDevices, vehicles as initialVehicles, formatDate } from '../utils/data';
 import DeviceCard from '../components/DeviceCard';
@@ -108,7 +109,8 @@ const Devices = () => {
       notes: deviceData.notes,
       status: 'ok',
       images: deviceData.images,
-      attachments: deviceData.attachments
+      attachments: deviceData.attachments,
+      thumbnail: deviceData.thumbnail
     };
     
     setAllDevices(prevDevices => [...prevDevices, newDevice]);
