@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";

@@ -90,10 +90,25 @@ const VehicleCard = ({
       className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-auto`}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xs font-semibold">{vehicle.name}</h3>
-          <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-2">
+          {vehicle.thumbnail ? (
+            <div className="h-14 w-14 rounded-md overflow-hidden flex-shrink-0 bg-background/50">
+              <img 
+                src={vehicle.thumbnail} 
+                alt={vehicle.name} 
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="h-14 w-14 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
+              <Car className="h-8 w-8" />
+            </div>
+          )}
+          <div>
+            <h3 className="text-xs font-semibold">{vehicle.name}</h3>
+            <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+          </div>
         </div>
         {getStatusIcon()}
       </div>

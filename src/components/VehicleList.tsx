@@ -28,7 +28,7 @@ const VehicleList = ({
   }
 
   return (
-    <div className="space-y-2 overflow-y-auto max-h-[70vh]">
+    <div className="space-y-3 overflow-y-auto max-h-[70vh]">
       {vehicles.map((vehicle, index) => (
         <VehicleCard 
           key={vehicle.id}
@@ -39,7 +39,7 @@ const VehicleList = ({
           isSelected={selectedVehicleId === vehicle.id}
           onClick={() => onVehicleClick(vehicle.id)}
           onView={onView ? () => onView(vehicle) : undefined}
-          compact={true}
+          compact={false}
         />
       ))}
     </div>

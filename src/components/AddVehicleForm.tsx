@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,6 +10,7 @@ import { Vehicle } from "../utils/types";
 import VehicleBasicFields from "./vehicle-form/VehicleBasicFields";
 import ReminderSection from "./vehicle-form/ReminderSection";
 import FileUploadField from "./vehicle-form/FileUploadField";
+import { Image, Car } from "lucide-react";
 
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
@@ -42,6 +44,8 @@ type AddVehicleFormProps = {
 const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: AddVehicleFormProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
@@ -80,6 +84,7 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: A
   const handleSubmit = (values: VehicleFormValues) => {
     const newVehicle: Partial<Vehicle> = {
       ...values,
+      thumbnail: thumbnail ? URL.createObjectURL(thumbnail) : undefined,
       images: images.map(img => URL.createObjectURL(img)),
       attachments: attachments.map(file => ({
         name: file.name,
@@ -101,6 +106,14 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: A
     setAttachments(prev => [...prev, ...newFiles]);
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setThumbnail(file);
+      setThumbnailPreview(URL.createObjectURL(file));
+    }
+  };
+
   const removeAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
@@ -109,9 +122,51 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: A
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removeThumbnail = () => {
+    setThumbnail(null);
+    setThumbnailPreview(null);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border/50 relative">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              {thumbnailPreview ? (
+                <div className="h-20 w-20 rounded-lg overflow-hidden border border-border/50 bg-background">
+                  <img src={thumbnailPreview} alt="Miniatura pojazdu" className="h-full w-full object-cover" />
+                  <button 
+                    type="button" 
+                    onClick={removeThumbnail}
+                    className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                  >
+                    <span>×</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="h-20 w-20 rounded-lg border border-dashed border-border flex items-center justify-center bg-background/50">
+                  <Car className="h-10 w-10 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div>
+              <h4 className="text-sm font-medium mb-2">Miniatura pojazdu</h4>
+              <Button type="button" size="sm" variant="outline" className="relative" onClick={() => document.getElementById('thumbnail-input')?.click()}>
+                <Image className="mr-1 h-4 w-4" />
+                Załącz miniaturkę
+                <input 
+                  id="thumbnail-input"
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleThumbnailChange} 
+                  className="sr-only"
+                />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
         <VehicleBasicFields form={form} availableTags={availableTags} onRemoveTag={onRemoveTag} />
         
         <ReminderSection 
