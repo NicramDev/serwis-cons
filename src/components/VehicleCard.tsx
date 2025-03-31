@@ -1,3 +1,4 @@
+
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -90,9 +91,9 @@ const VehicleCard = ({
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-20 w-32 rounded-md overflow-hidden flex-shrink-0 bg-background/50">
+            <div className="h-24 w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -100,22 +101,22 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-20 w-32 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
-              <Car className="h-12 w-12" />
+            <div className="h-24 w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
+              <Car className="h-14 w-14" />
             </div>
           )}
-          <div>
+          <div className="flex flex-col">
             <h3 className="text-xs font-semibold">{vehicle.name}</h3>
             <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+            <span className="text-xs text-muted-foreground mt-1">
+              Następny serwis: {nextServiceFormatted}
+            </span>
           </div>
         </div>
         {getStatusIcon()}
       </div>
       
-      <div className="flex justify-between items-center mt-2">
-        <span className="text-xs text-muted-foreground text-right w-full pr-2">
-          Następny serwis: {nextServiceFormatted}
-        </span>
+      <div className="flex justify-end items-center mt-2">
         <div className="flex gap-1">
           {onView && (
             <Button 
