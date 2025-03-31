@@ -1,4 +1,3 @@
-
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -63,17 +62,14 @@ const VehicleCard = ({
     return `${baseClass} ${isSelected ? 'ring-2 ring-primary shadow-lg' : ''}`;
   };
   
-  // Safely convert to Date objects and format dates
   const safeFormatDate = (dateValue: any) => {
     if (!dateValue) return 'Brak danych';
     
     try {
-      // Handle if it's already a Date object
       if (dateValue instanceof Date) {
         return formatDate(dateValue);
       }
       
-      // Handle if it's a string or number
       return formatDate(new Date(dateValue));
     } catch (error) {
       console.error("Error formatting date:", error);
@@ -93,7 +89,7 @@ const VehicleCard = ({
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50">
+            <div className="h-[100px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -101,11 +97,11 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
+            <div className="h-[100px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
               <Car className="h-14 w-14" />
             </div>
           )}
-          <div className="flex flex-col justify-between h-[88px]">
+          <div className="flex flex-col justify-between h-[100px]">
             <div>
               <h3 className="text-xs font-semibold">{vehicle.name}</h3>
               <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
