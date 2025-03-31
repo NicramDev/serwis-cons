@@ -4,6 +4,8 @@ import { ServiceRecord, Device } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
@@ -59,7 +61,7 @@ const ServiceRecordList = ({
                 </div>
                 <div className="flex items-start gap-2">
                   {service.deviceName && device?.thumbnail ? (
-                    <div className="h-10 w-10 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                    <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                       <img 
                         src={device.thumbnail} 
                         alt={service.deviceName}
@@ -71,7 +73,7 @@ const ServiceRecordList = ({
                       />
                     </div>
                   ) : service.deviceName ? (
-                    <div className="h-10 w-10 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                    <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                       <Smartphone className="h-5 w-5 text-muted-foreground" />
                     </div>
                   ) : (
