@@ -465,7 +465,7 @@ const Vehicles = () => {
         
         {filteredVehicles.length > 0 ? (
           <div className="flex">
-            <div className="w-[30%] pr-4">
+            <div className="w-1/3 pr-4">
               <VehicleList 
                 vehicles={filteredVehicles}
                 selectedVehicleId={selectedVehicleId}
@@ -476,7 +476,7 @@ const Vehicles = () => {
               />
             </div>
             
-            <div className="w-[70%] pl-4">
+            <div className="w-2/3 pl-4">
               <VehicleDetailPanel 
                 selectedVehicleId={selectedVehicleId}
                 vehicles={allVehicles}
