@@ -24,6 +24,7 @@ const VehicleServiceSection = ({
   onViewService,
   onOpenAttachment
 }: VehicleServiceSectionProps) => {
+  console.log("Devices in VehicleServiceSection:", devices);
   return (
     <>
       <div className="flex items-center justify-between mb-3">

@@ -38,10 +38,13 @@ const ServiceRecordList = ({
     return devices.find(device => device.id === deviceId);
   };
 
+  console.log("Devices in ServiceRecordList:", devices);
+  
   return (
     <div className="space-y-3">
       {services.map((service) => {
         const device = service.deviceId ? findDevice(service.deviceId) : null;
+        console.log("Service:", service.id, "DeviceId:", service.deviceId, "Found device:", device);
         
         return (
           <div 
@@ -60,13 +63,14 @@ const ServiceRecordList = ({
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  {service.deviceName && device?.thumbnail ? (
+                  {service.deviceId && device?.thumbnail ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                       <img 
                         src={device.thumbnail} 
-                        alt={service.deviceName}
+                        alt={service.deviceName || 'Device'}
                         className="h-full w-full object-cover"
                         onError={(e) => {
+                          console.log("Image failed to load:", device.thumbnail);
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder.svg';
                         }}
