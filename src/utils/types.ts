@@ -1,4 +1,3 @@
-
 export interface Vehicle {
   id: string;
   name: string;
@@ -24,6 +23,7 @@ export interface Vehicle {
   status: 'ok' | 'needs-service' | 'in-service';
   images?: string[];
   vehicleType?: 'car' | 'truck' | 'motorcycle' | 'other';
+  thumbnail?: string | null; // Added thumbnail property
   attachments?: {
     name: string;
     type: string;
