@@ -87,9 +87,9 @@ const VehicleCard = ({
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4 w-full">
+        <div className="flex items-center gap-4 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-[100px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50">
+            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -97,11 +97,11 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[100px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
+            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
               <Car className="h-14 w-14" />
             </div>
           )}
-          <div className="flex flex-col justify-between h-[100px]">
+          <div className="flex flex-col justify-between h-[88px]">
             <div>
               <h3 className="text-xs font-semibold">{vehicle.name}</h3>
               <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
