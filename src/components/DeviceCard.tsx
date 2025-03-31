@@ -35,15 +35,19 @@ const DeviceCard = ({ device, delay = 0, onEdit, onDelete, onViewDetails }: Devi
       <div className="flex justify-between items-start">
         <div className="flex gap-3">
           {device.thumbnail ? (
-            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
               <img 
                 src={device.thumbnail} 
                 alt={device.name} 
                 className="h-full w-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
+                }}
               />
             </div>
           ) : (
-            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
               <Smartphone className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
@@ -94,6 +98,7 @@ const DeviceCard = ({ device, delay = 0, onEdit, onDelete, onViewDetails }: Devi
           className="h-7 px-2 text-xs"
           onClick={() => onViewDetails && onViewDetails(device)}
         >
+          <Eye className="h-3 w-3 mr-1" />
           Szczegóły
         </Button>
         <Button 
