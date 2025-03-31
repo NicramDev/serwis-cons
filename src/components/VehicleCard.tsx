@@ -84,13 +84,13 @@ const VehicleCard = ({
   
   return (
     <div 
-      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-[70px] overflow-hidden`}
+      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-[100px] overflow-hidden`}
       onClick={onClick}
     >
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-3 w-full">
+        <div className="flex items-center gap-4 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-[50px] w-[50px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-[70px] w-[70px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -98,27 +98,27 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[50px] w-[50px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
-              <Car className="h-7 w-7 text-muted-foreground" />
+            <div className="h-[70px] w-[70px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+              <Car className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
           <div className="flex flex-col justify-center h-full flex-grow truncate">
             <div className="flex flex-col">
-              <h3 className="text-sm font-semibold truncate">{vehicle.name}</h3>
-              <p className="text-xs text-muted-foreground truncate">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
-              <div className="flex items-center whitespace-nowrap text-xs text-muted-foreground mt-1">
+              <h3 className="text-base font-semibold truncate">{vehicle.name}</h3>
+              <p className="text-sm text-muted-foreground truncate">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+              <div className="flex items-center whitespace-nowrap text-sm text-muted-foreground mt-1">
                 <span className="truncate">Następny serwis: {nextServiceFormatted}</span>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {getStatusIcon()}
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             {onView && (
               <Button 
-                className="h-6 w-6 p-0" 
+                className="h-8 w-8 p-0" 
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -126,12 +126,12 @@ const VehicleCard = ({
                 }}
                 variant="outline"
               >
-                <Eye className="h-3 w-3" />
+                <Eye className="h-4 w-4" />
               </Button>
             )}
             
             <Button 
-              className="h-6 w-6 p-0" 
+              className="h-8 w-8 p-0" 
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
@@ -139,11 +139,11 @@ const VehicleCard = ({
               }}
               variant="secondary"
             >
-              <Edit className="h-3 w-3" />
+              <Edit className="h-4 w-4" />
             </Button>
             
             <Button 
-              className="h-6 w-6 p-0" 
+              className="h-8 w-8 p-0" 
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
@@ -151,7 +151,7 @@ const VehicleCard = ({
               }}
               variant="destructive"
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
