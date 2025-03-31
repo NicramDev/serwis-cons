@@ -2,7 +2,7 @@
 import React from 'react';
 import { Device } from "../utils/types";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Eye } from 'lucide-react';
+import { Edit, Trash2, Eye, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DeviceListProps {
@@ -35,10 +35,29 @@ const DeviceList = ({
           key={device.id} 
           className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
         >
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 className="font-medium">{device.name}</h4>
-              <p className="text-xs text-muted-foreground">{device.type}</p>
+          <div className="flex justify-between items-start">
+            <div className="flex gap-3">
+              {device.thumbnail ? (
+                <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                  <img 
+                    src={device.thumbnail} 
+                    alt={device.name} 
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                  <Smartphone className="h-7 w-7 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <h4 className="font-medium">{device.name}</h4>
+                <p className="text-xs text-muted-foreground">{device.type}</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {onViewDevice && (
