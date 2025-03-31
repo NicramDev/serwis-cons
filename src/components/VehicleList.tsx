@@ -28,7 +28,7 @@ const VehicleList = ({
   }
 
   return (
-    <div className="space-y-3 overflow-y-auto max-h-[70vh] w-full">
+    <div className="space-y-3 overflow-y-auto max-h-[60vh] w-full">
       {vehicles.map((vehicle, index) => (
         <VehicleCard 
           key={vehicle.id}
@@ -47,3 +47,4 @@ const VehicleList = ({
 };
 
 export default VehicleList;
+
