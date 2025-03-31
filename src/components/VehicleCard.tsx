@@ -1,4 +1,3 @@
-
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
@@ -98,8 +97,8 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center text-muted-foreground">
-              <Car className="h-14 w-14" />
+            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+              <Car className="h-14 w-14 text-muted-foreground" />
             </div>
           )}
           <div className="flex flex-col justify-between h-[88px] flex-grow">
