@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { ServiceRecord } from '../utils/types';
+import { ServiceRecord, Device } from '../utils/types';
 import { Wrench, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ServiceRecordList from './ServiceRecordList';
 
 interface VehicleServiceSectionProps {
   services: ServiceRecord[];
+  devices?: Device[]; // Added devices array prop
   onAddService: () => void;
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
@@ -16,6 +17,7 @@ interface VehicleServiceSectionProps {
 
 const VehicleServiceSection = ({
   services,
+  devices,
   onAddService,
   onEditService,
   onDeleteService,
@@ -40,7 +42,8 @@ const VehicleServiceSection = ({
       </div>
       
       <ServiceRecordList 
-        services={services} 
+        services={services}
+        devices={devices}
         onEditService={onEditService}
         onDeleteService={onDeleteService}
         onViewService={onViewService}

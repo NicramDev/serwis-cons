@@ -1,16 +1,18 @@
 
 import { useState } from 'react';
-import { ServiceRecord } from '../utils/types';
+import { ServiceRecord, Device } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FullscreenViewer from './FullscreenViewer';
 import { formatDate } from '../utils/data';
 import FileAttachments from './FileAttachments';
+import { Smartphone } from 'lucide-react';
 
 interface ServiceDetailsProps {
   service: ServiceRecord;
+  device?: Device | null;
 }
 
-const ServiceDetails = ({ service }: ServiceDetailsProps) => {
+const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
   const openFullscreen = (url: string, e?: React.MouseEvent) => {
@@ -81,7 +83,31 @@ const ServiceDetails = ({ service }: ServiceDetailsProps) => {
               </div>
               <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
                 <p className="text-sm text-muted-foreground">Dotyczy</p>
-                <p className="font-medium">{service.deviceName || 'Pojazd'}</p>
+                {service.deviceName && device?.thumbnail ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                      <img 
+                        src={device.thumbnail} 
+                        alt={service.deviceName}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                    <p className="font-medium">{service.deviceName}</p>
+                  </div>
+                ) : service.deviceName ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                      <Smartphone className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="font-medium">{service.deviceName}</p>
+                  </div>
+                ) : (
+                  <p className="font-medium">Pojazd</p>
+                )}
               </div>
             </div>
             

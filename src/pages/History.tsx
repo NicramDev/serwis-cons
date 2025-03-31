@@ -102,7 +102,7 @@ const History = () => {
 
   // Function to get vehicle and device information for a service record
   const getItemInfo = (record: ServiceRecord) => {
-    let vehicleName, vehicleModel, deviceName, deviceModel;
+    let vehicleName, vehicleModel, deviceName, deviceModel, deviceThumbnail;
     
     if (record.vehicleId) {
       const vehicle = allVehicles.find(v => v.id === record.vehicleId);
@@ -117,6 +117,7 @@ const History = () => {
       if (device) {
         deviceName = device.name;
         deviceModel = device.model || device.type;
+        deviceThumbnail = device.thumbnail;
         
         // If device is connected to a vehicle, get the vehicle info
         if (device.vehicleId && !record.vehicleId) {
@@ -129,7 +130,7 @@ const History = () => {
       }
     }
     
-    return { vehicleName, vehicleModel, deviceName, deviceModel };
+    return { vehicleName, vehicleModel, deviceName, deviceModel, deviceThumbnail };
   };
   
   return (
@@ -165,7 +166,7 @@ const History = () => {
         {filteredRecords.length > 0 ? (
           <div className="space-y-4">
             {filteredRecords.map((record, index) => {
-              const { vehicleName, vehicleModel, deviceName, deviceModel } = getItemInfo(record);
+              const { vehicleName, vehicleModel, deviceName, deviceModel, deviceThumbnail } = getItemInfo(record);
               
               return (
                 <ServiceHistoryItem 
@@ -176,6 +177,7 @@ const History = () => {
                   vehicleModel={vehicleModel}
                   deviceName={deviceName}
                   deviceModel={deviceModel}
+                  deviceThumbnail={deviceThumbnail}
                 />
               );
             })}

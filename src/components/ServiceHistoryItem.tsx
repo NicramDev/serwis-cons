@@ -1,8 +1,7 @@
 
 import { formatDate } from "../utils/data";
 import { ServiceRecord } from "../utils/types";
-import { WrenchIcon, CarIcon, SmartphoneIcon, InfoIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { WrenchIcon, CarIcon, SmartphoneIcon } from "lucide-react";
 
 interface ServiceHistoryItemProps {
   record: ServiceRecord;
@@ -11,6 +10,7 @@ interface ServiceHistoryItemProps {
   deviceName?: string;
   vehicleModel?: string;
   deviceModel?: string;
+  deviceThumbnail?: string | null;
 }
 
 const ServiceHistoryItem = ({ 
@@ -19,7 +19,8 @@ const ServiceHistoryItem = ({
   vehicleName,
   deviceName,
   vehicleModel,
-  deviceModel
+  deviceModel,
+  deviceThumbnail
 }: ServiceHistoryItemProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
@@ -99,10 +100,31 @@ const ServiceHistoryItem = ({
           )}
           
           {record.deviceId && deviceName && (
-            <p className="text-sm">
-              <span className="font-medium">Urządzenie:</span> {deviceName}
-              {deviceModel ? ` (${deviceModel})` : ''}
-            </p>
+            <div className="flex items-center gap-2">
+              {deviceThumbnail ? (
+                <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                  <img 
+                    src={deviceThumbnail} 
+                    alt={deviceName} 
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                  <SmartphoneIcon className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <p className="text-sm">
+                  <span className="font-medium">Urządzenie:</span> {deviceName}
+                  {deviceModel ? ` (${deviceModel})` : ''}
+                </p>
+              </div>
+            </div>
           )}
         </div>
         
