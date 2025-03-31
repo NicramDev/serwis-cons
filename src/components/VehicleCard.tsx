@@ -84,13 +84,13 @@ const VehicleCard = ({
   
   return (
     <div 
-      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-[40px] overflow-hidden`}
+      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-[70px] overflow-hidden`}
       onClick={onClick}
     >
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-2 w-full">
+        <div className="flex items-center gap-3 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-[30px] w-[30px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-[50px] w-[50px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -98,19 +98,22 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[30px] w-[30px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
-              <Car className="h-5 w-5 text-muted-foreground" />
+            <div className="h-[50px] w-[50px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+              <Car className="h-7 w-7 text-muted-foreground" />
             </div>
           )}
           <div className="flex flex-col justify-center h-full flex-grow truncate">
-            <div className="flex items-center">
-              <h3 className="text-xs font-semibold truncate mr-1">{vehicle.name}</h3>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-semibold truncate">{vehicle.name}</h3>
               <p className="text-xs text-muted-foreground truncate">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+              <div className="flex items-center whitespace-nowrap text-xs text-muted-foreground mt-1">
+                <span className="truncate">Następny serwis: {nextServiceFormatted}</span>
+              </div>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {getStatusIcon()}
           <div className="flex gap-1">
             {onView && (
