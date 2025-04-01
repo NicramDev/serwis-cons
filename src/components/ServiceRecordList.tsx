@@ -37,14 +37,11 @@ const ServiceRecordList = ({
     if (!deviceId) return null;
     return devices.find(device => device.id === deviceId);
   };
-
-  console.log("Devices in ServiceRecordList:", devices);
   
   return (
     <div className="space-y-3">
       {services.map((service) => {
         const device = service.deviceId ? findDevice(service.deviceId) : null;
-        console.log("Service:", service.id, "DeviceId:", service.deviceId, "Found device:", device);
         
         return (
           <div 
@@ -52,7 +49,7 @@ const ServiceRecordList = ({
             className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
           >
             <div className="flex justify-between items-start">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <CalendarDays className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{formatDate(service.date)}</span>
@@ -62,7 +59,7 @@ const ServiceRecordList = ({
                     'Przegląd'}
                   </span>
                 </div>
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-4">
                   {service.deviceId && device?.thumbnail ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                       <img 
@@ -70,7 +67,6 @@ const ServiceRecordList = ({
                         alt={service.deviceName || 'Device'}
                         className="h-full w-full object-cover"
                         onError={(e) => {
-                          console.log("Image failed to load:", device.thumbnail);
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder.svg';
                         }}
@@ -139,3 +135,4 @@ const ServiceRecordList = ({
 };
 
 export default ServiceRecordList;
+
