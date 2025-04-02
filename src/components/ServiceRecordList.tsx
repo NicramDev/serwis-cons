@@ -76,8 +76,8 @@ const ServiceRecordList = ({
                           />
                         </div>
                       </HoverCardTrigger>
-                      <HoverCardContent className="w-auto p-0 z-[100]">
-                        <div className="h-24 w-24 overflow-hidden">
+                      <HoverCardContent className="w-auto p-0">
+                        <div className="h-48 w-48 overflow-hidden">
                           <img 
                             src={device.thumbnail} 
                             alt={service.deviceName || 'Device'} 

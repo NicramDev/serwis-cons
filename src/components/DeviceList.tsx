@@ -53,8 +53,8 @@ const DeviceList = ({
                       />
                     </div>
                   </HoverCardTrigger>
-                  <HoverCardContent className="w-auto p-0 z-[100]">
-                    <div className="h-28 w-28 overflow-hidden">
+                  <HoverCardContent className="w-auto p-0">
+                    <div className="h-56 w-56 overflow-hidden">
                       <img 
                         src={device.thumbnail} 
                         alt={device.name} 
