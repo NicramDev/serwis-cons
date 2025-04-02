@@ -7,12 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
@@ -68,43 +62,34 @@ const ServiceRecordList = ({
                 </div>
                 <div className="flex items-start gap-4">
                   {service.deviceId && device?.thumbnail ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-pointer">
-                                <img 
-                                  src={device.thumbnail} 
-                                  alt={service.deviceName || 'Device'}
-                                  className="h-full w-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = '/placeholder.svg';
-                                  }}
-                                />
-                              </div>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-auto p-0 border-none z-50">
-                              <div className="w-24 h-24 overflow-hidden flex items-center justify-center bg-background">
-                                <img 
-                                  src={device.thumbnail} 
-                                  alt={service.deviceName || 'Device'} 
-                                  className="max-w-full max-h-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = '/placeholder.svg';
-                                  }}
-                                />
-                              </div>
-                            </HoverCardContent>
-                          </HoverCard>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Najedź, aby powiększyć</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-pointer">
+                          <img 
+                            src={device.thumbnail} 
+                            alt={service.deviceName || 'Device'}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-auto p-0 border-none">
+                        <div className="w-48 h-48 overflow-hidden flex items-center justify-center bg-background">
+                          <img 
+                            src={device.thumbnail} 
+                            alt={service.deviceName || 'Device'} 
+                            className="max-w-full max-h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   ) : service.deviceName ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                       <Smartphone className="h-5 w-5 text-muted-foreground" />
