@@ -6,7 +6,6 @@ import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone } from 'l
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
@@ -62,34 +61,17 @@ const ServiceRecordList = ({
                 </div>
                 <div className="flex items-start gap-4">
                   {service.deviceId && device?.thumbnail ? (
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-zoom-in relative">
-                          <img 
-                            src={device.thumbnail} 
-                            alt={service.deviceName || 'Device'}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg';
-                            }}
-                          />
-                        </div>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-auto p-0">
-                        <div className="h-48 w-48 overflow-hidden">
-                          <img 
-                            src={device.thumbnail} 
-                            alt={service.deviceName || 'Device'} 
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg';
-                            }}
-                          />
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
+                    <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                      <img 
+                        src={device.thumbnail} 
+                        alt={service.deviceName || 'Device'}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
                   ) : service.deviceName ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                       <Smartphone className="h-5 w-5 text-muted-foreground" />
@@ -153,3 +135,4 @@ const ServiceRecordList = ({
 };
 
 export default ServiceRecordList;
+
