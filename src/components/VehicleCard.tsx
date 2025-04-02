@@ -93,15 +93,19 @@ const VehicleCard = ({
           {vehicle.thumbnail ? (
             <HoverCard>
               <HoverCardTrigger asChild>
-                <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center cursor-zoom-in">
+                <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center cursor-zoom-in relative">
                   <img 
                     src={vehicle.thumbnail} 
                     alt={vehicle.name} 
                     className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
                   />
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent className="w-auto p-0">
+              <HoverCardContent className="w-auto p-0 z-[100]">
                 <div className="h-[176px] w-80 overflow-hidden">
                   <img 
                     src={vehicle.thumbnail} 

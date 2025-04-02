@@ -64,7 +64,7 @@ const ServiceRecordList = ({
                   {service.deviceId && device?.thumbnail ? (
                     <HoverCard>
                       <HoverCardTrigger asChild>
-                        <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-zoom-in">
+                        <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-zoom-in relative">
                           <img 
                             src={device.thumbnail} 
                             alt={service.deviceName || 'Device'}
@@ -76,7 +76,7 @@ const ServiceRecordList = ({
                           />
                         </div>
                       </HoverCardTrigger>
-                      <HoverCardContent className="w-auto p-0">
+                      <HoverCardContent className="w-auto p-0 z-[100]">
                         <div className="h-24 w-24 overflow-hidden">
                           <img 
                             src={device.thumbnail} 
