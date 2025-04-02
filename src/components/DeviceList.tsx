@@ -4,6 +4,7 @@ import { Device } from "../utils/types";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Eye, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 
 interface DeviceListProps {
   devices: Device[];
@@ -38,17 +39,34 @@ const DeviceList = ({
           <div className="flex justify-between items-start">
             <div className="flex gap-3">
               {device.thumbnail ? (
-                <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
-                  <img 
-                    src={device.thumbnail} 
-                    alt={device.name} 
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder.svg';
-                    }}
-                  />
-                </div>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-zoom-in">
+                      <img 
+                        src={device.thumbnail} 
+                        alt={device.name} 
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-auto p-0">
+                    <div className="h-28 w-28 overflow-hidden">
+                      <img 
+                        src={device.thumbnail} 
+                        alt={device.name} 
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               ) : (
                 <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
                   <Smartphone className="h-7 w-7 text-muted-foreground" />

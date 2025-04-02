@@ -1,8 +1,10 @@
+
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -89,13 +91,30 @@ const VehicleCard = ({
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4 w-full">
           {vehicle.thumbnail ? (
-            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
-              <img 
-                src={vehicle.thumbnail} 
-                alt={vehicle.name} 
-                className="h-full w-full object-cover"
-              />
-            </div>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center cursor-zoom-in">
+                  <img 
+                    src={vehicle.thumbnail} 
+                    alt={vehicle.name} 
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-auto p-0">
+                <div className="h-[176px] w-80 overflow-hidden">
+                  <img 
+                    src={vehicle.thumbnail} 
+                    alt={vehicle.name} 
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
+                  />
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           ) : (
             <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <Car className="h-14 w-14 text-muted-foreground" />
