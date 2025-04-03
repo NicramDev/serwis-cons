@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
@@ -61,7 +60,7 @@ const VehicleCard = ({
                      'gradient-card-red border-red-400/30';
     
     return `${baseClass} ${isSelected 
-      ? 'ring-4 ring-primary/70 ring-offset-4 ring-offset-background shadow-lg border-primary/50 outline outline-4 outline-primary/20' 
+      ? 'bg-blue-50/50' 
       : ''}`;
   };
   
