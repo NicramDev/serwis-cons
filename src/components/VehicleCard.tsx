@@ -61,7 +61,7 @@ const VehicleCard = ({
     
     return `${baseClass} ${isSelected 
       ? 'bg-blue-50/50' 
-      : ''}`;
+      : 'hover:bg-blue-50/30'}`;
   };
   
   const safeFormatDate = (dateValue: any) => {
