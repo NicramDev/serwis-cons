@@ -1,8 +1,8 @@
+import React from 'react';
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
 import { formatDate } from '../utils/data';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -59,7 +59,9 @@ const VehicleCard = ({
                      vehicle.status === 'in-service' ? 'gradient-card-blue border-blue-400/30' : 
                      'gradient-card-red border-red-400/30';
     
-    return `${baseClass} ${isSelected ? 'ring-2 ring-primary shadow-lg' : ''}`;
+    return `${baseClass} ${isSelected 
+      ? 'ring-4 ring-primary/70 ring-offset-2 ring-offset-background shadow-lg border-primary/50' 
+      : ''}`;
   };
   
   const safeFormatDate = (dateValue: any) => {
