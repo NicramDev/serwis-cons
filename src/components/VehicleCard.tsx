@@ -61,7 +61,7 @@ const VehicleCard = ({
                      'gradient-card-red border-red-400/30';
     
     return `${baseClass} ${isSelected 
-      ? 'bg-[rgba(0,122,255,0.2)]' 
+      ? 'bg-red-500 border-2 border-red-600' 
       : 'hover:bg-blue-50/30'}`;
   };
   
