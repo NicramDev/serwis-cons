@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
@@ -60,7 +61,7 @@ const VehicleCard = ({
                      'gradient-card-red border-red-400/30';
     
     return `${baseClass} ${isSelected 
-      ? 'bg-blue-500/20' 
+      ? 'bg-[rgba(0,122,255,0.2)]' 
       : 'hover:bg-blue-50/30'}`;
   };
   
