@@ -1,6 +1,7 @@
 
 import { Vehicle, ServiceRecord, Device } from '../../utils/types';
-import { formatDate, serviceRecords as allServiceRecords } from '../../utils/data';
+import { formatDate } from '../../utils/formatting/dateUtils';
+import { serviceRecords as allServiceRecords } from '../../utils/data/serviceData';
 import { CalendarDays, FileText } from 'lucide-react';
 import ServiceRecordList from '../ServiceRecordList';
 

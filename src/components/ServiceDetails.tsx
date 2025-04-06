@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ServiceRecord, Device } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FullscreenViewer from './FullscreenViewer';
-import { formatDate } from '../utils/data';
+import { formatDate } from '../utils/formatting/dateUtils';
 import FileAttachments from './FileAttachments';
 import { Smartphone } from 'lucide-react';
 

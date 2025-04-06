@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ServiceRecord, Device } from '../utils/types';
-import { formatDate } from '../utils/data';
+import { formatDate } from '../utils/formatting/dateUtils';
 import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';

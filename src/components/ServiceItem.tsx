@@ -1,6 +1,6 @@
 
 import { CalendarClock } from 'lucide-react';
-import { formatDate } from '../utils/data';
+import { formatDate } from '../utils/formatting/dateUtils';
 
 interface ServiceItemProps {
   id: string;

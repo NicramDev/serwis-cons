@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
-import { formatDate } from "../utils/data";
+import { formatDate } from "../utils/formatting/dateUtils";
 
 interface VehicleReportFormProps {
   open: boolean;
