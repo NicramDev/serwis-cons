@@ -304,37 +304,9 @@ export const formatDate = (date: Date | string | undefined | null): string => {
     return 'Nieprawidłowa data';
   }
   
-  // Convert month to Roman numeral
-  const day = dateObj.getDate();
-  const month = dateObj.getMonth() + 1;
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
   const year = dateObj.getFullYear();
   
-  // Convert month number to Roman numeral
-  const toRoman = (num: number): string => {
-    const romanNumerals = [
-      { value: 12, numeral: 'XII' },
-      { value: 11, numeral: 'XI' },
-      { value: 10, numeral: 'X' },
-      { value: 9, numeral: 'IX' },
-      { value: 8, numeral: 'VIII' },
-      { value: 7, numeral: 'VII' },
-      { value: 6, numeral: 'VI' },
-      { value: 5, numeral: 'V' },
-      { value: 4, numeral: 'IV' },
-      { value: 3, numeral: 'III' },
-      { value: 2, numeral: 'II' },
-      { value: 1, numeral: 'I' }
-    ];
-    
-    for (const { value, numeral } of romanNumerals) {
-      if (num === value) {
-        return numeral;
-      }
-    }
-    return '';
-  };
-  
-  const romanMonth = toRoman(month);
-  
-  return `${day} ${romanMonth} ${year}`;
+  return `${day}.${month}.${year}`;
 };
