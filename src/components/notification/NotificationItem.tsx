@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Bell, Calendar, Car, CheckSquare, Info, Zap, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/utils/data';
+import { formatDate } from '@/utils/formatting/dateUtils';
 
 interface NotificationItemProps {
   notification: any;

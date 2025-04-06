@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { devices as initialDevices, vehicles as initialVehicles, formatDate } from '../utils/data';
+import { devices as initialDevices, vehicles as initialVehicles } from '../utils/data';
+import { formatDate } from '../utils/formatting/dateUtils';
 import DeviceCard from '../components/DeviceCard';
 import DeviceDetails from '../components/DeviceDetails';
 import { PlusCircle, Search, Maximize } from 'lucide-react';

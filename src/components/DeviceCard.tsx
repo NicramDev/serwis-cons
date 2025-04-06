@@ -1,7 +1,7 @@
 
 import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye } from 'lucide-react';
 import { Device } from '../utils/types';
-import { formatDate } from '../utils/data';
+import { formatDate } from '../utils/formatting/dateUtils';
 import { Button } from '@/components/ui/button';
 
 interface DeviceCardProps {

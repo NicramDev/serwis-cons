@@ -1,9 +1,8 @@
-
 import { Vehicle } from '../../utils/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Info, MapPin, Gauge, User } from 'lucide-react';
-import { formatDate } from '../../utils/data';
+import { formatDate } from '../../utils/formatting/dateUtils';
 
 interface VehicleBasicInfoProps {
   vehicle: Vehicle;

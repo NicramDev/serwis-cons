@@ -2,7 +2,7 @@
 import React from 'react';
 import { Car, Check, Clock, AlertTriangle, Edit, Trash2, Eye } from 'lucide-react';
 import { Vehicle } from '../utils/types';
-import { formatDate } from '../utils/data';
+import { formatDate } from '../utils/formatting/dateUtils';
 import { Button } from './ui/button';
 
 interface VehicleCardProps {
