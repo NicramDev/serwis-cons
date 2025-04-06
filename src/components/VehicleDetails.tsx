@@ -6,6 +6,8 @@ import FullscreenViewer from './FullscreenViewer';
 import VehicleBasicInfo from './vehicle-details/VehicleBasicInfo';
 import VehicleServiceInfo from './vehicle-details/VehicleServiceInfo';
 import FileAttachments from './FileAttachments';
+import { serviceRecords } from '../utils/data/serviceData';
+import { devices } from '../utils/data/deviceData';
 
 interface VehicleDetailsProps {
   vehicle: Vehicle;
@@ -13,6 +15,12 @@ interface VehicleDetailsProps {
 
 const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
+
+  // Get service records for this vehicle
+  const vehicleServices = serviceRecords.filter(record => record.vehicleId === vehicle.id);
+  
+  // Get devices for this vehicle
+  const vehicleDevices = devices.filter(device => device.vehicleId === vehicle.id);
 
   const openFullscreen = (url: string, e?: React.MouseEvent) => {
     if (e) {
@@ -60,7 +68,11 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
         </TabsContent>
 
         <TabsContent value="service" className="space-y-6 pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-white rounded-b-lg">
-          <VehicleServiceInfo vehicle={vehicle} />
+          <VehicleServiceInfo 
+            vehicle={vehicle} 
+            services={vehicleServices}
+            devices={vehicleDevices}
+          />
         </TabsContent>
 
         {hasAttachmentsOrImages && (
