@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -9,11 +8,43 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Calendar } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 type ServiceFormFieldsProps = {
   control: Control<any>;
+};
+
+const toRoman = (num: number): string => {
+  const romanNumerals = [
+    { value: 12, numeral: 'XII' },
+    { value: 11, numeral: 'XI' },
+    { value: 10, numeral: 'X' },
+    { value: 9, numeral: 'IX' },
+    { value: 8, numeral: 'VIII' },
+    { value: 7, numeral: 'VII' },
+    { value: 6, numeral: 'VI' },
+    { value: 5, numeral: 'V' },
+    { value: 4, numeral: 'IV' },
+    { value: 3, numeral: 'III' },
+    { value: 2, numeral: 'II' },
+    { value: 1, numeral: 'I' }
+  ];
+  
+  for (const { value, numeral } of romanNumerals) {
+    if (num === value) {
+      return numeral;
+    }
+  }
+  return '';
+};
+
+const formatDateWithRomanMonth = (date: Date): string => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  const romanMonth = toRoman(month);
+  
+  return `${day}.${romanMonth}.${year}`;
 };
 
 const ServiceFormFields = ({ control }: ServiceFormFieldsProps) => {
@@ -37,7 +68,7 @@ const ServiceFormFields = ({ control }: ServiceFormFieldsProps) => {
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "dd.MM.yyyy")
+                        formatDateWithRomanMonth(field.value)
                       ) : (
                         <span>Wybierz datę</span>
                       )}

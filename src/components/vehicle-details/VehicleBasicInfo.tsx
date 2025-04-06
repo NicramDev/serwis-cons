@@ -1,7 +1,9 @@
+
 import { Vehicle } from '../../utils/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Info, MapPin, Gauge, User } from 'lucide-react';
+import { formatDate } from '../../utils/data';
 
 interface VehicleBasicInfoProps {
   vehicle: Vehicle;
@@ -100,7 +102,7 @@ const VehicleBasicInfo = ({ vehicle }: VehicleBasicInfoProps) => {
         </div>
         <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
           <p className="text-sm text-muted-foreground">Data zakupu</p>
-          <p className="font-medium">{vehicle.purchaseDate ? new Date(vehicle.purchaseDate).toLocaleDateString('pl-PL') : 'Nie podano'}</p>
+          <p className="font-medium">{vehicle.purchaseDate ? formatDate(vehicle.purchaseDate) : 'Nie podano'}</p>
         </div>
       </div>
 
