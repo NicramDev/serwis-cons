@@ -7,7 +7,7 @@ import ServiceRecordList from './ServiceRecordList';
 
 interface VehicleServiceSectionProps {
   services: ServiceRecord[];
-  devices?: Device[]; // Added devices array prop
+  devices?: Device[];
   onAddService: () => void;
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;

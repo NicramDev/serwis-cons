@@ -25,6 +25,19 @@ const VehicleReportForm = ({
 }: VehicleReportFormProps) => {
   const [reportType, setReportType] = useState<'devices' | 'services'>('devices');
 
+  const getServiceTypeText = (type: string) => {
+    switch (type) {
+      case 'repair':
+        return 'Naprawa';
+      case 'maintenance':
+        return 'Konserwacja';
+      case 'inspection':
+        return 'Przegląd';
+      default:
+        return 'Inne';
+    }
+  };
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -57,6 +70,7 @@ const VehicleReportForm = ({
         <thead>
           <tr style="background-color: #f2f2f2;">
             <th>Data</th>
+            <th>Typ</th>
             <th>Dotyczy</th>
             <th>Opis</th>
             <th>Technik</th>
@@ -67,6 +81,7 @@ const VehicleReportForm = ({
           ${services.map(service => `
             <tr>
               <td>${formatDate(service.date)}</td>
+              <td>${getServiceTypeText(service.type)}</td>
               <td>${service.deviceName ? service.deviceName : 'Pojazd'}</td>
               <td>${service.description}</td>
               <td>${service.technician}</td>

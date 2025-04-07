@@ -10,7 +10,7 @@ import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/h
 
 interface ServiceRecordListProps {
   services: ServiceRecord[];
-  devices?: Device[]; // Added devices array prop
+  devices?: Device[];
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
   onViewService?: (service: ServiceRecord) => void;
@@ -19,7 +19,7 @@ interface ServiceRecordListProps {
 
 const ServiceRecordList = ({ 
   services, 
-  devices = [], // Default to empty array
+  devices = [],
   onEditService, 
   onDeleteService, 
   onViewService,
@@ -39,6 +39,34 @@ const ServiceRecordList = ({
     return devices.find(device => device.id === deviceId);
   };
   
+  // Helper function to get service type display text
+  const getServiceTypeText = (type: string) => {
+    switch (type) {
+      case 'repair':
+        return 'Naprawa';
+      case 'maintenance':
+        return 'Konserwacja';
+      case 'inspection':
+        return 'Przegląd';
+      default:
+        return 'Inne';
+    }
+  };
+  
+  // Helper function to get service type color
+  const getServiceTypeColor = (type: string) => {
+    switch (type) {
+      case 'repair':
+        return 'bg-orange-100 text-orange-700';
+      case 'maintenance':
+        return 'bg-blue-100 text-blue-700';
+      case 'inspection':
+        return 'bg-green-100 text-green-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+  
   return (
     <div className="space-y-3">
       {services.map((service) => {
@@ -54,10 +82,8 @@ const ServiceRecordList = ({
                 <div className="flex items-center gap-2 mb-1">
                   <CalendarDays className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{formatDate(service.date)}</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                    {service.type === 'repair' ? 'Naprawa' : 
-                    service.type === 'maintenance' ? 'Konserwacja' : 
-                    'Przegląd'}
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getServiceTypeColor(service.type)}`}>
+                    {getServiceTypeText(service.type)}
                   </span>
                 </div>
                 <div className="flex items-start gap-4">

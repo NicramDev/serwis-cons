@@ -1,7 +1,6 @@
 
 import { Vehicle, ServiceRecord, Device } from '../../utils/types';
 import { formatDate } from '../../utils/formatting/dateUtils';
-import { serviceRecords as allServiceRecords } from '../../utils/data/serviceData';
 import { CalendarDays, FileText } from 'lucide-react';
 import ServiceRecordList from '../ServiceRecordList';
 
@@ -12,11 +11,6 @@ interface VehicleServiceInfoProps {
 }
 
 const VehicleServiceInfo = ({ vehicle, services = [], devices = [] }: VehicleServiceInfoProps) => {
-  // Get all service records for this vehicle if not provided through props
-  const vehicleServices = services.length > 0 
-    ? services 
-    : allServiceRecords.filter(record => record.vehicleId === vehicle.id);
-  
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -86,8 +80,8 @@ const VehicleServiceInfo = ({ vehicle, services = [], devices = [] }: VehicleSer
 
       <div className="pt-2">
         <h3 className="text-lg font-semibold mb-3 text-foreground/80">Historia serwisów</h3>
-        {vehicleServices && vehicleServices.length > 0 ? (
-          <ServiceRecordList services={vehicleServices} devices={devices} />
+        {services && services.length > 0 ? (
+          <ServiceRecordList services={services} devices={devices} />
         ) : (
           <div className="border border-border/50 rounded-lg p-8 text-center bg-white/50 backdrop-blur-sm shadow-sm">
             <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
