@@ -1,4 +1,3 @@
-
 import { formatDate } from "../utils/formatting/dateUtils";
 import { ServiceRecord } from "../utils/types";
 import { WrenchIcon, CarIcon, SmartphoneIcon } from "lucide-react";
@@ -139,7 +138,7 @@ const ServiceHistoryItem = ({
         </div>
       </div>
       
-      <div className="flex justify-between items-center mt-3 pt-2 border-t border-border/50">
+      <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
         <p className="text-xs text-muted-foreground">Technik: {record.technician}</p>
         <p className="text-base font-semibold">{record.cost.toFixed(2)} zł</p>
       </div>
