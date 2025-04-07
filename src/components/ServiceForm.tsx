@@ -139,11 +139,11 @@ const ServiceForm = ({
           name="deviceId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Urządzenie</FormLabel>
+              <FormLabel>Czego dotyczy serwis?</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Wybierz urządzenie" />
+                    <SelectValue placeholder="Wybierz urządzenie lub pojazd" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

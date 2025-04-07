@@ -62,7 +62,7 @@ const ServiceHistoryItem = ({
       case 'repair':
         return 'Naprawa';
       case 'maintenance':
-        return 'Konserwacja';
+        return 'Serwis'; // Changed from 'Konserwacja' to 'Serwis'
       case 'inspection':
         return 'Inspekcja';
       default:

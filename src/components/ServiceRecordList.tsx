@@ -45,7 +45,7 @@ const ServiceRecordList = ({
       case 'repair':
         return 'Naprawa';
       case 'maintenance':
-        return 'Konserwacja';
+        return 'Serwis'; // Changed from 'Konserwacja' to 'Serwis'
       case 'inspection':
         return 'Przegląd';
       default:
@@ -128,6 +128,12 @@ const ServiceRecordList = ({
                       {service.deviceName || 'Pojazd'}
                     </h4>
                     <p className="text-sm mt-1">{service.description}</p>
+                    
+                    {/* Added information about what the service relates to */}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Dotyczy: {service.deviceId ? 'Urządzenia' : 'Pojazdu'}
+                      {service.deviceName && ` - ${service.deviceName}`}
+                    </p>
                   </div>
                 </div>
               </div>

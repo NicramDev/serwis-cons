@@ -8,9 +8,15 @@ interface VehicleServiceInfoProps {
   vehicle: Vehicle;
   services?: ServiceRecord[];
   devices?: Device[];
+  onOpenAttachment?: (url: string) => void;
 }
 
-const VehicleServiceInfo = ({ vehicle, services = [], devices = [] }: VehicleServiceInfoProps) => {
+const VehicleServiceInfo = ({ 
+  vehicle, 
+  services = [], 
+  devices = [],
+  onOpenAttachment = () => {} 
+}: VehicleServiceInfoProps) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -81,7 +87,11 @@ const VehicleServiceInfo = ({ vehicle, services = [], devices = [] }: VehicleSer
       <div className="pt-2">
         <h3 className="text-lg font-semibold mb-3 text-foreground/80">Historia serwisów</h3>
         {services && services.length > 0 ? (
-          <ServiceRecordList services={services} devices={devices} />
+          <ServiceRecordList 
+            services={services} 
+            devices={devices} 
+            onOpenAttachment={onOpenAttachment} 
+          />
         ) : (
           <div className="border border-border/50 rounded-lg p-8 text-center bg-white/50 backdrop-blur-sm shadow-sm">
             <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />

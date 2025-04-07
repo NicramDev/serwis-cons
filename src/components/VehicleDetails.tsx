@@ -72,6 +72,7 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
             vehicle={vehicle} 
             services={vehicleServices}
             devices={vehicleDevices}
+            onOpenAttachment={openFullscreen}
           />
         </TabsContent>
 
