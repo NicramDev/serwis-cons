@@ -1,3 +1,4 @@
+
 import { formatDate } from "../utils/formatting/dateUtils";
 import { ServiceRecord } from "../utils/types";
 import { WrenchIcon, CarIcon, SmartphoneIcon } from "lucide-react";
@@ -61,7 +62,7 @@ const ServiceHistoryItem = ({
       case 'repair':
         return 'Naprawa';
       case 'maintenance':
-        return 'Serwis'; // Changed from 'Konserwacja' to 'Serwis'
+        return 'Serwis';
       case 'inspection':
         return 'Inspekcja';
       default:
