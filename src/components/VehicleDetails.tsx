@@ -4,9 +4,7 @@ import { Vehicle } from '../utils/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FullscreenViewer from './FullscreenViewer';
 import VehicleBasicInfo from './vehicle-details/VehicleBasicInfo';
-import VehicleServiceInfo from './vehicle-details/VehicleServiceInfo';
 import FileAttachments from './FileAttachments';
-import { serviceRecords } from '../utils/data/serviceData';
 import { devices } from '../utils/data/deviceData';
 
 interface VehicleDetailsProps {
@@ -15,9 +13,6 @@ interface VehicleDetailsProps {
 
 const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
-
-  // Get service records for this vehicle
-  const vehicleServices = serviceRecords.filter(record => record.vehicleId === vehicle.id);
   
   // Get devices for this vehicle
   const vehicleDevices = devices.filter(device => device.vehicleId === vehicle.id);
@@ -57,7 +52,6 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
       <Tabs defaultValue="general">
         <TabsList className="w-full bg-[#ebe9e6] p-1">
           <TabsTrigger value="general" className="flex-1 rounded-md data-[state=active]:shadow-sm">Informacje ogólne</TabsTrigger>
-          <TabsTrigger value="service" className="flex-1 rounded-md data-[state=active]:shadow-sm">Serwis i przeglądy</TabsTrigger>
           {hasAttachmentsOrImages && (
             <TabsTrigger value="files" className="flex-1 rounded-md data-[state=active]:shadow-sm">Dokumenty i zdjęcia</TabsTrigger>
           )}
@@ -65,15 +59,6 @@ const VehicleDetails = ({ vehicle }: VehicleDetailsProps) => {
 
         <TabsContent value="general" className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-white rounded-b-lg">
           <VehicleBasicInfo vehicle={vehicle} />
-        </TabsContent>
-
-        <TabsContent value="service" className="space-y-6 pt-4 animate-in fade-in-50 slide-in-from-bottom-3 bg-white rounded-b-lg">
-          <VehicleServiceInfo 
-            vehicle={vehicle} 
-            services={vehicleServices}
-            devices={vehicleDevices}
-            onOpenAttachment={openFullscreen}
-          />
         </TabsContent>
 
         {hasAttachmentsOrImages && (

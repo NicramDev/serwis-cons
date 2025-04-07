@@ -37,6 +37,19 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
     (service.attachments && service.attachments.length > 0) || 
     (service.images && service.images.length > 0)
   );
+  
+  const getServiceTypeText = (type: string) => {
+    switch (type) {
+      case 'repair':
+        return 'Naprawa';
+      case 'maintenance':
+        return 'Serwis';
+      case 'inspection':
+        return 'Przegląd';
+      default:
+        return 'Inne';
+    }
+  };
 
   return (
     <div className="pt-2">
@@ -62,9 +75,7 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                {service.type === 'repair' ? 'Naprawa' : 
-                 service.type === 'maintenance' ? 'Konserwacja' : 
-                 'Przegląd'}
+                {getServiceTypeText(service.type)}
               </span>
             </div>
             
