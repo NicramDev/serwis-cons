@@ -2,11 +2,20 @@
 import { useState } from 'react';
 import { Vehicle, ServiceRecord, Device } from '../../utils/types';
 import { formatDate } from '../../utils/formatting/dateUtils';
-import { CalendarDays, FileText, Filter } from 'lucide-react';
+import { CalendarDays, FileText, Filter, ChevronDown } from 'lucide-react';
 import ServiceRecordList from '../ServiceRecordList';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
 
 interface VehicleServiceInfoProps {
   vehicle: Vehicle;
@@ -120,7 +129,12 @@ const VehicleServiceInfo = ({
               defaultValue="all" 
               className="flex gap-4"
               value={filterType}
-              onValueChange={(value) => setFilterType(value as 'all' | 'vehicle' | 'device')}
+              onValueChange={(value) => {
+                setFilterType(value as 'all' | 'vehicle' | 'device');
+                if (value !== 'device') {
+                  setSelectedDeviceId(null);
+                }
+              }}
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="all" id="all" />
@@ -132,29 +146,91 @@ const VehicleServiceInfo = ({
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="device" id="device" />
-                <Label htmlFor="device">Urządzenia</Label>
+                <Label htmlFor="device">Urządzenie</Label>
               </div>
             </RadioGroup>
           </div>
           
           {filterType === 'device' && deviceOptions.length > 0 && (
             <div className="mt-3">
-              <Select 
-                value={selectedDeviceId || ''} 
-                onValueChange={(value) => setSelectedDeviceId(value || null)}
-              >
-                <SelectTrigger className="w-full max-w-xs">
-                  <SelectValue placeholder="Wybierz urządzenie" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Wszystkie urządzenia</SelectItem>
-                  {deviceOptions.map((device) => (
-                    <SelectItem key={device.id} value={device.id}>
-                      {device.name}
-                    </SelectItem>
+              {selectedDeviceId ? (
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        {(() => {
+                          const selectedDevice = deviceOptions.find(d => d.id === selectedDeviceId);
+                          return (
+                            <>
+                              <Avatar className="h-6 w-6">
+                                {selectedDevice?.thumbnail ? (
+                                  <AvatarImage src={selectedDevice.thumbnail} alt={selectedDevice.name} />
+                                ) : (
+                                  <AvatarFallback>{selectedDevice?.name.substring(0, 2) || 'UR'}</AvatarFallback>
+                                )}
+                              </Avatar>
+                              <span className="text-sm">{selectedDevice?.name || 'Wybierz urządzenie'}</span>
+                              <ChevronDown className="h-4 w-4 ml-1" />
+                            </>
+                          );
+                        })()}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="bg-white">
+                      <DropdownMenuLabel>Urządzenia</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {deviceOptions.map(device => (
+                        <DropdownMenuItem 
+                          key={device.id} 
+                          className="flex items-center gap-2 cursor-pointer"
+                          onClick={() => setSelectedDeviceId(device.id)}
+                        >
+                          <Avatar className="h-6 w-6">
+                            {device.thumbnail ? (
+                              <AvatarImage src={device.thumbnail} alt={device.name} />
+                            ) : (
+                              <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span>{device.name}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 px-2"
+                    onClick={() => setSelectedDeviceId(null)}
+                  >
+                    Reset
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {deviceOptions.map(device => (
+                    <div 
+                      key={device.id}
+                      onClick={() => setSelectedDeviceId(device.id)}
+                      className="flex flex-col items-center cursor-pointer p-2 rounded-lg border transition-all bg-background/50 border-border/50 hover:bg-background/80"
+                    >
+                      <Avatar className="h-12 w-12 mb-2">
+                        {device.thumbnail ? (
+                          <AvatarImage src={device.thumbnail} alt={device.name} />
+                        ) : (
+                          <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
+                        )}
+                      </Avatar>
+                      <span className="text-xs text-center font-medium">
+                        {device.name.length > 15 
+                          ? `${device.name.substring(0, 15)}...`
+                          : device.name
+                        }
+                      </span>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -170,8 +246,8 @@ const VehicleServiceInfo = ({
             <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
             <p className="text-muted-foreground">
               {filterType === 'all' ? 'Brak historii serwisowej dla tego pojazdu' : 
-               filterType === 'vehicle' ? 'Brak historii serwisowej dla tego pojazdu' : 
-               'Brak historii serwisowej dla wybranego urządzenia'}
+              filterType === 'vehicle' ? 'Brak historii serwisowej dla tego pojazdu' : 
+              selectedDeviceId ? 'Brak historii serwisowej dla wybranego urządzenia' : 'Wybierz urządzenie aby zobaczyć jego historię serwisową'}
             </p>
           </div>
         )}
