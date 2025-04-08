@@ -5,7 +5,6 @@ import { Wrench, PlusCircle, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ServiceRecordList from './ServiceRecordList';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface VehicleServiceSectionProps {
   services: ServiceRecord[];
@@ -26,18 +25,18 @@ const VehicleServiceSection = ({
   onViewService,
   onOpenAttachment
 }: VehicleServiceSectionProps) => {
-  const [serviceFilter, setServiceFilter] = useState<'all' | 'vehicle' | string>('vehicle');
+  const [serviceFilter, setServiceFilter] = useState<'vehicle' | 'all' | string>('vehicle');
 
   // Filter services based on the selected filter
   const filteredServices = services.filter(service => {
     if (serviceFilter === 'all') return true;
     if (serviceFilter === 'vehicle') return !service.deviceId;
-    return service.deviceId === serviceFilter; // This is a device ID
+    return service.deviceId === serviceFilter;
   });
 
   // Get devices for this vehicle
   const vehicleDevices = devices || [];
-  
+
   return (
     <>
       <div className="flex items-center justify-between mb-3">
@@ -55,53 +54,29 @@ const VehicleServiceSection = ({
         </Button>
       </div>
 
-      <div className="mb-4 bg-muted/20 p-3 rounded-md space-y-3">
+      <div className="flex items-center justify-between mb-4 bg-muted/20 p-2 rounded-md">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Filtruj serwisy:</span>
+          <span className="text-sm text-muted-foreground">Filtruj serwisy:</span>
         </div>
         
-        <RadioGroup 
+        <Select 
           value={serviceFilter} 
           onValueChange={setServiceFilter}
-          className="flex flex-col space-y-2"
         >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="all" id="all" />
-            <label htmlFor="all" className="text-sm cursor-pointer">Wszystkie serwisy</label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="vehicle" id="vehicle" />
-            <label htmlFor="vehicle" className="text-sm cursor-pointer">Tylko serwisy pojazdu</label>
-          </div>
-          
-          {vehicleDevices.length > 0 && (
-            <div className="pt-1 border-t border-border/30">
-              <p className="text-xs text-muted-foreground mb-2 mt-1">Serwisy urządzeń:</p>
-              {vehicleDevices.map(device => (
-                <div key={device.id} className="flex items-center space-x-2 ml-1 mb-1.5">
-                  <RadioGroupItem value={device.id} id={device.id} />
-                  <label htmlFor={device.id} className="text-sm cursor-pointer flex items-center">
-                    {device.thumbnail ? (
-                      <div className="w-6 h-6 mr-1.5 overflow-hidden rounded-sm">
-                        <img 
-                          src={device.thumbnail} 
-                          alt={device.name} 
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder.svg';
-                          }}
-                        />
-                      </div>
-                    ) : null}
-                    {device.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </RadioGroup>
+          <SelectTrigger className="w-[220px]">
+            <SelectValue placeholder="Tylko serwisy pojazdu" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Wszystkie serwisy</SelectItem>
+            <SelectItem value="vehicle">Tylko serwisy pojazdu</SelectItem>
+            {vehicleDevices.map(device => (
+              <SelectItem key={device.id} value={device.id}>
+                {device.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       
       <ServiceRecordList 
