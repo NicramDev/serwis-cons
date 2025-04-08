@@ -25,20 +25,17 @@ const VehicleServiceSection = ({
   onViewService,
   onOpenAttachment
 }: VehicleServiceSectionProps) => {
-  const [serviceFilter, setServiceFilter] = useState<'all' | 'vehicle' | 'device' | string>('all');
+  const [serviceFilter, setServiceFilter] = useState<'vehicle' | 'all' | string>('vehicle');
 
   // Filter services based on the selected filter
   const filteredServices = services.filter(service => {
     if (serviceFilter === 'all') return true;
     if (serviceFilter === 'vehicle') return !service.deviceId;
-    if (serviceFilter === 'device') return Boolean(service.deviceId);
     return service.deviceId === serviceFilter;
   });
 
-  // Get unique devices that have services
-  const devicesWithServices = devices?.filter(
-    device => services.some(service => service.deviceId === device.id)
-  ) || [];
+  // Get devices for this vehicle
+  const vehicleDevices = devices || [];
 
   return (
     <>
@@ -68,13 +65,12 @@ const VehicleServiceSection = ({
           onValueChange={setServiceFilter}
         >
           <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="Wszystkie serwisy" />
+            <SelectValue placeholder="Tylko serwisy pojazdu" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Wszystkie serwisy</SelectItem>
             <SelectItem value="vehicle">Tylko serwisy pojazdu</SelectItem>
-            <SelectItem value="device">Tylko serwisy urządzeń</SelectItem>
-            {devicesWithServices.map(device => (
+            {vehicleDevices.map(device => (
               <SelectItem key={device.id} value={device.id}>
                 {device.name}
               </SelectItem>
