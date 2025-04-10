@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { vehicles as initialVehicles } from '../utils/data/vehicleData';
 import { devices as initialDevices } from '../utils/data/deviceData';
@@ -444,6 +443,26 @@ const Vehicles = () => {
     setIsServiceDetailsDialogOpen(true);
   };
 
+  const handleMoveDevice = (device: Device, targetVehicleId: string) => {
+    setAllDevices(prevDevices => 
+      prevDevices.map(d => 
+        d.id === device.id ? { ...d, vehicleId: targetVehicleId } : d
+      )
+    );
+    
+    setServiceRecords(prevRecords => 
+      prevRecords.map(record => {
+        if (record.deviceId === device.id) {
+          return {
+            ...record,
+            vehicleId: targetVehicleId
+          };
+        }
+        return record;
+      })
+    );
+  };
+
   console.log("Vehicles count:", allVehicles.length);
   console.log("Devices count:", allDevices.length);
 
@@ -498,6 +517,7 @@ const Vehicles = () => {
                 onViewService={handleViewService}
                 onSaveService={handleSaveServiceChanges}
                 onView={handleViewDetails}
+                onMoveDevice={handleMoveDevice}
               />
             </div>
           </div>

@@ -1,9 +1,8 @@
-
 import React from 'react';
-import { Device } from "../utils/types";
-import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Eye, Smartphone } from 'lucide-react';
+import { Device } from '../utils/types';
+import { Edit, Trash2, Eye, FileText, MoveRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DeviceCard from './DeviceCard';
 
 interface DeviceListProps {
   devices: Device[];
@@ -11,6 +10,7 @@ interface DeviceListProps {
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
   onOpenAttachment?: (url: string) => void;
+  onMoveDevice?: (device: Device) => void;
 }
 
 const DeviceList = ({ 
@@ -18,7 +18,8 @@ const DeviceList = ({
   onEditDevice, 
   onDeleteDevice, 
   onViewDevice,
-  onOpenAttachment 
+  onOpenAttachment,
+  onMoveDevice
 }: DeviceListProps) => {
   if (devices.length === 0) {
     return (
@@ -29,89 +30,64 @@ const DeviceList = ({
   }
 
   return (
-    <div className="space-y-3">
-      {devices.map((device) => (
-        <div 
-          key={device.id} 
-          className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
-        >
-          <div className="flex justify-between items-start">
-            <div className="flex gap-3">
-              {device.thumbnail ? (
-                <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
-                  <img 
-                    src={device.thumbnail} 
-                    alt={device.name} 
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder.svg';
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="h-14 w-14 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
-                  <Smartphone className="h-7 w-7 text-muted-foreground" />
-                </div>
-              )}
-              <div>
-                <h4 className="font-medium">{device.name}</h4>
-                <p className="text-xs text-muted-foreground">{device.type}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {devices.map(device => (
+        <DeviceCard 
+          key={device.id}
+          device={device}
+          actions={
+            <>
               {onViewDevice && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="xs"
                   className="h-7 px-2 text-xs"
                   onClick={() => onViewDevice(device)}
                 >
-                  <Eye className="h-3 w-3 mr-1" />
+                  <Eye className="h-3.5 w-3.5 mr-1" />
                   Podgląd
                 </Button>
               )}
+              {onMoveDevice && (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  className="h-7 px-2 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveDevice(device);
+                  }}
+                >
+                  <MoveRight className="h-3.5 w-3.5 mr-1" />
+                  Przenieś
+                </Button>
+              )}
               {onEditDevice && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="xs"
                   className="h-7 px-2 text-xs"
                   onClick={() => onEditDevice(device)}
                 >
-                  <Edit className="h-3 w-3 mr-1" />
+                  <Edit className="h-3.5 w-3.5 mr-1" />
                   Edytuj
                 </Button>
               )}
               {onDeleteDevice && (
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
+                <Button
+                  variant="destructive"
+                  size="xs"
                   className="h-7 px-2 text-xs"
                   onClick={() => onDeleteDevice(device)}
                 >
-                  <Trash2 className="h-3 w-3 mr-1" />
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
                   Usuń
                 </Button>
               )}
-              {/* Only show badge for statuses other than 'ok' */}
-              {device.status !== 'ok' && (
-                <Badge variant={
-                  device.status === 'needs-service' ? 'secondary' : 
-                  device.status === 'in-service' ? 'default' : 
-                  'destructive'
-                }>
-                  {device.status === 'needs-service' ? 'Wymaga serwisu' : 
-                  device.status === 'in-service' ? 'W serwisie' : 
-                  'Problem'}
-                </Badge>
-              )}
-            </div>
-          </div>
-          <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
-            <span className="text-xs text-muted-foreground">Nr seryjny: {device.serialNumber}</span>
-            <span className="text-xs text-muted-foreground">Typ: {device.type}</span>
-          </div>
-        </div>
+            </>
+          }
+          onAttachmentClick={onOpenAttachment}
+        />
       ))}
     </div>
   );

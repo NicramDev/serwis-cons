@@ -47,6 +47,11 @@ const VehicleServiceSection = ({
     return true;
   });
 
+  // Sort services by date - newest first
+  const sortedServices = [...filteredServices].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
   // Get devices for this vehicle
   const vehicleDevices = devices || [];
 
@@ -138,7 +143,7 @@ const VehicleServiceSection = ({
       </div>
       
       <ServiceRecordList 
-        services={filteredServices}
+        services={sortedServices}
         devices={devices}
         onEditService={onEditService}
         onDeleteService={onDeleteService}
