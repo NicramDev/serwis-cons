@@ -10,9 +10,19 @@ interface DeviceCardProps {
   onEdit?: (device: Device) => void;
   onDelete?: (device: Device) => void;
   onViewDetails?: (device: Device) => void;
+  actions?: React.ReactNode; // Added actions prop
+  onAttachmentClick?: (url: string) => void; // Added onAttachmentClick prop
 }
 
-const DeviceCard = ({ device, delay = 0, onEdit, onDelete, onViewDetails }: DeviceCardProps) => {
+const DeviceCard = ({ 
+  device, 
+  delay = 0, 
+  onEdit, 
+  onDelete, 
+  onViewDetails, 
+  actions, // Added actions prop
+  onAttachmentClick 
+}: DeviceCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
   
   const getStatusIcon = () => {
@@ -92,33 +102,39 @@ const DeviceCard = ({ device, delay = 0, onEdit, onDelete, onViewDetails }: Devi
       </div>
       
       <div className="flex justify-end mt-3 gap-1">
-        <Button 
-          variant="secondary"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={() => onViewDetails && onViewDetails(device)}
-        >
-          <Eye className="h-3 w-3 mr-1" />
-          Szczegóły
-        </Button>
-        <Button 
-          variant="outline"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={() => onEdit && onEdit(device)}
-        >
-          <Edit className="h-3 w-3 mr-1" />
-          Edytuj
-        </Button>
-        <Button 
-          variant="destructive"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={() => onDelete && onDelete(device)}
-        >
-          <Trash2 className="h-3 w-3 mr-1" />
-          Usuń
-        </Button>
+        {actions ? (
+          actions
+        ) : (
+          <>
+            <Button 
+              variant="secondary"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onViewDetails && onViewDetails(device)}
+            >
+              <Eye className="h-3 w-3 mr-1" />
+              Szczegóły
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onEdit && onEdit(device)}
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edytuj
+            </Button>
+            <Button 
+              variant="destructive"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onDelete && onDelete(device)}
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Usuń
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

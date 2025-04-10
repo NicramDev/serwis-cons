@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Device } from '../utils/types';
 import { Edit, Trash2, Eye, FileText, MoveRight } from 'lucide-react';
@@ -40,7 +41,7 @@ const DeviceList = ({
               {onViewDevice && (
                 <Button
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={() => onViewDevice(device)}
                 >
@@ -51,7 +52,7 @@ const DeviceList = ({
               {onMoveDevice && (
                 <Button
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -65,7 +66,7 @@ const DeviceList = ({
               {onEditDevice && (
                 <Button
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={() => onEditDevice(device)}
                 >
@@ -76,7 +77,7 @@ const DeviceList = ({
               {onDeleteDevice && (
                 <Button
                   variant="destructive"
-                  size="xs"
+                  size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={() => onDeleteDevice(device)}
                 >
