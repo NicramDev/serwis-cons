@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,6 +15,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import FullscreenViewer from "./FullscreenViewer";
 import ReminderSection from "./vehicle-form/ReminderSection";
+import FileUploadField from "./vehicle-form/FileUploadField";
 
 const deviceSchema = z.object({
   vehicleId: z.string().optional(),
@@ -99,16 +99,12 @@ const AddDeviceForm = ({
     onSubmit(updatedDevice);
   };
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setImages(Array.from(e.target.files));
-    }
+  const handleImagesChange = (files: File[]) => {
+    setImages(files);
   };
 
-  const handleAttachmentsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setAttachments(prev => [...prev, ...Array.from(e.target.files || [])]);
-    }
+  const handleAttachmentsChange = (files: File[]) => {
+    setAttachments(prev => [...prev, ...files]);
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -400,90 +396,30 @@ const AddDeviceForm = ({
           />
         </div>
         
-        <div className="space-y-4">
-          <FormLabel>Zdjęcia urządzenia</FormLabel>
-          <Input 
-            type="file" 
-            multiple 
-            accept="image/*" 
-            onChange={handleImagesChange}
-            className="cursor-pointer"
-          />
-          
-          {(existingImages.length > 0 || images.length > 0) && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {existingImages.map((img, idx) => (
-                <div key={`existing-${idx}`} className="relative group">
-                  <img 
-                    src={img} 
-                    alt={`Device preview ${idx}`} 
-                    className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                    onClick={() => openFullscreen(img)}
-                  />
-                  <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
-                      onClick={(e) => openFullscreen(img, e)}
-                    >
-                      <Maximize className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeExistingImage(idx);
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {images.map((img, idx) => (
-                <div key={`new-${idx}`} className="relative group">
-                  <img 
-                    src={URL.createObjectURL(img)} 
-                    alt={`Device preview ${idx}`} 
-                    className="h-20 w-20 object-cover rounded-md cursor-pointer"
-                    onClick={() => openFullscreen(URL.createObjectURL(img))}
-                  />
-                  <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-6 w-6 bg-black/40 hover:bg-black/60 text-white"
-                      onClick={(e) => openFullscreen(URL.createObjectURL(img), e)}
-                    >
-                      <Maximize className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeImage(idx);
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <FileUploadField
+          label="Zdjęcia urządzenia"
+          onChange={handleImagesChange}
+          files={images}
+          accept="image/*"
+          multiple={true}
+          existingFiles={existingImages.map(url => ({
+            name: 'image.jpg',
+            type: 'image/jpeg',
+            size: 0,
+            url
+          }))}
+          onRemoveExisting={removeExistingImage}
+          onRemove={removeImage}
+          isImage={true}
+          helpText="Dołącz zdjęcia urządzenia"
+        />
         
         <div className="space-y-2">
           <FormLabel>Załączniki</FormLabel>
           <Input 
             type="file" 
             multiple 
-            onChange={handleAttachmentsChange}
+            onChange={(e) => handleAttachmentsChange(Array.from(e.target.files || []))}
             className="cursor-pointer"
           />
           
