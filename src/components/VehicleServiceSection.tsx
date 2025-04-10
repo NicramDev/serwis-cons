@@ -8,14 +8,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
-import { ChevronDown } from 'lucide-react';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface VehicleServiceSectionProps {
   services: ServiceRecord[];
@@ -105,87 +103,33 @@ const VehicleServiceSection = ({
         {filterType === 'device' && vehicleDevices.length > 0 && (
           <div className="mt-3">
             {vehicleDevices.length > 0 ? (
-              <>
+              <div className="space-y-2">
                 <Label htmlFor="device-select" className="text-sm mb-2 block">Wybierz urządzenie:</Label>
-                {selectedDeviceId ? (
-                  <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex items-center gap-2 bg-white">
-                          {(() => {
-                            const selectedDevice = vehicleDevices.find(d => d.id === selectedDeviceId);
-                            return (
-                              <>
-                                <Avatar className="h-6 w-6">
-                                  {selectedDevice?.thumbnail ? (
-                                    <AvatarImage src={selectedDevice.thumbnail} alt={selectedDevice.name} />
-                                  ) : (
-                                    <AvatarFallback>{selectedDevice?.name.substring(0, 2) || 'UR'}</AvatarFallback>
-                                  )}
-                                </Avatar>
-                                <span className="text-sm">{selectedDevice?.name || 'Wybierz urządzenie'}</span>
-                                <ChevronDown className="h-4 w-4 ml-1" />
-                              </>
-                            );
-                          })()}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="bg-white">
-                        <DropdownMenuLabel>Urządzenia</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {vehicleDevices.map(device => (
-                          <DropdownMenuItem 
-                            key={device.id} 
-                            className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => setSelectedDeviceId(device.id)}
-                          >
-                            <Avatar className="h-6 w-6">
-                              {device.thumbnail ? (
-                                <AvatarImage src={device.thumbnail} alt={device.name} />
-                              ) : (
-                                <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
-                              )}
-                            </Avatar>
-                            <span>{device.name}</span>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 px-2"
-                      onClick={() => setSelectedDeviceId(null)}
-                    >
-                      Reset
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-3 mt-2">
-                    {vehicleDevices.map(device => (
-                      <div 
-                        key={device.id}
-                        onClick={() => setSelectedDeviceId(device.id)}
-                        className="flex flex-col items-center cursor-pointer p-2 rounded-lg border transition-all bg-background/50 border-border/50 hover:bg-background/80"
-                      >
-                        <Avatar className="h-12 w-12 mb-2">
-                          {device.thumbnail ? (
-                            <AvatarImage src={device.thumbnail} alt={device.name} />
-                          ) : (
-                            <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
-                          )}
-                        </Avatar>
-                        <span className="text-xs text-center font-medium">
-                          {device.name.length > 15 
-                            ? `${device.name.substring(0, 15)}...`
-                            : device.name
-                          }
-                        </span>
-                      </div>
+                <Select
+                  value={selectedDeviceId || ""}
+                  onValueChange={(value) => setSelectedDeviceId(value)}
+                >
+                  <SelectTrigger className="w-full bg-white">
+                    <SelectValue placeholder="Wybierz urządzenie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vehicleDevices.map((device) => (
+                      <SelectItem key={device.id} value={device.id}>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            {device.thumbnail ? (
+                              <AvatarImage src={device.thumbnail} alt={device.name} />
+                            ) : (
+                              <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span>{device.name}</span>
+                        </div>
+                      </SelectItem>
                     ))}
-                  </div>
-                )}
-              </>
+                  </SelectContent>
+                </Select>
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground">Brak urządzeń dla tego pojazdu.</p>
             )}
