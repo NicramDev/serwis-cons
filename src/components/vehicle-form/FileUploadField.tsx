@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X, Maximize, Upload, Image, ImagePlus, Images } from "lucide-react";
+import { X, Maximize, Upload, Image, ImagePlus, Images, FileImage, FilePdf, File } from "lucide-react";
 
 interface FileInfo {
   name: string;
@@ -56,6 +56,22 @@ const FileUploadField = ({
     e.preventDefault();
   };
 
+  // Function to get appropriate icon based on file type
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) {
+      return <FileImage className="h-8 w-8 text-blue-500" />;
+    } else if (fileType === 'application/pdf') {
+      return <FilePdf className="h-8 w-8 text-red-500" />;
+    } else {
+      return <File className="h-8 w-8 text-gray-500" />;
+    }
+  };
+
+  // Function to check if a file is an image
+  const isImageFile = (fileType: string) => {
+    return fileType.startsWith('image/');
+  };
+
   return (
     <div className="space-y-2">
       <FormLabel>{label}</FormLabel>
@@ -83,15 +99,19 @@ const FileUploadField = ({
           </div>
         </div>
       ) : (
-        <Input 
-          type="file" 
-          multiple={multiple} 
-          accept={accept} 
-          onChange={handleChange}
-          className="cursor-pointer"
-        />
+        <div>
+          <Input 
+            type="file" 
+            multiple={multiple} 
+            accept={accept} 
+            onChange={handleChange}
+            className="cursor-pointer"
+          />
+          {helpText && <p className="text-xs text-muted-foreground mt-1">{helpText}</p>}
+        </div>
       )}
       
+      {/* Previews for images */}
       {isImage && (existingFiles.length > 0 || files.length > 0) && (
         <div className="flex flex-wrap gap-2 mt-2">
           {existingFiles && existingFiles.map((file, idx) => (
@@ -128,6 +148,77 @@ const FileUploadField = ({
                     type="button"
                     onClick={() => onRemove(idx)}
                     className="bg-destructive text-white rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Previews for attachments (non-images) */}
+      {!isImage && (existingFiles.length > 0 || files.length > 0) && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {existingFiles && existingFiles.map((file, idx) => (
+            <div key={`existing-${idx}`} className="relative group border border-border rounded-md p-2 bg-background/50">
+              <div className="flex items-center gap-2">
+                {isImageFile(file.type) ? (
+                  <div className="h-14 w-14 rounded-md overflow-hidden flex items-center justify-center bg-muted">
+                    <img 
+                      src={file.url} 
+                      alt={`Preview ${idx}`} 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-14 w-14 rounded-md overflow-hidden flex items-center justify-center bg-muted">
+                    {getFileIcon(file.type)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate" title={file.name}>{file.name}</p>
+                  <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
+                </div>
+                {onRemoveExisting && (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveExisting(idx)}
+                    className="text-destructive hover:bg-destructive/10 rounded-full p-1 h-6 w-6 flex items-center justify-center"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          
+          {files.map((file, idx) => (
+            <div key={`new-${idx}`} className="relative group border border-border rounded-md p-2 bg-background/50">
+              <div className="flex items-center gap-2">
+                {file.type.startsWith('image/') ? (
+                  <div className="h-14 w-14 rounded-md overflow-hidden flex items-center justify-center bg-muted">
+                    <img 
+                      src={URL.createObjectURL(file)} 
+                      alt={`Preview ${idx}`} 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-14 w-14 rounded-md overflow-hidden flex items-center justify-center bg-muted">
+                    {getFileIcon(file.type)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate" title={file.name}>{file.name}</p>
+                  <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
+                </div>
+                {onRemove && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(idx)}
+                    className="text-destructive hover:bg-destructive/10 rounded-full p-1 h-6 w-6 flex items-center justify-center"
                   >
                     <X className="h-4 w-4" />
                   </button>

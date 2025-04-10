@@ -2,7 +2,7 @@
 import React from 'react';
 import { ServiceRecord, Device } from '../utils/types';
 import { formatDate } from '../utils/formatting/dateUtils';
-import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone } from 'lucide-react';
+import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone, FileImage, FilePdf, File, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -64,6 +64,17 @@ const ServiceRecordList = ({
         return 'bg-green-100 text-green-700';
       default:
         return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  // Helper function to get appropriate icon based on file type
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) {
+      return <FileImage className="h-4 w-4 text-blue-500" />;
+    } else if (fileType === 'application/pdf') {
+      return <FilePdf className="h-4 w-4 text-red-500" />;
+    } else {
+      return <File className="h-4 w-4 text-gray-500" />;
     }
   };
   
@@ -133,6 +144,35 @@ const ServiceRecordList = ({
                       Dotyczy: {service.deviceId ? 'Urządzenia' : 'Pojazdu'}
                       {service.deviceName && ` - ${service.deviceName}`}
                     </p>
+
+                    {/* Attachment thumbnails */}
+                    {service.attachments && service.attachments.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {service.attachments.slice(0, 3).map((attachment, idx) => (
+                          <div 
+                            key={idx} 
+                            className="h-6 w-6 rounded-md overflow-hidden border border-border/50 flex items-center justify-center bg-muted cursor-pointer"
+                            onClick={() => onOpenAttachment && onOpenAttachment(attachment.url)}
+                            title={attachment.name}
+                          >
+                            {attachment.type.startsWith('image/') ? (
+                              <img 
+                                src={attachment.url} 
+                                alt={attachment.name} 
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              getFileIcon(attachment.type)
+                            )}
+                          </div>
+                        ))}
+                        {service.attachments.length > 3 && (
+                          <div className="h-6 px-1 rounded-md overflow-hidden border border-border/50 flex items-center justify-center bg-muted text-xs">
+                            +{service.attachments.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

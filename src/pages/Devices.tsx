@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { devices as initialDevices, vehicles as initialVehicles } from '../utils/data';
 import { formatDate } from '../utils/formatting/dateUtils';

@@ -104,7 +104,7 @@ const AddDeviceForm = ({
   };
 
   const handleAttachmentsChange = (files: File[]) => {
-    setAttachments(prev => [...prev, ...files]);
+    setAttachments(files);
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -414,74 +414,17 @@ const AddDeviceForm = ({
           helpText="Dołącz zdjęcia urządzenia"
         />
         
-        <div className="space-y-2">
-          <FormLabel>Załączniki</FormLabel>
-          <Input 
-            type="file" 
-            multiple 
-            onChange={(e) => handleAttachmentsChange(Array.from(e.target.files || []))}
-            className="cursor-pointer"
-          />
-          
-          {(existingAttachments.length > 0 || attachments.length > 0) && (
-            <div className="space-y-2 mt-2">
-              {existingAttachments.map((file, idx) => (
-                <div 
-                  key={`existing-attach-${idx}`} 
-                  className="flex items-center justify-between bg-secondary p-2 rounded-md cursor-pointer"
-                  onClick={() => openFullscreen(file.url)}
-                >
-                  <div className="truncate text-sm">
-                    {file.name} ({(file.size / 1024).toFixed(0)} KB)
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-primary"
-                      onClick={(e) => openFullscreen(file.url, e)}
-                    >
-                      <Maximize className="h-3 w-3 mr-1" />
-                      <span className="text-xs">Pełny ekran</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeExistingAttachment(idx);
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {attachments.map((file, idx) => (
-                <div 
-                  key={`new-attach-${idx}`} 
-                  className="flex items-center justify-between bg-secondary p-2 rounded-md"
-                >
-                  <div className="truncate text-sm">
-                    {file.name} ({(file.size / 1024).toFixed(0)} KB)
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeAttachment(idx);
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <FileUploadField
+          label="Załączniki"
+          onChange={handleAttachmentsChange}
+          files={attachments}
+          multiple={true}
+          existingFiles={existingAttachments}
+          onRemoveExisting={removeExistingAttachment}
+          onRemove={removeAttachment}
+          isImage={false}
+          helpText="Załącz dokumenty związane z urządzeniem (instrukcje, faktury, itp.)"
+        />
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
           <Button type="button" variant="outline" onClick={onCancel}>
