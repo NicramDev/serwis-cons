@@ -99,6 +99,7 @@ const VehicleDetailPanel = ({
               ) : showingServiceRecords && !showingReports ? (
                 <VehicleServiceSection 
                   services={selectedVehicleServices}
+                  devices={selectedVehicleDevices}
                   onAddService={onAddService}
                   onEditService={onEditService}
                   onDeleteService={onDeleteService}

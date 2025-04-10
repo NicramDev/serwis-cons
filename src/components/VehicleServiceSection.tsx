@@ -111,7 +111,7 @@ const VehicleServiceSection = ({
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex items-center gap-2">
+                        <Button variant="outline" className="flex items-center gap-2 bg-white">
                           {(() => {
                             const selectedDevice = vehicleDevices.find(d => d.id === selectedDeviceId);
                             return (
