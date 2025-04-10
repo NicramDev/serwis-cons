@@ -461,6 +461,8 @@ const Vehicles = () => {
         return record;
       })
     );
+    
+    toast.success(`Urządzenie zostało przeniesione do innego pojazdu`);
   };
 
   console.log("Vehicles count:", allVehicles.length);
