@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X, Maximize, Upload, Image, ImagePlus, Images, FileImage, FilePdf, File } from "lucide-react";
+import { X, Maximize, Upload, Image, ImagePlus, Images, FileImage, FileText, File } from "lucide-react";
 
 interface FileInfo {
   name: string;
@@ -61,7 +61,7 @@ const FileUploadField = ({
     if (fileType.startsWith('image/')) {
       return <FileImage className="h-8 w-8 text-blue-500" />;
     } else if (fileType === 'application/pdf') {
-      return <FilePdf className="h-8 w-8 text-red-500" />;
+      return <FileText className="h-8 w-8 text-red-500" />;
     } else {
       return <File className="h-8 w-8 text-gray-500" />;
     }

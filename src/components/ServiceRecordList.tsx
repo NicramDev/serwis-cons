@@ -2,7 +2,7 @@
 import React from 'react';
 import { ServiceRecord, Device } from '../utils/types';
 import { formatDate } from '../utils/formatting/dateUtils';
-import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone, FileImage, FilePdf, File, ExternalLink } from 'lucide-react';
+import { CalendarDays, Wrench, Car, Zap, Edit, Trash2, Eye, Smartphone, FileImage, FileText, File, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -72,7 +72,7 @@ const ServiceRecordList = ({
     if (fileType.startsWith('image/')) {
       return <FileImage className="h-4 w-4 text-blue-500" />;
     } else if (fileType === 'application/pdf') {
-      return <FilePdf className="h-4 w-4 text-red-500" />;
+      return <FileText className="h-4 w-4 text-red-500" />;
     } else {
       return <File className="h-4 w-4 text-gray-500" />;
     }
