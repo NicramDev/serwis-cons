@@ -1,5 +1,5 @@
 
-import { FileText, FileImage, ExternalLink, Maximize } from 'lucide-react';
+import { FileText, FileImage, ExternalLink, Maximize, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FileInfo {
@@ -28,6 +28,22 @@ const FileAttachments = ({
     return null;
   }
 
+  // Function to get appropriate icon based on file type
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) {
+      return <FileImage className="h-5 w-5 text-blue-500" />;
+    } else if (fileType === 'application/pdf') {
+      return <FileText className="h-5 w-5 text-red-500" />;
+    } else {
+      return <File className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  // Function to check if a file is an image
+  const isImageFile = (fileType: string) => {
+    return fileType.startsWith('image/');
+  };
+
   return (
     <div className="space-y-6">
       {attachments.length > 0 && (
@@ -41,13 +57,21 @@ const FileAttachments = ({
                 onClick={() => onOpenFullscreen(file.url)}
               >
                 <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <FileText className="h-5 w-5" />
+                  <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+                    {isImageFile(file.type) ? (
+                      <img 
+                        src={file.url}
+                        alt={file.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      getFileIcon(file.type)
+                    )}
                   </div>
                   <div>
                     <p className="font-medium">{file.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {file.type} • {(file.size / 1024).toFixed(0)} KB
+                      {file.type === 'application/pdf' ? 'PDF' : file.type} • {(file.size / 1024).toFixed(0)} KB
                     </p>
                   </div>
                 </div>
@@ -88,8 +112,12 @@ const FileAttachments = ({
                 onClick={() => onOpenFullscreen(imgUrl)}
               >
                 <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <FileImage className="h-5 w-5" />
+                  <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+                    <img 
+                      src={imgUrl} 
+                      alt={`${itemName ? itemName : ''} - zdjęcie ${idx + 1}`}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="flex items-center space-x-3">
                     <img 
