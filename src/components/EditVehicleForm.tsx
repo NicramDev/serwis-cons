@@ -225,6 +225,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [], onRemo
           onRemoveExisting={removeImage}
           onRemove={(index) => removeImage(index + images.length)}
           isImage={true}
+          helpText="Przeciągnij i upuść zdjęcia lub kliknij, aby wybrać"
         />
         
         <FileUploadField 
@@ -235,6 +236,7 @@ const EditVehicleForm = ({ vehicle, onSubmit, onCancel, allVehicles = [], onRemo
           existingFiles={attachments || []}
           onRemoveExisting={removeAttachment}
           onRemove={(index) => removeAttachment(index + (attachments?.length || 0))}
+          helpText="Przeciągnij i upuść pliki lub kliknij, aby wybrać"
         />
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
