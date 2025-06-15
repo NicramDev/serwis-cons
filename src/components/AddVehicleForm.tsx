@@ -5,7 +5,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "sonner";
 import { Vehicle } from "../utils/types";
 import VehicleBasicFields from "./vehicle-form/VehicleBasicFields";
 import ReminderSection from "./vehicle-form/ReminderSection";
@@ -35,13 +34,15 @@ const vehicleSchema = z.object({
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
 
 type AddVehicleFormProps = {
-  onSubmit: (vehicle: Partial<Vehicle>) => void;
+  onSubmit: (vehicle: Partial<Vehicle> | Vehicle) => void;
   onCancel: () => void;
   allVehicles?: Vehicle[];
   onRemoveTag?: (tagName: string) => void;
+  vehicle?: Vehicle;
+  isEditing?: boolean;
 };
 
-const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: AddVehicleFormProps) => {
+const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, vehicle, isEditing = false }: AddVehicleFormProps) => {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -81,10 +82,35 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: A
     },
   });
 
+  useEffect(() => {
+    if (isEditing && vehicle) {
+      form.reset({
+        ...vehicle,
+        brand: vehicle.brand || "",
+        vin: vehicle.vin || "",
+        purchaseDate: vehicle.purchaseDate ? new Date(vehicle.purchaseDate) : undefined,
+        inspectionExpiryDate: vehicle.inspectionExpiryDate ? new Date(vehicle.inspectionExpiryDate) : undefined,
+        serviceExpiryDate: vehicle.serviceExpiryDate ? new Date(vehicle.serviceExpiryDate) : undefined,
+        insuranceExpiryDate: vehicle.insuranceExpiryDate ? new Date(vehicle.insuranceExpiryDate) : undefined,
+        fuelCardNumber: vehicle.fuelCardNumber || "",
+        gpsSystemNumber: vehicle.gpsSystemNumber || "",
+        driverName: vehicle.driverName || "",
+        tags: vehicle.tags || "",
+        notes: vehicle.notes || "",
+        insuranceReminderDays: vehicle.insuranceReminderDays ?? 30,
+        inspectionReminderDays: vehicle.inspectionReminderDays ?? 30,
+        serviceReminderDays: vehicle.serviceReminderDays ?? 30,
+      });
+      if (vehicle.thumbnail) {
+        setThumbnailPreview(vehicle.thumbnail);
+      }
+    }
+  }, [form, isEditing, vehicle]);
+
   const handleSubmit = (values: VehicleFormValues) => {
-    const newVehicle: Partial<Vehicle> = {
+    const vehicleData: Partial<Vehicle> = {
       ...values,
-      thumbnail: thumbnail ? URL.createObjectURL(thumbnail) : undefined,
+      thumbnail: thumbnail ? URL.createObjectURL(thumbnail) : vehicle?.thumbnail,
       images: images.map(img => URL.createObjectURL(img)),
       attachments: attachments.map(file => ({
         name: file.name,
@@ -94,8 +120,11 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: A
       })),
     };
     
-    onSubmit(newVehicle);
-    toast.success("Pojazd został dodany pomyślnie");
+    if (isEditing && vehicle) {
+      onSubmit({ ...vehicle, ...vehicleData });
+    } else {
+      onSubmit(vehicleData);
+    }
   };
 
   const handleImagesChange = (newFiles: File[]) => {
@@ -210,7 +239,7 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag }: A
             Anuluj
           </Button>
           <Button type="submit" className="bg-primary">
-            Dodaj pojazd
+            {isEditing ? 'Zapisz zmiany' : 'Dodaj pojazd'}
           </Button>
         </div>
       </form>

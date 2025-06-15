@@ -86,7 +86,7 @@ const Devices = () => {
   );
 
   const handleAddDevice = async (deviceData: Partial<Device>) => {
-    const newDeviceData = {
+    const newDeviceData: Partial<Device> = {
       ...deviceData,
       id: uuidv4(),
       lastService: deviceData.lastService || new Date(),
