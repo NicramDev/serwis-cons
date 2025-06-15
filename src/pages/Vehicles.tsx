@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -5,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import AddVehicleForm from '../components/AddVehicleForm';
-import VehicleDetails from '../components/VehicleDetails';
+import VehicleDetailPanel from '../components/VehicleDetailPanel';
 import { toast } from 'sonner';
 import VehicleList from '../components/VehicleList';
 import NoVehiclesFound from '../components/NoVehiclesFound';
@@ -23,17 +24,24 @@ import {
 import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle } from '@/utils/supabaseMappers';
 import { extractAllTags } from '@/utils/tagUtils';
 
+// Nowe: przykładowe pobieranie devices i services – należy wprowadzić
+const mockDevices: Device[] = []; // Replace with actual fetch
+const mockServices: ServiceRecord[] = []; // Replace with actual fetch
+
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedVehicleForEdit, setSelectedVehicleForEdit] = useState<Vehicle | null>(null);
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [services, setServices] = useState<ServiceRecord[]>([]);
+  const [showingServiceRecords, setShowingServiceRecords] = useState(false);
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -49,7 +57,40 @@ const Vehicles = () => {
         setAllVehicles(data.map(mapSupabaseVehicleToVehicle));
       }
     };
+
     fetchVehicles();
+  }, []);
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      const { data, error } = await supabase
+        .from('devices')
+        .select('*');
+
+      if (error) {
+        toast.error("Nie udało się pobrać danych urządzeń.");
+        setDevices([]);
+      } else {
+        setDevices(data as Device[]);
+      }
+    };
+    fetchDevices();
+  }, []);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const { data, error } = await supabase
+        .from('service_records')
+        .select('*');
+
+      if (error) {
+        toast.error("Nie udało się pobrać historii serwisowej.");
+        setServices([]);
+      } else {
+        setServices(data as ServiceRecord[]);
+      }
+    };
+    fetchServices();
   }, []);
 
   const handleAddVehicle = async (vehicleData: Partial<Vehicle>) => {
@@ -146,15 +187,14 @@ const Vehicles = () => {
       setIsDeleteDialogOpen(true);
   };
   
-  const handleViewDetails = (vehicle: Vehicle) => {
-      setSelectedVehicleForEdit(vehicle);
-      setIsDetailsDialogOpen(true);
-  };
-  
   const handleTagSelect = (tag: string) => {
       setSelectedTags(prev => 
           prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
       );
+  };
+
+  const handleServiceClick = () => {
+    setShowingServiceRecords((prev) => !prev);
   };
 
   const filteredVehicles = allVehicles.filter(vehicle => {
@@ -189,7 +229,6 @@ const Vehicles = () => {
             <h1 className="text-3xl font-bold mb-2">Pojazdy</h1>
             <p className="text-muted-foreground">Zarządzaj i śledź wszystkie swoje pojazdy</p>
           </div>
-          
           <VehicleSearchBar 
             searchQuery={searchQuery} 
             onSearchChange={setSearchQuery} 
@@ -199,21 +238,49 @@ const Vehicles = () => {
             onTagSelect={handleTagSelect}
           />
         </div>
-        
-        {filteredVehicles.length > 0 ? (
-          <VehicleList 
-            vehicles={filteredVehicles}
-            selectedVehicleId={selectedVehicleId}
-            onVehicleClick={handleVehicleClick}
-            onEdit={handleEditVehicle}
-            onDelete={handleDeleteVehicle}
-            onView={handleViewDetails}
-          />
-        ) : (
-          <NoVehiclesFound />
-        )}
+
+        {/* GŁÓWNY UKŁAD STRONY: lista pojazdów + panel szczegółów */}
+        <div className="flex gap-5">
+          <div className="w-full md:w-1/3 xl:w-1/4">
+            {filteredVehicles.length > 0 ? (
+              <VehicleList 
+                vehicles={filteredVehicles}
+                selectedVehicleId={selectedVehicleId}
+                onVehicleClick={handleVehicleClick}
+                onEdit={handleEditVehicle}
+                onDelete={handleDeleteVehicle}
+              />
+            ) : (
+              <NoVehiclesFound />
+            )}
+          </div>
+          <div className="w-full md:w-2/3 xl:w-3/4">
+            <VehicleDetailPanel
+              selectedVehicleId={selectedVehicleId}
+              vehicles={allVehicles}
+              devices={devices}
+              services={services}
+              showingServiceRecords={showingServiceRecords}
+              onServiceClick={handleServiceClick}
+              onEdit={handleEditVehicle}
+              onAddService={() => {}} // TODO: Podłącz funkcję
+              // Te poniższe to placeholdery pod funkcjonalność urządzeń i serwisów:
+              onAddDevice={() => {}}
+              onEditDevice={() => {}}
+              onDeleteDevice={() => {}}
+              onViewDevice={() => {}}
+              onEditService={() => {}}
+              onDeleteService={() => {}}
+              onViewService={() => {}}
+              onSaveService={() => {}}
+              onView={() => {}}
+              onMoveDevice={() => {}}
+            />
+          </div>
+        </div>
       </div>
       
+      {/* DIALOGI – NIE ULEGAJĄ ZMIANOM */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
@@ -227,18 +294,6 @@ const Vehicles = () => {
             onCancel={() => setIsAddDialogOpen(false)} 
             allVehicles={allVehicles}
           />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Szczegóły pojazdu</DialogTitle>
-            <DialogDescription>
-              Pełne informacje o pojeździe
-            </DialogDescription>
-          </DialogHeader>
-          {selectedVehicleForEdit && <VehicleDetails vehicle={selectedVehicleForEdit} />}
         </DialogContent>
       </Dialog>
       
