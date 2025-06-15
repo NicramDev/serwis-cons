@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ServiceRecord, Vehicle, Device } from '../utils/types';
+import { supabase } from '@/integrations/supabase/client';
+import { mapSupabaseVehicleToVehicle, mapSupabaseDeviceToDevice, mapSupabaseServiceRecordToServiceRecord } from '@/utils/supabaseMappers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Select, 
@@ -50,23 +52,44 @@ const Costs = () => {
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false);
   const [treatVehicleAsDevice, setTreatVehicleAsDevice] = useState<boolean>(false);
 
-  useEffect(() => {
-    // RESET localStorage (vehicles, devices, serviceRecords)
-    localStorage.removeItem('vehicles');
-    localStorage.removeItem('devices');
-    localStorage.removeItem('serviceRecords');
+  // 1. Pobierz pojazdy z Supabase
+  const fetchVehicles = async () => {
+    const { data, error } = await supabase.from('vehicles').select('*');
+    if (error) {
+      console.error('Błąd pobierania pojazdów:', error);
+      setAllVehicles([]);
+    } else {
+      setAllVehicles(data.map(mapSupabaseVehicleToVehicle));
+    }
+  };
 
-    const savedVehicles = localStorage.getItem('vehicles');
-    const savedDevices = localStorage.getItem('devices');
-    const savedRecords = localStorage.getItem('serviceRecords');
-    
-    if (savedVehicles) setAllVehicles(JSON.parse(savedVehicles));
-    if (savedDevices) setAllDevices(JSON.parse(savedDevices));
-    if (savedRecords) setServiceRecords(JSON.parse(savedRecords));
-    // Opcjonalnie — domyślne wartości, jeśli chcesz je załadować
-    // setAllVehicles([...]);
-    // setAllDevices([...]);
-    // setServiceRecords([...]);
+  // 2. Pobierz urządzenia z Supabase
+  const fetchDevices = async () => {
+    const { data, error } = await supabase.from('devices').select('*');
+    if (error) {
+      console.error('Błąd pobierania urządzeń:', error);
+      setAllDevices([]);
+    } else {
+      setAllDevices(data.map(mapSupabaseDeviceToDevice));
+    }
+  };
+
+  // 3. Pobierz rekordy serwisowe z Supabase
+  const fetchServiceRecords = async () => {
+    const { data, error } = await supabase.from('service_records').select('*');
+    if (error) {
+      console.error('Błąd pobierania serwisów:', error);
+      setServiceRecords([]);
+    } else {
+      setServiceRecords(data.map(mapSupabaseServiceRecordToServiceRecord));
+    }
+  };
+
+  useEffect(() => {
+    // Na starcie pobierz dane z supabase
+    fetchVehicles();
+    fetchDevices();
+    fetchServiceRecords();
   }, []);
 
   useEffect(() => {
