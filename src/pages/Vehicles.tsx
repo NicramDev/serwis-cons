@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, 
+  DialogFooter, DialogClose
+} from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import AddVehicleForm from '../components/AddVehicleForm';
 import VehicleDetailPanel from '../components/VehicleDetailPanel';
@@ -206,13 +208,30 @@ const Vehicles = () => {
     setShowingServiceRecords((prev) => !prev);
   };
 
-  // Dodawanie urządzenia do pojazdu
+  // --- Poprawiony handler dodawania urządzenia ---
   const handleAddDevice = async (deviceData: Partial<Device>) => {
     if (!selectedVehicleId) return;
-    const newDeviceData = {
-      ...deviceData,
+    // Tworzymy pełny device
+    const newDeviceData: Device = {
       id: uuidv4(),
+      name: deviceData.name ?? "",
+      brand: deviceData.brand ?? "",
+      type: deviceData.type ?? "",
+      model: deviceData.model ?? "",
+      serialNumber: deviceData.serialNumber ?? "",
       vehicleId: selectedVehicleId,
+      year: deviceData.year,
+      purchasePrice: deviceData.purchasePrice,
+      purchaseDate: deviceData.purchaseDate,
+      lastService: deviceData.lastService ?? new Date(),
+      nextService: deviceData.nextService ?? new Date(new Date().setMonth(new Date().getMonth() + 6)),
+      serviceExpiryDate: deviceData.serviceExpiryDate,
+      serviceReminderDays: deviceData.serviceReminderDays,
+      notes: deviceData.notes ?? "",
+      status: deviceData.status ?? "ok",
+      images: deviceData.images ?? [],
+      thumbnail: deviceData.thumbnail ?? null,
+      attachments: deviceData.attachments ?? [],
     };
     const supabaseDevice = mapDeviceToSupabaseDevice(newDeviceData);
 
