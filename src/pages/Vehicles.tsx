@@ -343,7 +343,7 @@ const Vehicles = () => {
   const confirmMoveDevice = async () => {
     if (deviceToMove && targetVehicleId) {
       // Update device in supabase and local state
-      const updates = { vehicleId: targetVehicleId };
+      const updates = { vehicleid: targetVehicleId }; // Use snake_case key as expected by Supabase
       const { data, error } = await supabase
         .from('devices')
         .update(updates)
