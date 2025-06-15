@@ -25,6 +25,7 @@ import { extractAllTags } from '@/utils/tagUtils';
 import AddDeviceDialog from '../components/AddDeviceDialog';
 import AddServiceDialog from '../components/AddServiceDialog';
 import VehicleDetails from '../components/VehicleDetails';
+import DeviceDetails from '../components/DeviceDetails';
 
 const Vehicles = () => {
   // Główne stany
@@ -281,6 +282,131 @@ const Vehicles = () => {
   const selectedVehicle = allVehicles.find(v => v.id === selectedVehicleId) || null;
   const selectedVehicleDevices = devices.filter(d => d.vehicleId === selectedVehicleId);
 
+  // --- DIALOGI AKCJE URZĄDZEŃ ---
+  const [selectedDeviceForEdit, setSelectedDeviceForEdit] = useState<Device | null>(null);
+  const [isEditDeviceDialogOpen, setIsEditDeviceDialogOpen] = useState(false);
+  const [selectedDeviceForView, setSelectedDeviceForView] = useState<Device | null>(null);
+  const [isViewDeviceDialogOpen, setIsViewDeviceDialogOpen] = useState(false);
+  const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
+  const [isDeleteDeviceDialogOpen, setIsDeleteDeviceDialogOpen] = useState(false);
+
+  // --- DIALOGI AKCJE SERWISÓW ---
+  const [selectedServiceForEdit, setSelectedServiceForEdit] = useState<ServiceRecord | null>(null);
+  const [isEditServiceDialogOpen, setIsEditServiceDialogOpen] = useState(false);
+  const [selectedServiceForView, setSelectedServiceForView] = useState<ServiceRecord | null>(null);
+  const [isViewServiceDialogOpen, setIsViewServiceDialogOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
+  const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
+
+  // --- Move Device Dialog ---
+  const [deviceToMove, setDeviceToMove] = useState<Device | null>(null);
+  const [isMoveDeviceDialogOpen, setIsMoveDeviceDialogOpen] = useState(false);
+  const [targetVehicleId, setTargetVehicleId] = useState<string>("");
+
+  // Przyciski do urządzeń
+  const handleEditDevice = (device: Device) => {
+    setSelectedDeviceForEdit(device);
+    setIsEditDeviceDialogOpen(true);
+  };
+  const handleDeleteDevice = (device: Device) => {
+    setDeviceToDelete(device);
+    setIsDeleteDeviceDialogOpen(true);
+  };
+  const handleViewDevice = (device: Device) => {
+    setSelectedDeviceForView(device);
+    setIsViewDeviceDialogOpen(true);
+  };
+  const handleMoveDevice = (device: Device) => {
+    setDeviceToMove(device);
+    setIsMoveDeviceDialogOpen(true);
+    setTargetVehicleId("");
+  };
+  const confirmMoveDevice = async () => {
+    if (deviceToMove && targetVehicleId) {
+      // Update device in supabase and local state
+      const updates = { vehicleId: targetVehicleId };
+      const { data, error } = await supabase
+        .from('devices')
+        .update(updates)
+        .eq('id', deviceToMove.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Błąd przenoszenia urządzenia");
+      } else if (data) {
+        setDevices(prev =>
+          prev.map(d =>
+            d.id === deviceToMove.id ? { ...d, vehicleId: targetVehicleId } : d
+          )
+        );
+        toast.success("Urządzenie przeniesione");
+      }
+      setIsMoveDeviceDialogOpen(false);
+      setDeviceToMove(null);
+      setTargetVehicleId("");
+    }
+  };
+  const confirmDeleteDevice = async () => {
+    if (deviceToDelete) {
+      const { error } = await supabase
+        .from('devices')
+        .delete()
+        .eq('id', deviceToDelete.id);
+      if (error) {
+        toast.error("Błąd usuwania urządzenia");
+      } else {
+        setDevices(prev => prev.filter(d => d.id !== deviceToDelete.id));
+        toast.success("Urządzenie usunięte");
+      }
+      setIsDeleteDeviceDialogOpen(false);
+      setDeviceToDelete(null);
+    }
+  };
+  // Edycja urządzenia - UI logika istniejąca w AddDeviceDialog
+
+  // Przyciski do serwisów
+  const handleViewService = (service: ServiceRecord) => {
+    setSelectedServiceForView(service);
+    setIsViewServiceDialogOpen(true);
+  };
+  const handleEditService = (service: ServiceRecord) => {
+    setSelectedServiceForEdit(service);
+    setIsEditServiceDialogOpen(true);
+  };
+  const handleDeleteService = (service: ServiceRecord) => {
+    setServiceToDelete(service);
+    setIsDeleteServiceDialogOpen(true);
+  };
+  const confirmDeleteService = async () => {
+    if (serviceToDelete) {
+      const { error } = await supabase
+        .from('service_records')
+        .delete()
+        .eq('id', serviceToDelete.id);
+      if (error) {
+        toast.error("Błąd usuwania serwisu");
+      } else {
+        setServices(prev => prev.filter(s => s.id !== serviceToDelete.id));
+        toast.success("Serwis usunięty");
+      }
+      setIsDeleteServiceDialogOpen(false);
+      setServiceToDelete(null);
+    }
+  };
+
+  // --- Reset powiadomień i kosztów na wejściu (do nowych danych) ---
+  useEffect(() => {
+    localStorage.removeItem('notifications');
+    localStorage.removeItem('vehicles');
+    localStorage.removeItem('devices');
+    localStorage.removeItem('serviceRecords');
+    // Chwilowe zapisanie bieżących danych (vehicles/devices/services)
+    localStorage.setItem('vehicles', JSON.stringify(allVehicles));
+    localStorage.setItem('devices', JSON.stringify(devices));
+    localStorage.setItem('serviceRecords', JSON.stringify(services));
+  }, [allVehicles, devices, services]);
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -325,15 +451,15 @@ const Vehicles = () => {
               onEdit={handleEditVehicle}
               onAddService={() => setIsAddServiceDialogOpen(true)}
               onAddDevice={() => setIsAddDeviceDialogOpen(true)}
-              onEditDevice={() => { }}
-              onDeleteDevice={() => { }}
-              onViewDevice={() => { }}
-              onEditService={() => { }}
-              onDeleteService={() => { }}
-              onViewService={() => { }}
+              onEditDevice={handleEditDevice}
+              onDeleteDevice={handleDeleteDevice}
+              onViewDevice={handleViewDevice}
+              onMoveDevice={handleMoveDevice}
+              onEditService={handleEditService}
+              onDeleteService={handleDeleteService}
+              onViewService={handleViewService}
               onSaveService={() => { }}
               onView={() => { }}
-              onMoveDevice={() => { }}
             />
           </div>
         </div>
@@ -428,6 +554,143 @@ const Vehicles = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edytowanie urządzenia */}
+      <Dialog open={isEditDeviceDialogOpen} onOpenChange={setIsEditDeviceDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Edytuj urządzenie</DialogTitle>
+            <DialogDescription>Zaktualizuj informacje o urządzeniu</DialogDescription>
+          </DialogHeader>
+          {selectedDeviceForEdit && (
+            <AddDeviceDialog
+              open={isEditDeviceDialogOpen}
+              onOpenChange={setIsEditDeviceDialogOpen}
+              allVehicles={allVehicles}
+              vehicle={allVehicles.find(v => v.id === selectedDeviceForEdit.vehicleId) ?? null}
+              onSubmit={() => setIsEditDeviceDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Podgląd urządzenia */}
+      <Dialog open={isViewDeviceDialogOpen} onOpenChange={setIsViewDeviceDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Szczegóły urządzenia</DialogTitle>
+          </DialogHeader>
+          {selectedDeviceForView && (
+            <div>
+              <DeviceDetails device={selectedDeviceForView} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Usuwanie urządzenia */}
+      <AlertDialog open={isDeleteDeviceDialogOpen} onOpenChange={setIsDeleteDeviceDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć to urządzenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteDevice} className="bg-destructive text-destructive-foreground">
+              Usuń urządzenie
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Przenoszenie urządzenia */}
+      <Dialog open={isMoveDeviceDialogOpen} onOpenChange={setIsMoveDeviceDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Przenieś urządzenie</DialogTitle>
+            <DialogDescription>
+              Wybierz pojazd docelowy.
+            </DialogDescription>
+          </DialogHeader>
+          <select
+            className="border rounded w-full p-2 my-4"
+            value={targetVehicleId}
+            onChange={e => setTargetVehicleId(e.target.value)}
+          >
+            <option value="">Wybierz pojazd</option>
+            {allVehicles.filter(v => v.id !== deviceToMove?.vehicleId).map(vehicle => (
+              <option key={vehicle.id} value={vehicle.id}>
+                {vehicle.name} ({vehicle.registrationNumber})
+              </option>
+            ))}
+          </select>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Anuluj</Button>
+            </DialogClose>
+            <Button
+              onClick={confirmMoveDevice}
+              disabled={!targetVehicleId}
+              className="gap-2"
+            >
+              Przenieś
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edytowanie serwisu */}
+      <Dialog open={isEditServiceDialogOpen} onOpenChange={setIsEditServiceDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Edytuj serwis</DialogTitle>
+          </DialogHeader>
+          {/* Można dodać formularz edycji serwisu */}
+          {selectedServiceForEdit && (
+            <div>
+              {/* Przykładowo: ServiceForm z propsami */}
+              {/* <ServiceForm service={selectedServiceForEdit} onSubmit={} ... /> */}
+              Edycja serwisu ({selectedServiceForEdit.description})
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Podgląd serwisu */}
+      <Dialog open={isViewServiceDialogOpen} onOpenChange={setIsViewServiceDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Podgląd serwisu</DialogTitle>
+          </DialogHeader>
+          {selectedServiceForView && (
+            <div>
+              {/* ServiceDetails może wymagać propsów z pojazdem/urządzeniem */}
+              Podgląd serwisu ({selectedServiceForView.description})
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Usuwanie serwisu */}
+      <AlertDialog open={isDeleteServiceDialogOpen} onOpenChange={setIsDeleteServiceDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć ten serwis?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteService} className="bg-destructive text-destructive-foreground">
+              Usuń serwis
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
