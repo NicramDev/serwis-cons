@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle } from '@/utils/supabaseMappers';
+import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapSupabaseServiceRecordToServiceRecord } from '@/utils/supabaseMappers';
 import { extractAllTags } from '@/utils/tagUtils';
 
 // Nowe: przykładowe pobieranie devices i services – należy wprowadzić
@@ -70,8 +69,8 @@ const Vehicles = () => {
       if (error) {
         toast.error("Nie udało się pobrać danych urządzeń.");
         setDevices([]);
-      } else {
-        setDevices(data as Device[]);
+      } else if (data) {
+        setDevices(data.map(mapSupabaseDeviceToDevice));
       }
     };
     fetchDevices();
@@ -86,8 +85,8 @@ const Vehicles = () => {
       if (error) {
         toast.error("Nie udało się pobrać historii serwisowej.");
         setServices([]);
-      } else {
-        setServices(data as ServiceRecord[]);
+      } else if (data) {
+        setServices(data.map(mapSupabaseServiceRecordToServiceRecord));
       }
     };
     fetchServices();
