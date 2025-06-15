@@ -24,6 +24,7 @@ import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDe
 import { extractAllTags } from '@/utils/tagUtils';
 import AddDeviceDialog from '../components/AddDeviceDialog';
 import AddServiceDialog from '../components/AddServiceDialog';
+import VehicleDetails from '../components/VehicleDetails';
 
 const Vehicles = () => {
   // Główne stany
