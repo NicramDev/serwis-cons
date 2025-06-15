@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { devices as initialDevices, vehicles as initialVehicles } from '../utils/data';
+import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from '../utils/formatting/dateUtils';
 import DeviceCard from '../components/DeviceCard';
 import DeviceDetails from '../components/DeviceDetails';
@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import FullscreenViewer from '../components/FullscreenViewer';
+import { mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseVehicleToVehicle } from '@/utils/supabaseMappers';
 
 const Devices = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,32 +38,34 @@ const Devices = () => {
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
   
   useEffect(() => {
-    const savedDevices = localStorage.getItem('devices');
-    const devicesData = savedDevices ? JSON.parse(savedDevices) : null;
-    
-    if (!devicesData || !Array.isArray(devicesData) || devicesData.length === 0) {
-      setAllDevices(initialDevices);
-      localStorage.setItem('devices', JSON.stringify(initialDevices));
-    } else {
-      setAllDevices(devicesData);
-    }
-    
-    const savedVehicles = localStorage.getItem('vehicles');
-    const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
-    
-    if (!vehiclesData || !Array.isArray(vehiclesData) || vehiclesData.length === 0) {
-      setAllVehicles(initialVehicles);
-      localStorage.setItem('vehicles', JSON.stringify(initialVehicles));
-    } else {
-      setAllVehicles(vehiclesData);
-    }
+    const fetchData = async () => {
+      const [devicesRes, vehiclesRes] = await Promise.all([
+        supabase.from('devices').select('*'),
+        supabase.from('vehicles').select('*'),
+      ]);
+
+      if (devicesRes.error) {
+        toast.error("Błąd pobierania urządzeń");
+        console.error(devicesRes.error);
+      } else {
+        setAllDevices(devicesRes.data.map(mapSupabaseDeviceToDevice));
+      }
+
+      if (vehiclesRes.error) {
+        toast.error("Błąd pobierania pojazdów");
+        console.error(vehiclesRes.error);
+      } else {
+        setAllVehicles(vehiclesRes.data.map(mapSupabaseVehicleToVehicle));
+      }
+    };
+    fetchData();
   }, []);
   
   useEffect(() => {
     const deviceId = searchParams.get('deviceId');
     const shouldEdit = searchParams.get('edit') === 'true';
     
-    if (deviceId) {
+    if (deviceId && allDevices.length > 0) {
       const device = allDevices.find(d => d.id === deviceId);
       if (device) {
         setSelectedDevice(device);
@@ -75,12 +78,6 @@ const Devices = () => {
     }
   }, [searchParams, allDevices]);
   
-  useEffect(() => {
-    if (allDevices.length > 0) {
-      localStorage.setItem('devices', JSON.stringify(allDevices));
-    }
-  }, [allDevices]);
-  
   const filteredDevices = allDevices.filter(device => 
     device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (device.model?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
@@ -88,49 +85,79 @@ const Devices = () => {
     device.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddDevice = (deviceData: Partial<Device>) => {
-    const now = new Date();
-    const nextServiceDate = new Date(now);
-    nextServiceDate.setMonth(now.getMonth() + 6);
-    
-    const newDevice: Device = {
+  const handleAddDevice = async (deviceData: Partial<Device>) => {
+    const newDeviceData = {
+      ...deviceData,
       id: uuidv4(),
-      name: deviceData.name || '',
-      type: deviceData.type || '',
-      model: deviceData.model || deviceData.type || '',
-      serialNumber: deviceData.serialNumber || '',
-      vehicleId: deviceData.vehicleId,
-      year: deviceData.year,
-      purchasePrice: deviceData.purchasePrice,
-      lastService: now,
-      nextService: nextServiceDate,
-      serviceExpiryDate: deviceData.serviceExpiryDate,
-      serviceReminderDays: deviceData.serviceReminderDays || 30,
-      notes: deviceData.notes,
+      lastService: deviceData.lastService || new Date(),
+      nextService: deviceData.nextService || new Date(new Date().setMonth(new Date().getMonth() + 6)),
       status: 'ok',
-      images: deviceData.images,
-      attachments: deviceData.attachments,
-      thumbnail: deviceData.thumbnail
     };
+
+    const supabaseDevice = mapDeviceToSupabaseDevice(newDeviceData);
     
-    setAllDevices(prevDevices => [...prevDevices, newDevice]);
+    const { data, error } = await supabase
+      .from('devices')
+      .insert(supabaseDevice)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Nie udało się dodać urządzenia.");
+      console.error(error);
+      return;
+    }
+    
+    setAllDevices(prevDevices => [...prevDevices, mapSupabaseDeviceToDevice(data)]);
     setIsAddDialogOpen(false);
     toast.success("Urządzenie zostało dodane pomyślnie");
   };
 
-  const handleEditDevice = (device: Device) => {
-    setSelectedDevice(device);
-    setIsEditDialogOpen(true);
-  };
+  const handleUpdateDevice = async (updatedDeviceData: Device) => {
+    const supabaseDevice = mapDeviceToSupabaseDevice(updatedDeviceData);
+    delete supabaseDevice.id;
 
-  const handleUpdateDevice = (updatedDevice: Device) => {
+    const { data, error } = await supabase
+      .from('devices')
+      .update(supabaseDevice)
+      .eq('id', updatedDeviceData.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Nie udało się zaktualizować urządzenia.");
+      console.error(error);
+      return;
+    }
+
     setAllDevices(prevDevices => 
       prevDevices.map(device => 
-        device.id === updatedDevice.id ? updatedDevice : device
+        device.id === updatedDeviceData.id ? mapSupabaseDeviceToDevice(data) : device
       )
     );
     setIsEditDialogOpen(false);
     toast.success("Urządzenie zostało zaktualizowane pomyślnie");
+  };
+
+  const confirmDeleteDevice = async () => {
+    if (deviceToDelete) {
+      const { error } = await supabase.from('devices').delete().eq('id', deviceToDelete.id);
+
+      if (error) {
+        toast.error("Nie udało się usunąć urządzenia.");
+        console.error(error);
+      } else {
+        setAllDevices(prevDevices => prevDevices.filter(d => d.id !== deviceToDelete.id));
+        toast.success("Urządzenie zostało usunięte pomyślnie");
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setDeviceToDelete(null);
+  };
+  
+  const handleEditDevice = (device: Device) => {
+    setSelectedDevice(device);
+    setIsEditDialogOpen(true);
   };
 
   const handleViewDeviceDetails = (device: Device) => {
@@ -141,15 +168,6 @@ const Devices = () => {
   const handleDeleteDevice = (device: Device) => {
     setDeviceToDelete(device);
     setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteDevice = () => {
-    if (deviceToDelete) {
-      setAllDevices(prevDevices => prevDevices.filter(d => d.id !== deviceToDelete.id));
-      toast.success("Urządzenie zostało usunięte pomyślnie");
-    }
-    setIsDeleteDialogOpen(false);
-    setDeviceToDelete(null);
   };
   
   const openFullscreen = (url: string, e?: React.MouseEvent) => {

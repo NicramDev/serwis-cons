@@ -1,49 +1,41 @@
-
 import { useState, useEffect } from 'react';
-import { serviceRecords as initialServiceRecords, vehicles as initialVehicles, devices as initialDevices } from '../utils/data';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import ServiceHistoryItem from '../components/ServiceHistoryItem';
 import { Filter, Search } from 'lucide-react';
 import { ServiceRecord, Vehicle, Device } from '../utils/types';
+import { 
+  mapSupabaseServiceRecordToServiceRecord,
+  mapSupabaseVehicleToVehicle,
+  mapSupabaseDeviceToDevice
+} from '@/utils/supabaseMappers';
 
 const History = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [allServiceRecords, setAllServiceRecords] = useState<ServiceRecord[]>(() => {
-    const savedRecords = localStorage.getItem('serviceRecords');
-    return savedRecords ? JSON.parse(savedRecords) : initialServiceRecords;
-  });
+  const [allServiceRecords, setAllServiceRecords] = useState<ServiceRecord[]>([]);
+  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [allDevices, setAllDevices] = useState<Device[]>([]);
   
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>(() => {
-    const savedVehicles = localStorage.getItem('vehicles');
-    return savedVehicles ? JSON.parse(savedVehicles) : initialVehicles;
-  });
-  
-  const [allDevices, setAllDevices] = useState<Device[]>(() => {
-    const savedDevices = localStorage.getItem('devices');
-    return savedDevices ? JSON.parse(savedDevices) : initialDevices;
-  });
-  
-  // Update from localStorage if it changes
   useEffect(() => {
-    const handleStorageChange = () => {
-      const savedRecords = localStorage.getItem('serviceRecords');
-      const savedVehicles = localStorage.getItem('vehicles');
-      const savedDevices = localStorage.getItem('devices');
-      
-      if (savedRecords) {
-        setAllServiceRecords(JSON.parse(savedRecords));
+    const fetchData = async () => {
+      const [recordsRes, vehiclesRes, devicesRes] = await Promise.all([
+        supabase.from('service_records').select('*'),
+        supabase.from('vehicles').select('*'),
+        supabase.from('devices').select('*')
+      ]);
+
+      if (recordsRes.error || vehiclesRes.error || devicesRes.error) {
+        toast.error("Wystąpił błąd podczas pobierania historii serwisowej.");
+        console.error(recordsRes.error || vehiclesRes.error || devicesRes.error);
+        return;
       }
       
-      if (savedVehicles) {
-        setAllVehicles(JSON.parse(savedVehicles));
-      }
-      
-      if (savedDevices) {
-        setAllDevices(JSON.parse(savedDevices));
-      }
+      setAllServiceRecords(recordsRes.data.map(mapSupabaseServiceRecordToServiceRecord));
+      setAllVehicles(vehiclesRes.data.map(mapSupabaseVehicleToVehicle));
+      setAllDevices(devicesRes.data.map(mapSupabaseDeviceToDevice));
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    fetchData();
   }, []);
   
   const filteredRecords = allServiceRecords.filter(record => {

@@ -20,13 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle } from '@/utils/supabaseMappers';
+import { extractAllTags } from '@/utils/tagUtils';
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
-  const [allDevices, setAllDevices] = useState<Device[]>([]);
-  const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -43,129 +43,70 @@ const Vehicles = () => {
 
       if (error) {
         console.error("Błąd pobierania pojazdów z Supabase:", error);
+        toast.error("Nie udało się pobrać danych pojazdów.");
         setAllVehicles([]);
-      } else if (Array.isArray(data)) {
-        const vehiclesWithDates = data.map((v: any) => ({
-          ...v,
-          id: v.id,
-          purchaseDate: v.purchasedate ? new Date(v.purchasedate) : undefined,
-          inspectionExpiryDate: v.inspectionexpirydate ? new Date(v.inspectionexpirydate) : undefined,
-          serviceExpiryDate: v.serviceexpirydate ? new Date(v.serviceexpirydate) : undefined,
-          insuranceExpiryDate: v.insuranceexpirydate ? new Date(v.insuranceexpirydate) : undefined,
-          lastService: v.lastservice ? new Date(v.lastservice) : new Date(),
-          nextService: v.nextservice ? new Date(v.nextservice) : new Date(),
-          images: v.images || [],
-          attachments: v.attachments || [],
-        }));
-        setAllVehicles(vehiclesWithDates);
+      } else if (data) {
+        setAllVehicles(data.map(mapSupabaseVehicleToVehicle));
       }
     };
     fetchVehicles();
-
-    const savedDevices = localStorage.getItem('devices');
-    const savedRecords = localStorage.getItem('serviceRecords');
-    if (savedDevices) {
-      const devicesData = JSON.parse(savedDevices);
-      setAllDevices(devicesData);
-    }
-    if (savedRecords) {
-      const recordsData = JSON.parse(savedRecords);
-      setServiceRecords(recordsData);
-    }
   }, []);
 
   const handleAddVehicle = async (vehicleData: Partial<Vehicle>) => {
-    const now = new Date();
-    const nextServiceDate = vehicleData.serviceExpiryDate || new Date(now);
-    if (!vehicleData.serviceExpiryDate) nextServiceDate.setMonth(now.getMonth() + 6);
-
-    const insertData = {
+    const newVehicleData = {
       ...vehicleData,
       id: uuidv4(),
-      lastservice: now.toISOString(),
-      nextservice: nextServiceDate.toISOString(),
-      model: 'Generic',
-      registrationnumber: vehicleData.registrationNumber ?? '',
-      year: vehicleData.year ?? 0,
-      vehicletype: 'car',
-      purchaseDate: undefined,
-      purchasedate: vehicleData.purchaseDate ? vehicleData.purchaseDate.toISOString().slice(0,10) : null,
+      lastService: vehicleData.lastService || new Date(),
+      nextService: vehicleData.nextService || new Date(new Date().setMonth(new Date().getMonth() + 6)),
     };
-    const prep = {
-      ...insertData,
-      purchasedate: insertData.purchaseDate ? insertData.purchaseDate.toISOString().slice(0,10) : null,
-    };
-    delete prep.purchaseDate;
+    
+    const supabaseVehicle = mapVehicleToSupabaseVehicle(newVehicleData);
 
     const { data, error } = await supabase
       .from('vehicles')
-      .insert([prep])
-      .select();
+      .insert(supabaseVehicle)
+      .select()
+      .single();
     
     if (error) {
       console.error("Błąd dodawania pojazdu do Supabase:", error);
+      toast.error("Błąd podczas dodawania pojazdu.");
       return;
     }
-    if (data && data.length > 0) {
-      setAllVehicles(prev => [...prev, {
-        ...data[0],
-        purchaseDate: data[0].purchasedate ? new Date(data[0].purchasedate) : undefined,
-        inspectionExpiryDate: data[0].inspectionexpirydate ? new Date(data[0].inspectionexpirydate) : undefined,
-        serviceExpiryDate: data[0].serviceexpirydate ? new Date(data[0].serviceexpirydate) : undefined,
-        insuranceExpiryDate: data[0].insuranceexpirydate ? new Date(data[0].insuranceexpirydate) : undefined,
-        lastService: data[0].lastservice ? new Date(data[0].lastservice) : new Date(),
-        nextService: data[0].nextservice ? new Date(data[0].nextservice) : new Date(),
-        images: data[0].images || [],
-        attachments: data[0].attachments || [],
-      }]);
+    if (data) {
+      setAllVehicles(prev => [...prev, mapSupabaseVehicleToVehicle(data)]);
+      setIsAddDialogOpen(false);
+      toast.success("Pojazd został dodany pomyślnie");
     }
-    setIsAddDialogOpen(false);
-    toast.success("Pojazd został dodany pomyślnie");
   };
 
-  const handleUpdateVehicle = async (updatedVehicle: Vehicle) => {
-    const updateData = {
-      ...updatedVehicle,
-      lastservice: updatedVehicle.lastService?.toISOString(),
-      nextservice: updatedVehicle.nextService?.toISOString(),
-      purchasedate: updatedVehicle.purchaseDate ? updatedVehicle.purchaseDate.toISOString().slice(0,10) : null,
-      inspectionexpirydate: updatedVehicle.inspectionExpiryDate ? updatedVehicle.inspectionExpiryDate.toISOString().slice(0,10) : null,
-      serviceexpirydate: updatedVehicle.serviceExpiryDate ? updatedVehicle.serviceExpiryDate.toISOString().slice(0,10) : null,
-      insuranceexpirydate: updatedVehicle.insuranceExpiryDate ? updatedVehicle.insuranceExpiryDate.toISOString().slice(0,10) : null,
-    };
-    const { id, ...fields } = updateData;
+  const handleUpdateVehicle = async (updatedVehicleData: Vehicle) => {
+    const supabaseVehicle = mapVehicleToSupabaseVehicle(updatedVehicleData);
+    delete supabaseVehicle.id;
+
     const { data, error } = await supabase
       .from('vehicles')
-      .update(fields)
-      .eq('id', id)
-      .select();
+      .update(supabaseVehicle)
+      .eq('id', updatedVehicleData.id)
+      .select()
+      .single();
 
     if (error) {
       console.error("Błąd aktualizacji pojazdu:", error);
       toast.error("Błąd edycji pojazdu");
       return;
     }
-    if (data && data.length > 0) {
+    if (data) {
       setAllVehicles(prev =>
         prev.map(vehicle =>
-          vehicle.id === id
-            ? {
-                ...data[0],
-                purchaseDate: data[0].purchasedate ? new Date(data[0].purchasedate) : undefined,
-                inspectionExpiryDate: data[0].inspectionexpirydate ? new Date(data[0].inspectionexpirydate) : undefined,
-                serviceExpiryDate: data[0].serviceexpirydate ? new Date(data[0].serviceexpirydate) : undefined,
-                insuranceExpiryDate: data[0].insuranceexpirydate ? new Date(data[0].insuranceexpirydate) : undefined,
-                lastService: data[0].lastservice ? new Date(data[0].lastservice) : new Date(),
-                nextService: data[0].nextservice ? new Date(data[0].nextservice) : new Date(),
-                images: data[0].images || [],
-                attachments: data[0].attachments || [],
-              }
+          vehicle.id === updatedVehicleData.id
+            ? mapSupabaseVehicleToVehicle(data)
             : vehicle
         )
       );
+      setIsEditDialogOpen(false);
+      toast.success("Pojazd został zaktualizowany pomyślnie");
     }
-    setIsEditDialogOpen(false);
-    toast.success("Pojazd został zaktualizowany pomyślnie");
   };
 
   const confirmDeleteVehicle = async () => {
@@ -189,6 +130,31 @@ const Vehicles = () => {
     }
     setIsDeleteDialogOpen(false);
     setVehicleToDelete(null);
+  };
+  
+  const handleVehicleClick = (vehicleId: string) => {
+    setSelectedVehicleId(vehicleId);
+  };
+
+  const handleEditVehicle = (vehicle: Vehicle) => {
+      setSelectedVehicleForEdit(vehicle);
+      setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteVehicle = (vehicle: Vehicle) => {
+      setVehicleToDelete(vehicle);
+      setIsDeleteDialogOpen(true);
+  };
+  
+  const handleViewDetails = (vehicle: Vehicle) => {
+      setSelectedVehicleForEdit(vehicle);
+      setIsDetailsDialogOpen(true);
+  };
+  
+  const handleTagSelect = (tag: string) => {
+      setSelectedTags(prev => 
+          prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+      );
   };
 
   const filteredVehicles = allVehicles.filter(vehicle => {
@@ -214,8 +180,6 @@ const Vehicles = () => {
     
     return textMatch && tagMatch;
   }).sort((a, b) => a.name.localeCompare(b.name));
-
-  const selectedVehicleData = selectedVehicleId ? allVehicles.find(v => v.id === selectedVehicleId) : null;
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -292,6 +256,7 @@ const Vehicles = () => {
               onSubmit={handleUpdateVehicle}
               onCancel={() => setIsEditDialogOpen(false)}
               allVehicles={allVehicles}
+              isEditing
             />
           )}
         </DialogContent>
