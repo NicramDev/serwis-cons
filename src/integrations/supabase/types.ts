@@ -9,7 +9,230 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      devices: {
+        Row: {
+          attachments: Json | null
+          brand: string | null
+          id: string
+          images: Json | null
+          lastservice: string | null
+          model: string | null
+          name: string
+          nextservice: string | null
+          notes: string | null
+          purchasedate: string | null
+          purchaseprice: number | null
+          serialnumber: string | null
+          serviceexpirydate: string | null
+          servicereminderdays: number | null
+          status: string | null
+          thumbnail: string | null
+          type: string | null
+          vehicleid: string | null
+          year: number | null
+        }
+        Insert: {
+          attachments?: Json | null
+          brand?: string | null
+          id?: string
+          images?: Json | null
+          lastservice?: string | null
+          model?: string | null
+          name: string
+          nextservice?: string | null
+          notes?: string | null
+          purchasedate?: string | null
+          purchaseprice?: number | null
+          serialnumber?: string | null
+          serviceexpirydate?: string | null
+          servicereminderdays?: number | null
+          status?: string | null
+          thumbnail?: string | null
+          type?: string | null
+          vehicleid?: string | null
+          year?: number | null
+        }
+        Update: {
+          attachments?: Json | null
+          brand?: string | null
+          id?: string
+          images?: Json | null
+          lastservice?: string | null
+          model?: string | null
+          name?: string
+          nextservice?: string | null
+          notes?: string | null
+          purchasedate?: string | null
+          purchaseprice?: number | null
+          serialnumber?: string | null
+          serviceexpirydate?: string | null
+          servicereminderdays?: number | null
+          status?: string | null
+          thumbnail?: string | null
+          type?: string | null
+          vehicleid?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devices_vehicleid_fkey"
+            columns: ["vehicleid"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_records: {
+        Row: {
+          attachments: Json | null
+          cost: number | null
+          date: string
+          description: string | null
+          deviceid: string | null
+          devicename: string | null
+          id: string
+          images: Json | null
+          location: string | null
+          notes: string | null
+          technician: string | null
+          type: string | null
+          vehicleid: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          cost?: number | null
+          date: string
+          description?: string | null
+          deviceid?: string | null
+          devicename?: string | null
+          id?: string
+          images?: Json | null
+          location?: string | null
+          notes?: string | null
+          technician?: string | null
+          type?: string | null
+          vehicleid?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          cost?: number | null
+          date?: string
+          description?: string | null
+          deviceid?: string | null
+          devicename?: string | null
+          id?: string
+          images?: Json | null
+          location?: string | null
+          notes?: string | null
+          technician?: string | null
+          type?: string | null
+          vehicleid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_records_deviceid_fkey"
+            columns: ["deviceid"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_records_vehicleid_fkey"
+            columns: ["vehicleid"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          attachments: Json | null
+          brand: string | null
+          drivername: string | null
+          fuelcardnumber: string | null
+          gpssystemnumber: string | null
+          id: string
+          images: Json | null
+          inspectionexpirydate: string | null
+          inspectionreminderdays: number | null
+          insuranceexpirydate: string | null
+          insurancereminderdays: number | null
+          lastservice: string | null
+          model: string | null
+          name: string
+          nextservice: string | null
+          notes: string | null
+          purchasedate: string | null
+          registrationnumber: string | null
+          serviceexpirydate: string | null
+          servicereminderdays: number | null
+          status: string | null
+          tags: string | null
+          thumbnail: string | null
+          vehicletype: string | null
+          vin: string | null
+          year: number | null
+        }
+        Insert: {
+          attachments?: Json | null
+          brand?: string | null
+          drivername?: string | null
+          fuelcardnumber?: string | null
+          gpssystemnumber?: string | null
+          id?: string
+          images?: Json | null
+          inspectionexpirydate?: string | null
+          inspectionreminderdays?: number | null
+          insuranceexpirydate?: string | null
+          insurancereminderdays?: number | null
+          lastservice?: string | null
+          model?: string | null
+          name: string
+          nextservice?: string | null
+          notes?: string | null
+          purchasedate?: string | null
+          registrationnumber?: string | null
+          serviceexpirydate?: string | null
+          servicereminderdays?: number | null
+          status?: string | null
+          tags?: string | null
+          thumbnail?: string | null
+          vehicletype?: string | null
+          vin?: string | null
+          year?: number | null
+        }
+        Update: {
+          attachments?: Json | null
+          brand?: string | null
+          drivername?: string | null
+          fuelcardnumber?: string | null
+          gpssystemnumber?: string | null
+          id?: string
+          images?: Json | null
+          inspectionexpirydate?: string | null
+          inspectionreminderdays?: number | null
+          insuranceexpirydate?: string | null
+          insurancereminderdays?: number | null
+          lastservice?: string | null
+          model?: string | null
+          name?: string
+          nextservice?: string | null
+          notes?: string | null
+          purchasedate?: string | null
+          registrationnumber?: string | null
+          serviceexpirydate?: string | null
+          servicereminderdays?: number | null
+          status?: string | null
+          tags?: string | null
+          thumbnail?: string | null
+          vehicletype?: string | null
+          vin?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
