@@ -15,21 +15,23 @@ const Notifications = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Load vehicles from localStorage
+    // Resetuj stare powiadomienia i dane!
+    localStorage.removeItem('notifications');
+    localStorage.removeItem('vehicles');
+    localStorage.removeItem('devices');
+
     const savedVehicles = localStorage.getItem('vehicles');
     const loadedVehicles = savedVehicles ? JSON.parse(savedVehicles) : [];
     setVehicles(loadedVehicles);
-    
-    // Load devices from localStorage
+
     const savedDevices = localStorage.getItem('devices');
     const loadedDevices = savedDevices ? JSON.parse(savedDevices) : [];
     setDevices(loadedDevices);
-    
-    // Generate notifications from vehicle and device data
+
+    // Generate notifications only for aktualnych danych
     const allNotifications = generateNotifications(loadedVehicles, loadedDevices);
     setNotifications(allNotifications);
-    
-    // Save notifications to localStorage for the Navbar to use
+
     saveNotifications(allNotifications);
   }, []);
   

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Vehicle, Device, ServiceRecord } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -40,6 +39,8 @@ const Vehicles = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [services, setServices] = useState<ServiceRecord[]>([]);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedVehicleForView, setSelectedVehicleForView] = useState<Vehicle | null>(null);
 
   // Stany dialogów dodawania
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
@@ -188,6 +189,11 @@ const Vehicles = () => {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicleForView(vehicle);
+    setIsViewDialogOpen(true);
+  };
+
   const handleTagSelect = (tag: string) => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
@@ -301,6 +307,7 @@ const Vehicles = () => {
                 onVehicleClick={handleVehicleClick}
                 onEdit={handleEditVehicle}
                 onDelete={handleDeleteVehicle}
+                onView={handleViewVehicle}
               />
             ) : (
               <NoVehiclesFound />
@@ -404,6 +411,22 @@ const Vehicles = () => {
         devices={selectedVehicleDevices}
         onSubmit={handleAddService}
       />
+
+      {/* Dialog podglądu pojazdu */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Szczegóły pojazdu</DialogTitle>
+          </DialogHeader>
+          {selectedVehicleForView && (
+            <div>
+              {/* Możesz użyć istniejącego VehicleDetails lub VehicleDetailPanel do prezentacji */}
+              {/* Zakładam, że VehicleDetails wyświetla szczegóły */}
+              <VehicleDetails vehicle={selectedVehicleForView} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

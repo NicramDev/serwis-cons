@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ServiceRecord, Vehicle, Device } from '../utils/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +51,11 @@ const Costs = () => {
   const [treatVehicleAsDevice, setTreatVehicleAsDevice] = useState<boolean>(false);
 
   useEffect(() => {
+    // RESET localStorage (vehicles, devices, serviceRecords)
+    localStorage.removeItem('vehicles');
+    localStorage.removeItem('devices');
+    localStorage.removeItem('serviceRecords');
+
     const savedVehicles = localStorage.getItem('vehicles');
     const savedDevices = localStorage.getItem('devices');
     const savedRecords = localStorage.getItem('serviceRecords');
@@ -59,6 +63,10 @@ const Costs = () => {
     if (savedVehicles) setAllVehicles(JSON.parse(savedVehicles));
     if (savedDevices) setAllDevices(JSON.parse(savedDevices));
     if (savedRecords) setServiceRecords(JSON.parse(savedRecords));
+    // Opcjonalnie — domyślne wartości, jeśli chcesz je załadować
+    // setAllVehicles([...]);
+    // setAllDevices([...]);
+    // setServiceRecords([...]);
   }, []);
 
   useEffect(() => {
