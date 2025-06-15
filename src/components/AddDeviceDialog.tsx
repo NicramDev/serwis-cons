@@ -19,9 +19,17 @@ const AddDeviceDialog = ({ open, onOpenChange, vehicle, allVehicles, onSubmit }:
         <DialogTitle>Dodaj urządzenie</DialogTitle>
         <DialogDescription>Wypełnij szczegóły urządzenia przypisanego do pojazdu.</DialogDescription>
       </DialogHeader>
-      {vehicle && <AddDeviceForm vehicle={vehicle} allVehicles={allVehicles} onSubmit={onSubmit} onCancel={() => onOpenChange(false)} />}
+      {vehicle && (
+        <AddDeviceForm
+          vehicles={allVehicles}
+          selectedVehicleId={vehicle.id}
+          onSubmit={onSubmit}
+          onCancel={() => onOpenChange(false)}
+        />
+      )}
     </DialogContent>
   </Dialog>
 );
 
 export default AddDeviceDialog;
+
