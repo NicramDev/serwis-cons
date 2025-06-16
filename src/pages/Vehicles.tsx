@@ -254,6 +254,42 @@ const Vehicles = () => {
     }
   };
 
+  // Handler aktualizacji urządzenia
+  const handleUpdateDevice = async (updatedDeviceData: Partial<Device>) => {
+    if (!selectedDeviceForEdit) return;
+    
+    const updatedDevice: Device = {
+      ...selectedDeviceForEdit,
+      ...updatedDeviceData,
+    };
+    
+    const supabaseDevice = mapDeviceToSupabaseDevice(updatedDevice);
+    delete supabaseDevice.id;
+
+    const { data, error } = await supabase
+      .from('devices')
+      .update(supabaseDevice)
+      .eq('id', selectedDeviceForEdit.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd podczas edycji urządzenia");
+      return;
+    }
+    if (data) {
+      setDevices(prev =>
+        prev.map(device =>
+          device.id === selectedDeviceForEdit.id
+            ? mapSupabaseDeviceToDevice(data)
+            : device
+        )
+      );
+      setIsEditDeviceDialogOpen(false);
+      toast.success("Urządzenie zostało zaktualizowane");
+    }
+  };
+
   // Dodawanie serwisu
   const handleAddService = async (service: ServiceRecord) => {
     const supabaseService = mapServiceRecordToSupabaseServiceRecord(service);
