@@ -10,14 +10,26 @@ type AddDeviceDialogProps = {
   vehicle: Vehicle | null;
   allVehicles: Vehicle[];
   onSubmit: (device: Partial<Device>) => void;
+  initialDevice?: Device;
+  isEditing?: boolean;
 };
 
-const AddDeviceDialog = ({ open, onOpenChange, vehicle, allVehicles, onSubmit }: AddDeviceDialogProps) => (
+const AddDeviceDialog = ({ 
+  open, 
+  onOpenChange, 
+  vehicle, 
+  allVehicles, 
+  onSubmit, 
+  initialDevice,
+  isEditing = false 
+}: AddDeviceDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="sm:max-w-2xl max-h-[90vh]">
       <DialogHeader>
-        <DialogTitle>Dodaj urządzenie</DialogTitle>
-        <DialogDescription>Wypełnij szczegóły urządzenia przypisanego do pojazdu.</DialogDescription>
+        <DialogTitle>{isEditing ? 'Edytuj urządzenie' : 'Dodaj urządzenie'}</DialogTitle>
+        <DialogDescription>
+          {isEditing ? 'Zaktualizuj informacje o urządzeniu.' : 'Wypełnij szczegóły urządzenia przypisanego do pojazdu.'}
+        </DialogDescription>
       </DialogHeader>
       {vehicle && (
         <AddDeviceForm
@@ -25,6 +37,8 @@ const AddDeviceDialog = ({ open, onOpenChange, vehicle, allVehicles, onSubmit }:
           selectedVehicleId={vehicle.id}
           onSubmit={onSubmit}
           onCancel={() => onOpenChange(false)}
+          initialDevice={initialDevice}
+          isEditing={isEditing}
         />
       )}
     </DialogContent>
@@ -32,4 +46,3 @@ const AddDeviceDialog = ({ open, onOpenChange, vehicle, allVehicles, onSubmit }:
 );
 
 export default AddDeviceDialog;
-

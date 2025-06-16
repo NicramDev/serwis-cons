@@ -28,6 +28,8 @@ import AddDeviceDialog from '../components/AddDeviceDialog';
 import AddServiceDialog from '../components/AddServiceDialog';
 import VehicleDetails from '../components/VehicleDetails';
 import DeviceDetails from '../components/DeviceDetails';
+import ServiceDetails from '../components/ServiceDetails';
+import ServiceForm from '../components/ServiceForm';
 
 const Vehicles = () => {
   // Główne stany
@@ -397,6 +399,31 @@ const Vehicles = () => {
     setServiceToDelete(service);
     setIsDeleteServiceDialogOpen(true);
   };
+  const handleUpdateService = async (updatedServiceData: ServiceRecord) => {
+    const supabaseService = mapServiceRecordToSupabaseServiceRecord(updatedServiceData);
+    delete supabaseService.id;
+
+    const { data, error } = await supabase
+      .from('service_records')
+      .update(supabaseService)
+      .eq('id', updatedServiceData.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd podczas edycji serwisu");
+      return;
+    }
+    if (data) {
+      setServices(prev =>
+        prev.map(s =>
+          s.id === updatedServiceData.id ? mapSupabaseServiceRecordToServiceRecord(data) : s
+        )
+      );
+      setIsEditServiceDialogOpen(false);
+      toast.success("Serwis został zaktualizowany");
+    }
+  };
   const confirmDeleteService = async () => {
     if (serviceToDelete) {
       const { error } = await supabase
@@ -587,7 +614,9 @@ const Vehicles = () => {
               onOpenChange={setIsEditDeviceDialogOpen}
               allVehicles={allVehicles}
               vehicle={allVehicles.find(v => v.id === selectedDeviceForEdit.vehicleId) ?? null}
-              onSubmit={() => setIsEditDeviceDialogOpen(false)}
+              onSubmit={handleUpdateDevice}
+              initialDevice={selectedDeviceForEdit}
+              isEditing={true}
             />
           )}
         </DialogContent>
@@ -666,14 +695,18 @@ const Vehicles = () => {
         <DialogContent className="sm:max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Edytuj serwis</DialogTitle>
+            <DialogDescription>Zaktualizuj informacje o serwisie</DialogDescription>
           </DialogHeader>
-          {/* Można dodać formularz edycji serwisu */}
-          {selectedServiceForEdit && (
-            <div>
-              {/* Przykładowo: ServiceForm z propsami */}
-              {/* <ServiceForm service={selectedServiceForEdit} onSubmit={} ... /> */}
-              Edycja serwisu ({selectedServiceForEdit.description})
-            </div>
+          {selectedServiceForEdit && selectedVehicle && (
+            <ServiceForm
+              onSubmit={handleUpdateService}
+              onCancel={() => setIsEditServiceDialogOpen(false)}
+              vehicleId={selectedVehicle.id}
+              devices={selectedVehicleDevices}
+              vehicle={selectedVehicle}
+              initialService={selectedServiceForEdit}
+              isEditing={true}
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -685,10 +718,10 @@ const Vehicles = () => {
             <DialogTitle>Podgląd serwisu</DialogTitle>
           </DialogHeader>
           {selectedServiceForView && (
-            <div>
-              {/* ServiceDetails może wymagać propsów z pojazdem/urządzeniem */}
-              Podgląd serwisu ({selectedServiceForView.description})
-            </div>
+            <ServiceDetails 
+              service={selectedServiceForView}
+              device={devices.find(d => d.id === selectedServiceForView.deviceId) || null}
+            />
           )}
         </DialogContent>
       </Dialog>
