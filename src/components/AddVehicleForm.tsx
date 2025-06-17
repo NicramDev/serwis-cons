@@ -10,6 +10,7 @@ import ReminderSection from "./vehicle-form/ReminderSection";
 import FileUploadField from "./vehicle-form/FileUploadField";
 import { Image, Car } from "lucide-react";
 import { toast } from "sonner";
+import { createVehicle, updateVehicle } from "@/services/vehicleService";
 
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
@@ -34,7 +35,7 @@ const vehicleSchema = z.object({
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
 
 type AddVehicleFormProps = {
-  onSubmit: (vehicle: Partial<Vehicle> | Vehicle, images?: File[], attachments?: File[], thumbnailFile?: File) => void;
+  onSubmit: (vehicle: Vehicle) => void;
   onCancel: () => void;
   allVehicles?: Vehicle[];
   onRemoveTag?: (tagName: string) => void;
@@ -111,7 +112,19 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   const handleSubmit = async (values: VehicleFormValues) => {
     setIsLoading(true);
     try {
-      await onSubmit(values, images, attachments, thumbnail || undefined);
+      let result: Vehicle;
+      
+      if (isEditing && vehicle) {
+        // For editing, use the service directly
+        result = await updateVehicle(vehicle.id, values, images, attachments, thumbnail || undefined);
+      } else {
+        // For creating, use the service directly
+        result = await createVehicle(values, images, attachments, thumbnail || undefined);
+      }
+      
+      // Call the parent's onSubmit with the result
+      onSubmit(result);
+      
       toast.success(isEditing ? "Pojazd został zaktualizowany" : "Pojazd został dodany");
     } catch (error) {
       console.error('Error submitting vehicle:', error);
