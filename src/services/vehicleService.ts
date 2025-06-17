@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle } from '@/utils/types';
 import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle } from '@/utils/supabaseMappers';
@@ -66,14 +65,15 @@ export const updateVehicle = async (
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'vehicles/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'vehicles/thumbnails') : null;
 
-    // Safely handle existing files - ensure they are arrays
-    const existingImages = Array.isArray(vehicleData.images) ? vehicleData.images : 
-                          Array.isArray(currentVehicle.images) ? currentVehicle.images : [];
-    const existingAttachments = Array.isArray(vehicleData.attachments) ? vehicleData.attachments : 
-                               Array.isArray(currentVehicle.attachments) ? currentVehicle.attachments : [];
+    // Safely handle existing files - ensure they are arrays and properly typed
+    const existingImages: string[] = Array.isArray(vehicleData.images) ? vehicleData.images : 
+                                   (Array.isArray(currentVehicle.images) ? currentVehicle.images as string[] : []);
+    const existingAttachments: Array<{name: string; type: string; size: number; url: string}> = 
+      Array.isArray(vehicleData.attachments) ? vehicleData.attachments : 
+      (Array.isArray(currentVehicle.attachments) ? currentVehicle.attachments as Array<{name: string; type: string; size: number; url: string}> : []);
     
-    const allImages = [...existingImages, ...uploadedImages.map(img => img.url)];
-    const allAttachments = [
+    const allImages: string[] = [...existingImages, ...uploadedImages.map(img => img.url)];
+    const allAttachments: Array<{name: string; type: string; size: number; url: string}> = [
       ...existingAttachments,
       ...uploadedAttachments.map((att, index) => ({
         name: newAttachments[index]?.name || '',

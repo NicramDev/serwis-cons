@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ServiceRecord } from '@/utils/types';
 import { mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord } from '@/utils/supabaseMappers';
@@ -62,14 +61,15 @@ export const updateServiceRecord = async (
     const uploadedImages = newImages.length > 0 ? await uploadMultipleFiles(newImages, 'service-records/images') : [];
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'service-records/attachments') : [];
 
-    // Safely handle existing files - ensure they are arrays
-    const existingImages = Array.isArray(serviceData.images) ? serviceData.images : 
-                          Array.isArray(currentRecord.images) ? currentRecord.images : [];
-    const existingAttachments = Array.isArray(serviceData.attachments) ? serviceData.attachments : 
-                               Array.isArray(currentRecord.attachments) ? currentRecord.attachments : [];
+    // Safely handle existing files - ensure they are arrays and properly typed
+    const existingImages: string[] = Array.isArray(serviceData.images) ? serviceData.images : 
+                                   (Array.isArray(currentRecord.images) ? currentRecord.images as string[] : []);
+    const existingAttachments: Array<{name: string; type: string; size: number; url: string}> = 
+      Array.isArray(serviceData.attachments) ? serviceData.attachments : 
+      (Array.isArray(currentRecord.attachments) ? currentRecord.attachments as Array<{name: string; type: string; size: number; url: string}> : []);
     
-    const allImages = [...existingImages, ...uploadedImages.map(img => img.url)];
-    const allAttachments = [
+    const allImages: string[] = [...existingImages, ...uploadedImages.map(img => img.url)];
+    const allAttachments: Array<{name: string; type: string; size: number; url: string}> = [
       ...existingAttachments,
       ...uploadedAttachments.map((att, index) => ({
         name: newAttachments[index]?.name || '',
