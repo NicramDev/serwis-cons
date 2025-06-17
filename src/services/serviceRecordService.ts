@@ -62,9 +62,11 @@ export const updateServiceRecord = async (
     const uploadedImages = newImages.length > 0 ? await uploadMultipleFiles(newImages, 'service-records/images') : [];
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'service-records/attachments') : [];
 
-    // Combine existing and new files
-    const existingImages = serviceData.images || currentRecord.images || [];
-    const existingAttachments = serviceData.attachments || currentRecord.attachments || [];
+    // Safely handle existing files - ensure they are arrays
+    const existingImages = Array.isArray(serviceData.images) ? serviceData.images : 
+                          Array.isArray(currentRecord.images) ? currentRecord.images : [];
+    const existingAttachments = Array.isArray(serviceData.attachments) ? serviceData.attachments : 
+                               Array.isArray(currentRecord.attachments) ? currentRecord.attachments : [];
     
     const allImages = [...existingImages, ...uploadedImages.map(img => img.url)];
     const allAttachments = [

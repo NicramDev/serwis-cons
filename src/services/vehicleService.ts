@@ -66,9 +66,11 @@ export const updateVehicle = async (
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'vehicles/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'vehicles/thumbnails') : null;
 
-    // Combine existing and new files
-    const existingImages = vehicleData.images || currentVehicle.images || [];
-    const existingAttachments = vehicleData.attachments || currentVehicle.attachments || [];
+    // Safely handle existing files - ensure they are arrays
+    const existingImages = Array.isArray(vehicleData.images) ? vehicleData.images : 
+                          Array.isArray(currentVehicle.images) ? currentVehicle.images : [];
+    const existingAttachments = Array.isArray(vehicleData.attachments) ? vehicleData.attachments : 
+                               Array.isArray(currentVehicle.attachments) ? currentVehicle.attachments : [];
     
     const allImages = [...existingImages, ...uploadedImages.map(img => img.url)];
     const allAttachments = [

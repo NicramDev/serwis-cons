@@ -66,9 +66,11 @@ export const updateDevice = async (
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'devices/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'devices/thumbnails') : null;
 
-    // Combine existing and new files
-    const existingImages = deviceData.images || currentDevice.images || [];
-    const existingAttachments = deviceData.attachments || currentDevice.attachments || [];
+    // Safely handle existing files - ensure they are arrays
+    const existingImages = Array.isArray(deviceData.images) ? deviceData.images : 
+                          Array.isArray(currentDevice.images) ? currentDevice.images : [];
+    const existingAttachments = Array.isArray(deviceData.attachments) ? deviceData.attachments : 
+                               Array.isArray(currentDevice.attachments) ? currentDevice.attachments : [];
     
     const allImages = [...existingImages, ...uploadedImages.map(img => img.url)];
     const allAttachments = [
