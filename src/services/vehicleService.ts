@@ -57,8 +57,35 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[
 
     console.log('Complete vehicle data:', completeVehicleData);
 
-    // Map to database format
-    const vehicleForDb = mapVehicleToSupabaseVehicle(completeVehicleData);
+    // Map to database format and ensure all required fields are present
+    const vehicleForDb = {
+      id: vehicleId,
+      name: completeVehicleData.name,
+      brand: completeVehicleData.brand,
+      model: completeVehicleData.model,
+      year: completeVehicleData.year,
+      vin: completeVehicleData.vin,
+      registrationnumber: completeVehicleData.registrationNumber,
+      purchasedate: completeVehicleData.purchaseDate ? completeVehicleData.purchaseDate.toISOString().slice(0, 10) : null,
+      inspectionexpirydate: completeVehicleData.inspectionExpiryDate ? completeVehicleData.inspectionExpiryDate.toISOString().slice(0, 10) : null,
+      serviceexpirydate: completeVehicleData.serviceExpiryDate ? completeVehicleData.serviceExpiryDate.toISOString().slice(0, 10) : null,
+      insuranceexpirydate: completeVehicleData.insuranceExpiryDate ? completeVehicleData.insuranceExpiryDate.toISOString().slice(0, 10) : null,
+      lastservice: completeVehicleData.lastService ? completeVehicleData.lastService.toISOString() : null,
+      nextservice: completeVehicleData.nextService ? completeVehicleData.nextService.toISOString() : null,
+      fuelcardnumber: completeVehicleData.fuelCardNumber,
+      gpssystemnumber: completeVehicleData.gpsSystemNumber,
+      drivername: completeVehicleData.driverName,
+      insurancereminderdays: completeVehicleData.insuranceReminderDays,
+      inspectionreminderdays: completeVehicleData.inspectionReminderDays,
+      servicereminderdays: completeVehicleData.serviceReminderDays,
+      tags: completeVehicleData.tags,
+      notes: completeVehicleData.notes,
+      status: completeVehicleData.status,
+      images: completeVehicleData.images,
+      vehicletype: completeVehicleData.vehicleType,
+      thumbnail: completeVehicleData.thumbnail,
+      attachments: completeVehicleData.attachments,
+    };
     
     console.log('Vehicle for database:', vehicleForDb);
 
@@ -69,8 +96,12 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[
       .single();
 
     if (error) {
-      console.error('Error creating vehicle:', error);
+      console.error('Supabase insert error:', error);
       throw new Error(`Failed to create vehicle: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('No data returned from insert operation');
     }
 
     console.log('Vehicle created successfully:', data);

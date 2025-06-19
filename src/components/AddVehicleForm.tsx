@@ -113,6 +113,10 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   }, [form, isEditing, vehicle]);
 
   const handleSubmit = async (values: VehicleFormValues) => {
+    if (isLoading) {
+      return; // Prevent double submission
+    }
+    
     setIsLoading(true);
     try {
       console.log('Form values:', values);
@@ -121,6 +125,11 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
         attachments: attachments.length, 
         thumbnail: !!thumbnail 
       });
+
+      // Validation check
+      if (!values.name || !values.brand || !values.model || !values.registrationNumber || !values.vin) {
+        throw new Error('Wszystkie wymagane pola muszą być wypełnione');
+      }
       
       let result: Vehicle;
       
