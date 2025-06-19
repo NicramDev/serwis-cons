@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,6 +15,7 @@ import { createVehicle, updateVehicle } from "@/services/vehicleService";
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
+  model: z.string().min(1, "Model jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   vin: z.string().min(1, "Numer VIN jest wymagany"),
   registrationNumber: z.string().min(1, "Numer rejestracyjny jest wymagany"),
@@ -71,6 +71,7 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
     defaultValues: {
       name: "",
       brand: "",
+      model: "",
       year: new Date().getFullYear(),
       vin: "",
       registrationNumber: "",

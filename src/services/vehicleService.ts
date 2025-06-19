@@ -1,11 +1,16 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle } from '@/utils/types';
 import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle } from '@/utils/supabaseMappers';
 import { uploadMultipleFiles, uploadFileToStorage, deleteFileFromStorage } from '@/utils/fileUpload';
+import { v4 as uuidv4 } from 'uuid';
 
 export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[] = [], attachments: File[] = [], thumbnailFile?: File): Promise<Vehicle> => {
   try {
     console.log('Creating vehicle with files:', { images: images.length, attachments: attachments.length, thumbnailFile: !!thumbnailFile });
+    
+    // Generate unique ID for the vehicle
+    const vehicleId = uuidv4();
     
     // Upload files to storage
     const uploadedImages = images.length > 0 ? await uploadMultipleFiles(images, 'vehicles/images') : [];
@@ -14,18 +19,43 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[
 
     console.log('Files uploaded:', { uploadedImages, uploadedAttachments, uploadedThumbnail });
 
-    // Prepare data for database
-    const vehicleForDb = mapVehicleToSupabaseVehicle({
-      ...vehicleData,
+    // Prepare vehicle data with proper structure
+    const completeVehicleData: Vehicle = {
+      id: vehicleId,
+      name: vehicleData.name || '',
+      brand: vehicleData.brand || '',
+      model: vehicleData.model || '',
+      year: vehicleData.year || new Date().getFullYear(),
+      vin: vehicleData.vin || '',
+      registrationNumber: vehicleData.registrationNumber || '',
+      purchaseDate: vehicleData.purchaseDate,
+      inspectionExpiryDate: vehicleData.inspectionExpiryDate,
+      serviceExpiryDate: vehicleData.serviceExpiryDate,
+      insuranceExpiryDate: vehicleData.insuranceExpiryDate,
+      lastService: vehicleData.lastService || new Date(),
+      nextService: vehicleData.nextService || new Date(new Date().setMonth(new Date().getMonth() + 6)),
+      fuelCardNumber: vehicleData.fuelCardNumber,
+      gpsSystemNumber: vehicleData.gpsSystemNumber,
+      driverName: vehicleData.driverName,
+      insuranceReminderDays: vehicleData.insuranceReminderDays || 30,
+      inspectionReminderDays: vehicleData.inspectionReminderDays || 30,
+      serviceReminderDays: vehicleData.serviceReminderDays || 30,
+      tags: vehicleData.tags,
+      notes: vehicleData.notes,
+      status: vehicleData.status || 'ok',
       images: uploadedImages.map(img => img.url),
+      vehicleType: vehicleData.vehicleType,
+      thumbnail: uploadedThumbnail?.url || null,
       attachments: uploadedAttachments.map((att, index) => ({
         name: attachments[index]?.name || '',
         type: attachments[index]?.type || '',
         size: attachments[index]?.size || 0,
         url: att.url
       })),
-      thumbnail: uploadedThumbnail?.url || null,
-    });
+    };
+
+    // Map to database format
+    const vehicleForDb = mapVehicleToSupabaseVehicle(completeVehicleData);
 
     const { data, error } = await supabase
       .from('vehicles')
