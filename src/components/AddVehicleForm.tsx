@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -114,6 +115,7 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   const handleSubmit = async (values: VehicleFormValues) => {
     setIsLoading(true);
     try {
+      console.log('Form values:', values);
       console.log('Submitting vehicle form with files:', { 
         images: images.length, 
         attachments: attachments.length, 
@@ -133,7 +135,8 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
       onSubmit(result);
     } catch (error) {
       console.error('Error submitting vehicle:', error);
-      toast.error("Wystąpił błąd podczas zapisywania pojazdu");
+      const errorMessage = error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania pojazdu";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

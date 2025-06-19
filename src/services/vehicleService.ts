@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[] = [], attachments: File[] = [], thumbnailFile?: File): Promise<Vehicle> => {
   try {
+    console.log('Creating vehicle with data:', vehicleData);
     console.log('Creating vehicle with files:', { images: images.length, attachments: attachments.length, thumbnailFile: !!thumbnailFile });
     
     // Generate unique ID for the vehicle
@@ -54,8 +55,12 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[
       })),
     };
 
+    console.log('Complete vehicle data:', completeVehicleData);
+
     // Map to database format
     const vehicleForDb = mapVehicleToSupabaseVehicle(completeVehicleData);
+    
+    console.log('Vehicle for database:', vehicleForDb);
 
     const { data, error } = await supabase
       .from('vehicles')
