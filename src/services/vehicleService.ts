@@ -5,19 +5,23 @@ import { uploadMultipleFiles, uploadFileToStorage, deleteFileFromStorage } from 
 
 export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[] = [], attachments: File[] = [], thumbnailFile?: File): Promise<Vehicle> => {
   try {
+    console.log('Creating vehicle with files:', { images: images.length, attachments: attachments.length, thumbnailFile: !!thumbnailFile });
+    
     // Upload files to storage
     const uploadedImages = images.length > 0 ? await uploadMultipleFiles(images, 'vehicles/images') : [];
     const uploadedAttachments = attachments.length > 0 ? await uploadMultipleFiles(attachments, 'vehicles/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'vehicles/thumbnails') : null;
 
+    console.log('Files uploaded:', { uploadedImages, uploadedAttachments, uploadedThumbnail });
+
     // Prepare data for database
     const vehicleForDb = mapVehicleToSupabaseVehicle({
       ...vehicleData,
       images: uploadedImages.map(img => img.url),
-      attachments: uploadedAttachments.map(att => ({
-        name: attachments[uploadedAttachments.indexOf(att)]?.name || '',
-        type: attachments[uploadedAttachments.indexOf(att)]?.type || '',
-        size: attachments[uploadedAttachments.indexOf(att)]?.size || 0,
+      attachments: uploadedAttachments.map((att, index) => ({
+        name: attachments[index]?.name || '',
+        type: attachments[index]?.type || '',
+        size: attachments[index]?.size || 0,
         url: att.url
       })),
       thumbnail: uploadedThumbnail?.url || null,
@@ -34,6 +38,7 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>, images: File[
       throw new Error(`Failed to create vehicle: ${error.message}`);
     }
 
+    console.log('Vehicle created successfully:', data);
     return mapSupabaseVehicleToVehicle(data);
   } catch (error) {
     console.error('Error in createVehicle:', error);
@@ -49,6 +54,8 @@ export const updateVehicle = async (
   thumbnailFile?: File
 ): Promise<Vehicle> => {
   try {
+    console.log('Updating vehicle with new files:', { newImages: newImages.length, newAttachments: newAttachments.length, thumbnailFile: !!thumbnailFile });
+    
     // Get current vehicle data
     const { data: currentVehicle, error: fetchError } = await supabase
       .from('vehicles')
@@ -65,19 +72,16 @@ export const updateVehicle = async (
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'vehicles/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'vehicles/thumbnails') : null;
 
-    // Safely handle existing files with proper type casting
-    const existingImages: string[] = Array.isArray(vehicleData.images) 
-      ? vehicleData.images 
-      : (Array.isArray(currentVehicle.images) 
-        ? (currentVehicle.images as unknown as string[])
-        : []);
+    console.log('New files uploaded:', { uploadedImages, uploadedAttachments, uploadedThumbnail });
+
+    // Combine existing and new files
+    const existingImages: string[] = Array.isArray(currentVehicle.images) 
+      ? (currentVehicle.images as string[])
+      : [];
         
-    const existingAttachments: Array<{name: string; type: string; size: number; url: string}> = 
-      Array.isArray(vehicleData.attachments) 
-        ? vehicleData.attachments 
-        : (Array.isArray(currentVehicle.attachments) 
-          ? (currentVehicle.attachments as unknown as Array<{name: string; type: string; size: number; url: string}>)
-          : []);
+    const existingAttachments = Array.isArray(currentVehicle.attachments) 
+      ? (currentVehicle.attachments as Array<{name: string; type: string; size: number; url: string}>)
+      : [];
     
     const allImages: string[] = [...existingImages, ...uploadedImages.map(img => img.url)];
     const allAttachments: Array<{name: string; type: string; size: number; url: string}> = [
@@ -94,7 +98,7 @@ export const updateVehicle = async (
       ...vehicleData,
       images: allImages,
       attachments: allAttachments,
-      thumbnail: uploadedThumbnail?.url || vehicleData.thumbnail || currentVehicle.thumbnail,
+      thumbnail: uploadedThumbnail?.url || currentVehicle.thumbnail,
     });
 
     const { data, error } = await supabase
@@ -109,6 +113,7 @@ export const updateVehicle = async (
       throw new Error(`Failed to update vehicle: ${error.message}`);
     }
 
+    console.log('Vehicle updated successfully:', data);
     return mapSupabaseVehicleToVehicle(data);
   } catch (error) {
     console.error('Error in updateVehicle:', error);

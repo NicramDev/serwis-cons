@@ -5,10 +5,14 @@ import { uploadMultipleFiles, uploadFileToStorage } from '@/utils/fileUpload';
 
 export const createDevice = async (deviceData: Partial<Device>, images: File[] = [], attachments: File[] = [], thumbnailFile?: File): Promise<Device> => {
   try {
+    console.log('Creating device with files:', { images: images.length, attachments: attachments.length, thumbnailFile: !!thumbnailFile });
+    
     // Upload files to storage
     const uploadedImages = images.length > 0 ? await uploadMultipleFiles(images, 'devices/images') : [];
     const uploadedAttachments = attachments.length > 0 ? await uploadMultipleFiles(attachments, 'devices/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'devices/thumbnails') : null;
+
+    console.log('Files uploaded:', { uploadedImages, uploadedAttachments, uploadedThumbnail });
 
     // Prepare data for database
     const deviceForDb = mapDeviceToSupabaseDevice({
@@ -34,6 +38,7 @@ export const createDevice = async (deviceData: Partial<Device>, images: File[] =
       throw new Error(`Failed to create device: ${error.message}`);
     }
 
+    console.log('Device created successfully:', data);
     return mapSupabaseDeviceToDevice(data);
   } catch (error) {
     console.error('Error in createDevice:', error);
@@ -49,6 +54,8 @@ export const updateDevice = async (
   thumbnailFile?: File
 ): Promise<Device> => {
   try {
+    console.log('Updating device with new files:', { newImages: newImages.length, newAttachments: newAttachments.length, thumbnailFile: !!thumbnailFile });
+    
     // Get current device data
     const { data: currentDevice, error: fetchError } = await supabase
       .from('devices')
@@ -65,7 +72,9 @@ export const updateDevice = async (
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'devices/attachments') : [];
     const uploadedThumbnail = thumbnailFile ? await uploadFileToStorage(thumbnailFile, 'devices/thumbnails') : null;
 
-    // Safely handle existing files - ensure they are arrays and properly typed
+    console.log('New files uploaded:', { uploadedImages, uploadedAttachments, uploadedThumbnail });
+
+    // Combine existing and new files
     const existingImages: string[] = Array.isArray(deviceData.images) ? deviceData.images : 
                                    (Array.isArray(currentDevice.images) ? currentDevice.images as string[] : []);
     const existingAttachments: Array<{name: string; type: string; size: number; url: string}> = 
@@ -102,6 +111,7 @@ export const updateDevice = async (
       throw new Error(`Failed to update device: ${error.message}`);
     }
 
+    console.log('Device updated successfully:', data);
     return mapSupabaseDeviceToDevice(data);
   } catch (error) {
     console.error('Error in updateDevice:', error);

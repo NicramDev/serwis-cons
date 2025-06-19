@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -112,20 +113,23 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   const handleSubmit = async (values: VehicleFormValues) => {
     setIsLoading(true);
     try {
+      console.log('Submitting vehicle form with files:', { 
+        images: images.length, 
+        attachments: attachments.length, 
+        thumbnail: !!thumbnail 
+      });
+      
       let result: Vehicle;
       
       if (isEditing && vehicle) {
-        // For editing, use the service directly
         result = await updateVehicle(vehicle.id, values, images, attachments, thumbnail || undefined);
+        toast.success("Pojazd został zaktualizowany");
       } else {
-        // For creating, use the service directly
         result = await createVehicle(values, images, attachments, thumbnail || undefined);
+        toast.success("Pojazd został dodany");
       }
       
-      // Call the parent's onSubmit with the result
       onSubmit(result);
-      
-      toast.success(isEditing ? "Pojazd został zaktualizowany" : "Pojazd został dodany");
     } catch (error) {
       console.error('Error submitting vehicle:', error);
       toast.error("Wystąpił błąd podczas zapisywania pojazdu");
@@ -135,16 +139,19 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   };
 
   const handleImagesChange = (newFiles: File[]) => {
+    console.log('Images changed:', newFiles.length);
     setImages(newFiles);
   };
 
   const handleAttachmentsChange = (newFiles: File[]) => {
+    console.log('Attachments changed:', newFiles.length);
     setAttachments(prev => [...prev, ...newFiles]);
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      console.log('Thumbnail changed:', file.name);
       setThumbnail(file);
       setThumbnailPreview(URL.createObjectURL(file));
     }

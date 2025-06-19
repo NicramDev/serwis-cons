@@ -5,9 +5,13 @@ import { uploadMultipleFiles } from '@/utils/fileUpload';
 
 export const createServiceRecord = async (serviceData: Partial<ServiceRecord>, images: File[] = [], attachments: File[] = []): Promise<ServiceRecord> => {
   try {
+    console.log('Creating service record with files:', { images: images.length, attachments: attachments.length });
+    
     // Upload files to storage
     const uploadedImages = images.length > 0 ? await uploadMultipleFiles(images, 'service-records/images') : [];
     const uploadedAttachments = attachments.length > 0 ? await uploadMultipleFiles(attachments, 'service-records/attachments') : [];
+
+    console.log('Files uploaded:', { uploadedImages, uploadedAttachments });
 
     // Prepare data for database
     const serviceForDb = mapServiceRecordToSupabaseServiceRecord({
@@ -32,6 +36,7 @@ export const createServiceRecord = async (serviceData: Partial<ServiceRecord>, i
       throw new Error(`Failed to create service record: ${error.message}`);
     }
 
+    console.log('Service record created successfully:', data);
     return mapSupabaseServiceRecordToServiceRecord(data);
   } catch (error) {
     console.error('Error in createServiceRecord:', error);
@@ -46,6 +51,8 @@ export const updateServiceRecord = async (
   newAttachments: File[] = []
 ): Promise<ServiceRecord> => {
   try {
+    console.log('Updating service record with new files:', { newImages: newImages.length, newAttachments: newAttachments.length });
+    
     // Get current service record data
     const { data: currentRecord, error: fetchError } = await supabase
       .from('service_records')
@@ -61,12 +68,16 @@ export const updateServiceRecord = async (
     const uploadedImages = newImages.length > 0 ? await uploadMultipleFiles(newImages, 'service-records/images') : [];
     const uploadedAttachments = newAttachments.length > 0 ? await uploadMultipleFiles(newAttachments, 'service-records/attachments') : [];
 
-    // Safely handle existing files - ensure they are arrays and properly typed
-    const existingImages: string[] = Array.isArray(serviceData.images) ? serviceData.images : 
-                                   (Array.isArray(currentRecord.images) ? currentRecord.images as string[] : []);
-    const existingAttachments: Array<{name: string; type: string; size: number; url: string}> = 
-      Array.isArray(serviceData.attachments) ? serviceData.attachments : 
-      (Array.isArray(currentRecord.attachments) ? currentRecord.attachments as Array<{name: string; type: string; size: number; url: string}> : []);
+    console.log('New files uploaded:', { uploadedImages, uploadedAttachments });
+
+    // Combine existing and new files
+    const existingImages: string[] = Array.isArray(currentRecord.images) 
+      ? (currentRecord.images as string[])
+      : [];
+        
+    const existingAttachments = Array.isArray(currentRecord.attachments) 
+      ? (currentRecord.attachments as Array<{name: string; type: string; size: number; url: string}>)
+      : [];
     
     const allImages: string[] = [...existingImages, ...uploadedImages.map(img => img.url)];
     const allAttachments: Array<{name: string; type: string; size: number; url: string}> = [
@@ -97,6 +108,7 @@ export const updateServiceRecord = async (
       throw new Error(`Failed to update service record: ${error.message}`);
     }
 
+    console.log('Service record updated successfully:', data);
     return mapSupabaseServiceRecordToServiceRecord(data);
   } catch (error) {
     console.error('Error in updateServiceRecord:', error);
