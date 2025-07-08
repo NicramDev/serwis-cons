@@ -9,6 +9,8 @@ import { Vehicle } from "../utils/types";
 import VehicleBasicFields from "./vehicle-form/VehicleBasicFields";
 import ReminderSection from "./vehicle-form/ReminderSection";
 import FileUploadField from "./vehicle-form/FileUploadField";
+import { FileStorageService } from "../services/fileStorageService";
+import { toast } from "sonner";
 import { Image, Car } from "lucide-react";
 
 const vehicleSchema = z.object({
@@ -107,23 +109,48 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
     }
   }, [form, isEditing, vehicle]);
 
-  const handleSubmit = (values: VehicleFormValues) => {
-    const vehicleData: Partial<Vehicle> = {
-      ...values,
-      thumbnail: thumbnail ? URL.createObjectURL(thumbnail) : vehicle?.thumbnail,
-      images: images.map(img => URL.createObjectURL(img)),
-      attachments: attachments.map(file => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        url: URL.createObjectURL(file)
-      })),
-    };
-    
-    if (isEditing && vehicle) {
-      onSubmit({ ...vehicle, ...vehicleData });
-    } else {
-      onSubmit(vehicleData);
+  const handleSubmit = async (values: VehicleFormValues) => {
+    try {
+      toast.loading("Zapisywanie pojazdu...");
+      
+      // Ensure bucket exists
+      await FileStorageService.ensureBucketExists();
+      
+      const vehicleId = vehicle?.id || crypto.randomUUID();
+      const vehicleName = values.name;
+      
+      // Upload files to organized folders
+      const [uploadedImages, uploadedAttachments, uploadedThumbnail] = await Promise.all([
+        images.length > 0 ? FileStorageService.uploadVehicleFiles(vehicleId, vehicleName, images, 'images') : [],
+        attachments.length > 0 ? FileStorageService.uploadVehicleFiles(vehicleId, vehicleName, attachments, 'attachments') : [],
+        thumbnail ? FileStorageService.uploadVehicleThumbnail(vehicleId, vehicleName, thumbnail) : null
+      ]);
+      
+      const vehicleData: Partial<Vehicle> = {
+        ...values,
+        id: vehicleId,
+        thumbnail: uploadedThumbnail || vehicle?.thumbnail,
+        images: uploadedImages.length > 0 ? uploadedImages : vehicle?.images || [],
+        attachments: uploadedAttachments.length > 0 ? uploadedAttachments.map((url, index) => ({
+          name: attachments[index]?.name || `attachment-${index}`,
+          type: attachments[index]?.type || 'application/octet-stream',
+          size: attachments[index]?.size || 0,
+          url: url
+        })) : vehicle?.attachments || [],
+      };
+      
+      if (isEditing && vehicle) {
+        onSubmit({ ...vehicle, ...vehicleData });
+      } else {
+        onSubmit(vehicleData);
+      }
+      
+      toast.dismiss();
+      toast.success(`Pojazd ${isEditing ? 'zaktualizowany' : 'dodany'} pomyślnie!`);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Błąd podczas zapisywania pojazdu");
+      console.error('Error submitting vehicle:', error);
     }
   };
 
