@@ -78,12 +78,14 @@ const Devices = () => {
     }
   }, [searchParams, allDevices]);
   
-  const filteredDevices = allDevices.filter(device => 
-    device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (device.model?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-    device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    device.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDevices = allDevices
+    .filter(device => 
+      device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (device.model?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      device.type.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleAddDevice = async (deviceData: Partial<Device>) => {
     const newDeviceData: Partial<Device> = {

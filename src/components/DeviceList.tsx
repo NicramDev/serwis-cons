@@ -30,9 +30,11 @@ const DeviceList = ({
     );
   }
 
+  const sortedDevices = [...devices].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div className="flex flex-col gap-3">
-      {devices.map(device => (
+      {sortedDevices.map(device => (
         <DeviceCard 
           key={device.id}
           device={device}
