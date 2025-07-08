@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import FullscreenViewer from "./FullscreenViewer";
 import ReminderSection from "./vehicle-form/ReminderSection";
 import FileUploadField from "./vehicle-form/FileUploadField";
+import { FileStorageService } from "../services/fileStorageService";
+import { toast } from "sonner";
 
 const deviceSchema = z.object({
   vehicleId: z.string().optional(),
@@ -73,30 +75,54 @@ const AddDeviceForm = ({
     },
   });
 
-  const handleSubmit = (values: DeviceFormValues) => {
-    const updatedDevice: Partial<Device> = {
-      ...initialDevice,
-      ...values,
-      thumbnail: thumbnailFile ? URL.createObjectURL(thumbnailFile) : thumbnail,
-      images: [
-        ...existingImages,
-        ...images.map(img => URL.createObjectURL(img))
-      ],
-      attachments: [
-        ...existingAttachments,
-        ...attachments.map(file => ({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file)
-        }))
-      ],
-      status: initialDevice?.status || 'ok',
-      lastService: initialDevice?.lastService || new Date(),
-      nextService: values.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6))
-    };
-    
-    onSubmit(updatedDevice);
+  const handleSubmit = async (values: DeviceFormValues) => {
+    try {
+      toast.loading("Zapisywanie urządzenia...");
+      
+      // Ensure bucket exists
+      await FileStorageService.ensureBucketExists();
+      
+      const deviceId = initialDevice?.id || crypto.randomUUID();
+      const deviceName = values.name;
+      
+      // Upload files to organized folders
+      const [uploadedImages, uploadedAttachments, uploadedThumbnail] = await Promise.all([
+        images.length > 0 ? FileStorageService.uploadDeviceFiles(deviceId, deviceName, images, 'images') : [],
+        attachments.length > 0 ? FileStorageService.uploadDeviceFiles(deviceId, deviceName, attachments, 'attachments') : [],
+        thumbnailFile ? FileStorageService.uploadDeviceFiles(deviceId, deviceName, [thumbnailFile], 'thumbnail').then(urls => urls[0] || null) : null
+      ]);
+      
+      const updatedDevice: Partial<Device> = {
+        ...initialDevice,
+        ...values,
+        id: deviceId,
+        thumbnail: uploadedThumbnail || thumbnail,
+        images: [
+          ...existingImages,
+          ...uploadedImages
+        ],
+        attachments: [
+          ...existingAttachments,
+          ...uploadedAttachments.map((url, index) => ({
+            name: attachments[index]?.name || `attachment-${index}`,
+            type: attachments[index]?.type || 'application/octet-stream',
+            size: attachments[index]?.size || 0,
+            url: url
+          }))
+        ],
+        status: initialDevice?.status || 'ok',
+        lastService: initialDevice?.lastService || new Date(),
+        nextService: values.serviceExpiryDate || new Date(new Date().setMonth(new Date().getMonth() + 6))
+      };
+      
+      onSubmit(updatedDevice);
+      toast.dismiss();
+      toast.success(`Urządzenie ${isEditing ? 'zaktualizowane' : 'dodane'} pomyślnie!`);
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Błąd podczas zapisywania urządzenia");
+      console.error('Error submitting device:', error);
+    }
   };
 
   const handleImagesChange = (files: File[]) => {
