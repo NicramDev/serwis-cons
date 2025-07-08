@@ -1,4 +1,5 @@
-export const VERSION = "BETA 1.0.0";
+export const VERSION = "BETA 1.0.1";
 export const CHANGELOG = `
-Cos tu będzie w następnej aktualizacji.
+Dodano:
+- alfabetyczne ustawienie urządzeń w pojazdach
 `;
