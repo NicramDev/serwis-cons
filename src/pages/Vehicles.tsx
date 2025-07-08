@@ -353,18 +353,77 @@ const Vehicles = () => {
 
   // Filtracja pojazdów - z obsługą komend
   const filteredVehicles = (() => {
-    // Jeśli to komenda szukaj-urządzenia, pokaż pojazdy z wyszukanymi urządzeniami
-    if (searchQuery.startsWith(':szukaj-urządzenia ') && searchedDevices.length > 0) {
-      const vehicleIds = [...new Set(searchedDevices.map(d => d.vehicleId))];
-      return allVehicles.filter(v => vehicleIds.includes(v.id)).sort((a, b) => a.name.localeCompare(b.name));
+    // Jeśli to komenda szukaj-urządzenia, wyszukaj urządzenia w czasie rzeczywistym
+    if (searchQuery.startsWith(':szukaj-urządzenia ')) {
+      const deviceQuery = searchQuery.replace(':szukaj-urządzenia ', '').toLowerCase().trim();
+      if (deviceQuery.length > 0) {
+        const foundDevices = devices.filter(device => 
+          device.name.toLowerCase().includes(deviceQuery) ||
+          device.brand?.toLowerCase().includes(deviceQuery) ||
+          device.type?.toLowerCase().includes(deviceQuery) ||
+          device.model?.toLowerCase().includes(deviceQuery)
+        );
+        
+        if (foundDevices.length > 0) {
+          // Podświetl znalezione urządzenia
+          setHighlightedDevices(foundDevices.map(d => d.id));
+          setSearchedDevices(foundDevices);
+          setShowDevicesList(false);
+          
+          // Pokaż pojazdy które mają te urządzenia
+          const vehicleIds = [...new Set(foundDevices.map(d => d.vehicleId))];
+          return allVehicles.filter(v => vehicleIds.includes(v.id)).sort((a, b) => a.name.localeCompare(b.name));
+        }
+      }
+      // Reset jeśli nie ma zapytania lub wyników
+      setHighlightedDevices([]);
+      setSearchedDevices([]);
+      setShowDevicesList(false);
+      return [];
     }
     
-    // Jeśli to komenda szukaj-w, pokaż tylko docelowy pojazd
+    // Jeśli to komenda szukaj-w, wyszukaj w konkretnym pojeździe
     if (searchQuery.startsWith(':szukaj-w ')) {
-      const vehicleName = searchQuery.replace(':szukaj-w ', '').toLowerCase();
-      return allVehicles.filter(v => 
-        v.name.toLowerCase().includes(vehicleName)
-      ).sort((a, b) => a.name.localeCompare(b.name));
+      const parts = searchQuery.replace(':szukaj-w ', '').split(' ');
+      const vehicleName = parts[0]?.toLowerCase() || '';
+      const deviceQuery = parts.slice(1).join(' ').toLowerCase().trim();
+      
+      // Znajdź pojazd
+      const targetVehicle = allVehicles.find(v => 
+        v.name.toLowerCase().includes(vehicleName) ||
+        v.registrationNumber?.toLowerCase().includes(vehicleName)
+      );
+      
+      if (targetVehicle) {
+        const vehicleDevices = devices.filter(d => d.vehicleId === targetVehicle.id);
+        
+        if (deviceQuery.length > 0) {
+          // Wyszukaj urządzenia w tym pojeździe
+          const foundDevices = vehicleDevices.filter(device => 
+            device.name.toLowerCase().includes(deviceQuery) ||
+            device.brand?.toLowerCase().includes(deviceQuery) ||
+            device.type?.toLowerCase().includes(deviceQuery) ||
+            device.model?.toLowerCase().includes(deviceQuery)
+          );
+          
+          setSearchedDevices(foundDevices);
+          setShowDevicesList(foundDevices.length > 0);
+          setHighlightedDevices(foundDevices.map(d => d.id));
+        } else {
+          // Tylko nazwa pojazdu - pokaż wszystkie urządzenia
+          setSearchedDevices(vehicleDevices);
+          setShowDevicesList(false);
+          setHighlightedDevices([]);
+        }
+        
+        return [targetVehicle];
+      }
+      
+      // Reset jeśli nie znaleziono pojazdu
+      setHighlightedDevices([]);
+      setSearchedDevices([]);
+      setShowDevicesList(false);
+      return [];
     }
     
     // Normalne wyszukiwanie
