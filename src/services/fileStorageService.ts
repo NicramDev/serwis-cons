@@ -5,7 +5,7 @@ export class FileStorageService {
   private static readonly BUCKET_NAME = 'vehicle-files';
   private static readonly BASE_FOLDER = 'Auta';
 
-  // Upload files for a vehicle and organize them in folders
+  // Upload files for vehicles
   static async uploadVehicleFiles(
     vehicleId: string,
     vehicleName: string,
@@ -162,6 +162,90 @@ export class FileStorageService {
       .replace(/[^a-zA-Z0-9\s\-_]/g, '') // Remove special characters
       .replace(/\s+/g, '_') // Replace spaces with underscores
       .trim();
+  }
+
+  // Upload files for devices
+  static async uploadDeviceFiles(
+    deviceId: string,
+    deviceName: string,
+    files: File[],
+    type: 'images' | 'attachments' | 'thumbnail'
+  ): Promise<string[]> {
+    const uploadedUrls: string[] = [];
+    
+    const folderPath = `${this.BASE_FOLDER}/Devices/${this.sanitizeFolderName(deviceName)}/${type}`;
+    
+    for (const file of files) {
+      try {
+        const fileExtension = file.name.split('.').pop();
+        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+        const filePath = `${folderPath}/${uniqueFileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from(this.BUCKET_NAME)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (error) {
+          console.error('Error uploading device file:', error);
+          throw error;
+        }
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from(this.BUCKET_NAME)
+          .getPublicUrl(filePath);
+        
+        uploadedUrls.push(publicUrl);
+      } catch (error) {
+        console.error(`Failed to upload device file ${file.name}:`, error);
+      }
+    }
+    
+    return uploadedUrls;
+  }
+
+  // Upload files for service records
+  static async uploadServiceFiles(
+    serviceId: string,
+    vehicleName: string,
+    files: File[],
+    type: 'images' | 'attachments'
+  ): Promise<string[]> {
+    const uploadedUrls: string[] = [];
+    
+    const folderPath = `${this.BASE_FOLDER}/Services/${this.sanitizeFolderName(vehicleName)}/${serviceId}/${type}`;
+    
+    for (const file of files) {
+      try {
+        const fileExtension = file.name.split('.').pop();
+        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+        const filePath = `${folderPath}/${uniqueFileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from(this.BUCKET_NAME)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (error) {
+          console.error('Error uploading service file:', error);
+          throw error;
+        }
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from(this.BUCKET_NAME)
+          .getPublicUrl(filePath);
+        
+        uploadedUrls.push(publicUrl);
+      } catch (error) {
+        console.error(`Failed to upload service file ${file.name}:`, error);
+      }
+    }
+    
+    return uploadedUrls;
   }
   
   // Check if bucket exists and create if needed

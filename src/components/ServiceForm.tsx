@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import FullscreenViewer from "./FullscreenViewer";
 import ServiceFormImages from "./ServiceFormImages";
 import ServiceFormFields from "./ServiceFormFields";
+import { FileStorageService } from "../services/fileStorageService";
 
 const serviceSchema = z.object({
   deviceId: z.string().min(1, "Wybór urządzenia jest wymagany"),
@@ -69,34 +70,50 @@ const ServiceForm = ({
     },
   });
 
-  const handleSubmit = (values: ServiceFormValues) => {
-    // Handle the "vehicle" special case
-    let deviceName;
-    if (values.deviceId === "vehicle") {
-      deviceName = vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd";
-    } else {
-      const selectedDevice = devices.find(d => d.id === values.deviceId);
-      deviceName = selectedDevice?.name;
+  const handleSubmit = async (values: ServiceFormValues) => {
+    try {
+      // Handle the "vehicle" special case
+      let deviceName;
+      if (values.deviceId === "vehicle") {
+        deviceName = vehicle?.name ? `Pojazd - ${vehicle.name}` : "Pojazd";
+      } else {
+        const selectedDevice = devices.find(d => d.id === values.deviceId);
+        deviceName = selectedDevice?.name;
+      }
+
+      const serviceId = initialService?.id || uuidv4();
+      
+      // Upload new images to Supabase Storage
+      const uploadedImages = images.length > 0 
+        ? await FileStorageService.uploadServiceFiles(
+            serviceId,
+            vehicle?.name || 'Unknown',
+            images,
+            'images'
+          )
+        : [];
+      
+      const serviceRecord: ServiceRecord = {
+        id: serviceId,
+        date: values.date,
+        vehicleId: vehicleId,
+        deviceId: values.deviceId === "vehicle" ? undefined : values.deviceId,
+        deviceName,
+        location: values.location,
+        type: values.type,
+        description: values.description,
+        cost: values.cost,
+        technician: values.technician,
+        images: [
+          ...existingImages,
+          ...uploadedImages
+        ],
+      };
+      
+      onSubmit(serviceRecord);
+    } catch (error) {
+      console.error('Error submitting service:', error);
     }
-    
-    const serviceRecord: ServiceRecord = {
-      id: initialService?.id || uuidv4(),
-      date: values.date,
-      vehicleId: vehicleId,
-      deviceId: values.deviceId === "vehicle" ? undefined : values.deviceId,
-      deviceName,
-      location: values.location,
-      type: values.type,
-      description: values.description,
-      cost: values.cost,
-      technician: values.technician,
-      images: [
-        ...existingImages,
-        ...images.map(img => URL.createObjectURL(img))
-      ],
-    };
-    
-    onSubmit(serviceRecord);
   };
 
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
