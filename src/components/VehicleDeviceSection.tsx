@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Device, Vehicle } from '../utils/types';
-import { Cpu, PlusCircle, MoveRight } from 'lucide-react';
+import { Cpu, PlusCircle, MoveRight, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceList from './DeviceList';
 import { 
@@ -49,6 +49,7 @@ const VehicleDeviceSection = ({
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [targetVehicleId, setTargetVehicleId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleMoveClick = (device: Device) => {
     setSelectedDevice(device);
@@ -67,6 +68,14 @@ const VehicleDeviceSection = ({
   // Filter out the current vehicle from the list of available vehicles
   const availableVehicles = allVehicles.filter(vehicle => vehicle.id !== selectedVehicleId);
 
+  // Filter devices based on search query
+  const filteredDevices = devices.filter(device =>
+    device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    device.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    device.model?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    device.type?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
       <div className="flex items-center justify-between mb-3">
@@ -75,19 +84,34 @@ const VehicleDeviceSection = ({
           <span>Przypisane urządzenia ({devices.length})</span>
         </div>
         
-        {onAddDevice && (
-          <Button 
-            size="sm" 
-            onClick={onAddDevice}
-          >
-            <PlusCircle className="h-4 w-4 mr-1" />
-            Dodaj urządzenie
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <input
+              type="text"
+              placeholder="Szukaj urządzeń..."
+              className="pl-9 pr-3 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          {onAddDevice && (
+            <Button 
+              size="sm" 
+              onClick={onAddDevice}
+            >
+              <PlusCircle className="h-4 w-4 mr-1" />
+              Dodaj urządzenie
+            </Button>
+          )}
+        </div>
       </div>
       
       <DeviceList 
-        devices={devices} 
+        devices={filteredDevices} 
         onEditDevice={onEditDevice}
         onDeleteDevice={onDeleteDevice}
         onViewDevice={onViewDevice}
