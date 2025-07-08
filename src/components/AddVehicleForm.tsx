@@ -10,13 +10,10 @@ import VehicleBasicFields from "./vehicle-form/VehicleBasicFields";
 import ReminderSection from "./vehicle-form/ReminderSection";
 import FileUploadField from "./vehicle-form/FileUploadField";
 import { Image, Car } from "lucide-react";
-import { toast } from "sonner";
-import { createVehicle, updateVehicle } from "@/services/vehicleService";
 
 const vehicleSchema = z.object({
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka jest wymagana"),
-  model: z.string().min(1, "Model jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   vin: z.string().min(1, "Numer VIN jest wymagany"),
   registrationNumber: z.string().min(1, "Numer rejestracyjny jest wymagany"),
@@ -37,7 +34,7 @@ const vehicleSchema = z.object({
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
 
 type AddVehicleFormProps = {
-  onSubmit: (vehicle: Vehicle) => void;
+  onSubmit: (vehicle: Partial<Vehicle> | Vehicle) => void;
   onCancel: () => void;
   allVehicles?: Vehicle[];
   onRemoveTag?: (tagName: string) => void;
@@ -51,7 +48,6 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const allTags: string[] = [];
@@ -72,7 +68,6 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
     defaultValues: {
       name: "",
       brand: "",
-      model: "",
       year: new Date().getFullYear(),
       vin: "",
       registrationNumber: "",
@@ -112,59 +107,37 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
     }
   }, [form, isEditing, vehicle]);
 
-  const handleSubmit = async (values: VehicleFormValues) => {
-    if (isLoading) {
-      return; // Prevent double submission
-    }
+  const handleSubmit = (values: VehicleFormValues) => {
+    const vehicleData: Partial<Vehicle> = {
+      ...values,
+      thumbnail: thumbnail ? URL.createObjectURL(thumbnail) : vehicle?.thumbnail,
+      images: images.map(img => URL.createObjectURL(img)),
+      attachments: attachments.map(file => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file)
+      })),
+    };
     
-    setIsLoading(true);
-    try {
-      console.log('Form values:', values);
-      console.log('Submitting vehicle form with files:', { 
-        images: images.length, 
-        attachments: attachments.length, 
-        thumbnail: !!thumbnail 
-      });
-
-      // Validation check
-      if (!values.name || !values.brand || !values.model || !values.registrationNumber || !values.vin) {
-        throw new Error('Wszystkie wymagane pola muszą być wypełnione');
-      }
-      
-      let result: Vehicle;
-      
-      if (isEditing && vehicle) {
-        result = await updateVehicle(vehicle.id, values, images, attachments, thumbnail || undefined);
-        toast.success("Pojazd został zaktualizowany");
-      } else {
-        result = await createVehicle(values, images, attachments, thumbnail || undefined);
-        toast.success("Pojazd został dodany");
-      }
-      
-      onSubmit(result);
-    } catch (error) {
-      console.error('Error submitting vehicle:', error);
-      const errorMessage = error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania pojazdu";
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
+    if (isEditing && vehicle) {
+      onSubmit({ ...vehicle, ...vehicleData });
+    } else {
+      onSubmit(vehicleData);
     }
   };
 
   const handleImagesChange = (newFiles: File[]) => {
-    console.log('Images changed:', newFiles.length);
     setImages(newFiles);
   };
 
   const handleAttachmentsChange = (newFiles: File[]) => {
-    console.log('Attachments changed:', newFiles.length);
     setAttachments(prev => [...prev, ...newFiles]);
   };
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      console.log('Thumbnail changed:', file.name);
       setThumbnail(file);
       setThumbnailPreview(URL.createObjectURL(file));
     }
@@ -262,11 +235,11 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
         />
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          <Button type="button" variant="outline" onClick={onCancel}>
             Anuluj
           </Button>
-          <Button type="submit" className="bg-primary" disabled={isLoading}>
-            {isLoading ? "Zapisywanie..." : (isEditing ? 'Zapisz zmiany' : 'Dodaj pojazd')}
+          <Button type="submit" className="bg-primary">
+            {isEditing ? 'Zapisz zmiany' : 'Dodaj pojazd'}
           </Button>
         </div>
       </form>

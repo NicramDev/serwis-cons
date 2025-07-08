@@ -101,19 +101,59 @@ const Vehicles = () => {
   }, []);
 
   // Dodawanie pojazdu
-  const handleAddVehicle = async (vehicle: Vehicle) => {
-    setAllVehicles(prev => [...prev, vehicle]);
-    setIsAddDialogOpen(false);
+  const handleAddVehicle = async (vehicleData: Partial<Vehicle>) => {
+    const newVehicleData = {
+      ...vehicleData,
+      id: uuidv4(),
+      lastService: vehicleData.lastService || new Date(),
+      nextService: vehicleData.nextService || new Date(new Date().setMonth(new Date().getMonth() + 6)),
+    };
+    const supabaseVehicle = mapVehicleToSupabaseVehicle(newVehicleData);
+
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert(supabaseVehicle)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd podczas dodawania pojazdu.");
+      return;
+    }
+    if (data) {
+      setAllVehicles(prev => [...prev, mapSupabaseVehicleToVehicle(data)]);
+      setIsAddDialogOpen(false);
+      toast.success("Pojazd został dodany pomyślnie");
+    }
   };
 
   // Edycja pojazdu
-  const handleUpdateVehicle = async (updatedVehicle: Vehicle) => {
-    setAllVehicles(prev =>
-      prev.map(vehicle =>
-        vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle
-      )
-    );
-    setIsEditDialogOpen(false);
+  const handleUpdateVehicle = async (updatedVehicleData: Vehicle) => {
+    const supabaseVehicle = mapVehicleToSupabaseVehicle(updatedVehicleData);
+    delete supabaseVehicle.id;
+
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update(supabaseVehicle)
+      .eq('id', updatedVehicleData.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd edycji pojazdu");
+      return;
+    }
+    if (data) {
+      setAllVehicles(prev =>
+        prev.map(vehicle =>
+          vehicle.id === updatedVehicleData.id
+            ? mapSupabaseVehicleToVehicle(data)
+            : vehicle
+        )
+      );
+      setIsEditDialogOpen(false);
+      toast.success("Pojazd został zaktualizowany pomyślnie");
+    }
   };
 
   // Usuwanie pojazdu

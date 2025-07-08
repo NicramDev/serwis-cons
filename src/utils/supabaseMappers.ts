@@ -25,12 +25,10 @@ export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
   tags: supabaseVehicle.tags,
   notes: supabaseVehicle.notes,
   status: supabaseVehicle.status || 'ok',
-  images: Array.isArray(supabaseVehicle.images) ? supabaseVehicle.images as string[] : [],
+  images: supabaseVehicle.images || [],
   vehicleType: supabaseVehicle.vehicletype,
   thumbnail: supabaseVehicle.thumbnail,
-  attachments: Array.isArray(supabaseVehicle.attachments) 
-    ? supabaseVehicle.attachments as Array<{name: string; type: string; size: number; url: string}>
-    : [],
+  attachments: supabaseVehicle.attachments || [],
 });
 
 // Helper to map local Vehicle to Supabase vehicle for insert/update
@@ -43,8 +41,7 @@ export const mapVehicleToSupabaseVehicle = (vehicle: Partial<Vehicle>): any => {
         purchasedate: purchaseDate ? purchaseDate.toISOString().slice(0, 10) : null,
         inspectionexpirydate: inspectionExpiryDate ? inspectionExpiryDate.toISOString().slice(0, 10) : null,
         serviceexpirydate: serviceExpiryDate ? serviceExpiryDate.toISOString().slice(0, 10) : null,
-        insuranceexpirydate: insuranceExpiryDate ? insuranceExpiryDate.toISOString().slice(0, 10)
-        : null,
+        insuranceexpirydate: insuranceExpiryDate ? insuranceExpiryDate.toISOString().slice(0, 10) : null,
         lastservice: lastService ? lastService.toISOString() : null,
         nextservice: nextService ? nextService.toISOString() : null,
         fuelcardnumber: fuelCardNumber,
@@ -74,11 +71,9 @@ export const mapSupabaseDeviceToDevice = (supabaseDevice: any): Device => ({
   serviceReminderDays: supabaseDevice.servicereminderdays,
   notes: supabaseDevice.notes,
   status: supabaseDevice.status || 'ok',
-  images: Array.isArray(supabaseDevice.images) ? supabaseDevice.images as string[] : [],
+  images: supabaseDevice.images || [],
   thumbnail: supabaseDevice.thumbnail,
-  attachments: Array.isArray(supabaseDevice.attachments) 
-    ? supabaseDevice.attachments as Array<{name: string; type: string; size: number; url: string}>
-    : [],
+  attachments: supabaseDevice.attachments || [],
 });
 
 export const mapDeviceToSupabaseDevice = (device: Partial<Device>): any => {
@@ -109,10 +104,8 @@ export const mapSupabaseServiceRecordToServiceRecord = (record: any): ServiceRec
   cost: record.cost,
   technician: record.technician,
   notes: record.notes,
-  images: Array.isArray(record.images) ? record.images as string[] : [],
-  attachments: Array.isArray(record.attachments) 
-    ? record.attachments as Array<{name: string; type: string; size: number; url: string}>
-    : [],
+  images: record.images || [],
+  attachments: record.attachments || [],
 });
 
 export const mapServiceRecordToSupabaseServiceRecord = (record: Partial<ServiceRecord>): any => {
