@@ -28,6 +28,10 @@ interface VehicleDetailPanelProps {
   onSaveService?: () => void;
   onView?: (vehicle: Vehicle) => void;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
+  highlightedDevices?: string[];
+  searchedDevices?: Device[];
+  showDevicesList?: boolean;
+  onDeviceClick?: (deviceId: string) => void;
 }
 
 const VehicleDetailPanel = ({
@@ -48,7 +52,11 @@ const VehicleDetailPanel = ({
   onViewService,
   onSaveService,
   onView,
-  onMoveDevice
+  onMoveDevice,
+  highlightedDevices = [],
+  searchedDevices = [],
+  showDevicesList = false,
+  onDeviceClick
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);

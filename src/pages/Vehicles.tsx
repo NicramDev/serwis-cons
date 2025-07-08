@@ -51,6 +51,11 @@ const Vehicles = () => {
   // Stany dialogów dodawania
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
+  
+  // Stany dla wyszukiwania komend
+  const [highlightedDevices, setHighlightedDevices] = useState<string[]>([]);
+  const [searchedDevices, setSearchedDevices] = useState<Device[]>([]);
+  const [showDevicesList, setShowDevicesList] = useState(false);
 
   // Pobierz pojazdy
   useEffect(() => {
@@ -310,30 +315,83 @@ const Vehicles = () => {
     }
   };
 
-  // Filtracja pojazdów
-  const filteredVehicles = allVehicles.filter(vehicle => {
-    const textMatch =
-      vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vehicle.registrationNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
-
-    let tagMatch = true;
-    if (selectedTags.length > 0) {
-      tagMatch = selectedTags.every(selectedTag => {
-        const selectedTagName = selectedTag.split(':')[0].trim();
-        if (!vehicle.tags) return false;
-
-        return vehicle.tags.split(',')
-          .map(tag => tag.trim().split(':')[0].trim())
-          .includes(selectedTagName);
-      });
+  // Obsługa komend wyszukiwania
+  const handleCommandSelect = (command: string) => {
+    if (command.startsWith(':szukaj-urządzenia ')) {
+      const deviceQuery = command.replace(':szukaj-urządzenia ', '').toLowerCase();
+      const foundDevices = devices.filter(device => 
+        device.name.toLowerCase().includes(deviceQuery) ||
+        device.brand?.toLowerCase().includes(deviceQuery) ||
+        device.type?.toLowerCase().includes(deviceQuery) ||
+        device.model?.toLowerCase().includes(deviceQuery)
+      );
+      
+      setSearchedDevices(foundDevices);
+      setHighlightedDevices(foundDevices.map(d => d.id));
+      setShowDevicesList(false);
+      
+      // Pokaż pojazdy które mają te urządzenia
+      const vehicleIds = [...new Set(foundDevices.map(d => d.vehicleId))];
+      if (vehicleIds.length > 0) {
+        setSelectedVehicleId(vehicleIds[0]); // Wybierz pierwszy pojazd
+      }
+    } else if (command.startsWith(':szukaj-w ')) {
+      const vehicleName = command.replace(':szukaj-w ', '');
+      const targetVehicle = allVehicles.find(v => 
+        v.name.toLowerCase().includes(vehicleName.toLowerCase())
+      );
+      
+      if (targetVehicle) {
+        setSelectedVehicleId(targetVehicle.id);
+        const vehicleDevices = devices.filter(d => d.vehicleId === targetVehicle.id);
+        setSearchedDevices(vehicleDevices);
+        setShowDevicesList(true);
+        setHighlightedDevices([]);
+      }
     }
+  };
 
-    return textMatch && tagMatch;
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  // Filtracja pojazdów - z obsługą komend
+  const filteredVehicles = (() => {
+    // Jeśli to komenda szukaj-urządzenia, pokaż pojazdy z wyszukanymi urządzeniami
+    if (searchQuery.startsWith(':szukaj-urządzenia ') && searchedDevices.length > 0) {
+      const vehicleIds = [...new Set(searchedDevices.map(d => d.vehicleId))];
+      return allVehicles.filter(v => vehicleIds.includes(v.id)).sort((a, b) => a.name.localeCompare(b.name));
+    }
+    
+    // Jeśli to komenda szukaj-w, pokaż tylko docelowy pojazd
+    if (searchQuery.startsWith(':szukaj-w ')) {
+      const vehicleName = searchQuery.replace(':szukaj-w ', '').toLowerCase();
+      return allVehicles.filter(v => 
+        v.name.toLowerCase().includes(vehicleName)
+      ).sort((a, b) => a.name.localeCompare(b.name));
+    }
+    
+    // Normalne wyszukiwanie
+    return allVehicles.filter(vehicle => {
+      const textMatch =
+        vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        vehicle.registrationNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+        (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+
+      let tagMatch = true;
+      if (selectedTags.length > 0) {
+        tagMatch = selectedTags.every(selectedTag => {
+          const selectedTagName = selectedTag.split(':')[0].trim();
+          if (!vehicle.tags) return false;
+
+          return vehicle.tags.split(',')
+            .map(tag => tag.trim().split(':')[0].trim())
+            .includes(selectedTagName);
+        });
+      }
+
+      return textMatch && tagMatch;
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  })();
 
   // Pobierz dane wybranego pojazdu i jego urządzeń
   const selectedVehicle = allVehicles.find(v => v.id === selectedVehicleId) || null;
@@ -504,6 +562,9 @@ const Vehicles = () => {
             availableTags={extractAllTags(allVehicles)}
             selectedTags={selectedTags}
             onTagSelect={handleTagSelect}
+            vehicles={allVehicles}
+            devices={devices}
+            onCommandSelect={handleCommandSelect}
           />
         </div>
 
@@ -542,6 +603,14 @@ const Vehicles = () => {
               onViewService={handleViewService}
               onSaveService={() => { }}
               onView={() => { }}
+              highlightedDevices={highlightedDevices}
+              searchedDevices={searchedDevices}
+              showDevicesList={showDevicesList}
+              onDeviceClick={(deviceId) => {
+                const device = devices.find(d => d.id === deviceId);
+                if (device) handleViewDevice(device);
+                setShowDevicesList(false);
+              }}
             />
           </div>
         </div>
