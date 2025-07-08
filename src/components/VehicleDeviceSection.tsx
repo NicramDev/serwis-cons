@@ -33,7 +33,6 @@ interface VehicleDeviceSectionProps {
   onOpenAttachment: (url: string) => void;
   selectedVehicleId?: string | null;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
-  highlightedDevices?: string[];
 }
 
 const VehicleDeviceSection = ({
@@ -45,8 +44,7 @@ const VehicleDeviceSection = ({
   onViewDevice,
   onOpenAttachment,
   selectedVehicleId,
-  onMoveDevice,
-  highlightedDevices = []
+  onMoveDevice
 }: VehicleDeviceSectionProps) => {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -95,7 +93,6 @@ const VehicleDeviceSection = ({
         onViewDevice={onViewDevice}
         onOpenAttachment={onOpenAttachment}
         onMoveDevice={handleMoveClick}
-        highlightedDevices={highlightedDevices}
       />
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>

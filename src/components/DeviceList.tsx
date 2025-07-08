@@ -12,7 +12,6 @@ interface DeviceListProps {
   onViewDevice?: (device: Device) => void;
   onOpenAttachment?: (url: string) => void;
   onMoveDevice?: (device: Device) => void;
-  highlightedDevices?: string[];
 }
 
 const DeviceList = ({ 
@@ -21,8 +20,7 @@ const DeviceList = ({
   onDeleteDevice, 
   onViewDevice,
   onOpenAttachment,
-  onMoveDevice,
-  highlightedDevices = []
+  onMoveDevice
 }: DeviceListProps) => {
   if (devices.length === 0) {
     return (

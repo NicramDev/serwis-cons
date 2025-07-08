@@ -28,10 +28,6 @@ interface VehicleDetailPanelProps {
   onSaveService?: () => void;
   onView?: (vehicle: Vehicle) => void;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
-  highlightedDevices?: string[];
-  searchedDevices?: Device[];
-  showDevicesList?: boolean;
-  onDeviceClick?: (deviceId: string) => void;
 }
 
 const VehicleDetailPanel = ({
@@ -52,11 +48,7 @@ const VehicleDetailPanel = ({
   onViewService,
   onSaveService,
   onView,
-  onMoveDevice,
-  highlightedDevices = [],
-  searchedDevices = [],
-  showDevicesList = false,
-  onDeviceClick
+  onMoveDevice
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
@@ -96,36 +88,6 @@ const VehicleDetailPanel = ({
             <VehicleSummaryInfo vehicle={vehicle} />
             
             <div className="pt-4 border-t border-border/50">
-              {/* Mini lista urządzeń dla komend szukaj-w */}
-              {showDevicesList && searchedDevices.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-primary mb-3 flex items-center gap-2">
-                    <span>Znalezione urządzenia ({searchedDevices.length})</span>
-                  </h3>
-                  <div className="grid gap-2">
-                    {searchedDevices.map(device => (
-                      <div
-                        key={device.id}
-                        className="p-3 bg-white/50 backdrop-blur-sm border border-border/50 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-                        onClick={() => onDeviceClick?.(device.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-sm">{device.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {device.brand} {device.model}
-                            </p>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {device.type}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
               {!showingServiceRecords && !showingReports ? (
                 <VehicleDeviceSection 
                   devices={selectedVehicleDevices}
@@ -137,7 +99,6 @@ const VehicleDetailPanel = ({
                   onOpenAttachment={handleAttachmentOpen}
                   selectedVehicleId={selectedVehicleId}
                   onMoveDevice={onMoveDevice}
-                  highlightedDevices={highlightedDevices}
                 />
               ) : showingServiceRecords && !showingReports ? (
                 <VehicleServiceSection 

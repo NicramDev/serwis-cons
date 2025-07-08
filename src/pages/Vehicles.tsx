@@ -51,11 +51,6 @@ const Vehicles = () => {
   // Stany dialogów dodawania
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
-  
-  // Stany dla wyszukiwania komend
-  const [highlightedDevices, setHighlightedDevices] = useState<string[]>([]);
-  const [searchedDevices, setSearchedDevices] = useState<Device[]>([]);
-  const [showDevicesList, setShowDevicesList] = useState(false);
 
   // Pobierz pojazdy
   useEffect(() => {
@@ -315,142 +310,30 @@ const Vehicles = () => {
     }
   };
 
-  // Obsługa komend wyszukiwania
-  const handleCommandSelect = (command: string) => {
-    if (command.startsWith(':szukaj-urządzenia ')) {
-      const deviceQuery = command.replace(':szukaj-urządzenia ', '').toLowerCase();
-      const foundDevices = devices.filter(device => 
-        device.name.toLowerCase().includes(deviceQuery) ||
-        device.brand?.toLowerCase().includes(deviceQuery) ||
-        device.type?.toLowerCase().includes(deviceQuery) ||
-        device.model?.toLowerCase().includes(deviceQuery)
-      );
-      
-      setSearchedDevices(foundDevices);
-      setHighlightedDevices(foundDevices.map(d => d.id));
-      setShowDevicesList(false);
-      
-      // Pokaż pojazdy które mają te urządzenia
-      const vehicleIds = [...new Set(foundDevices.map(d => d.vehicleId))];
-      if (vehicleIds.length > 0) {
-        setSelectedVehicleId(vehicleIds[0]); // Wybierz pierwszy pojazd
-      }
-    } else if (command.startsWith(':szukaj-w ')) {
-      const vehicleName = command.replace(':szukaj-w ', '');
-      const targetVehicle = allVehicles.find(v => 
-        v.name.toLowerCase().includes(vehicleName.toLowerCase())
-      );
-      
-      if (targetVehicle) {
-        setSelectedVehicleId(targetVehicle.id);
-        const vehicleDevices = devices.filter(d => d.vehicleId === targetVehicle.id);
-        setSearchedDevices(vehicleDevices);
-        setShowDevicesList(true);
-        setHighlightedDevices([]);
-      }
+  // Filtracja pojazdów
+  const filteredVehicles = allVehicles.filter(vehicle => {
+    const textMatch =
+      vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      vehicle.registrationNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+
+    let tagMatch = true;
+    if (selectedTags.length > 0) {
+      tagMatch = selectedTags.every(selectedTag => {
+        const selectedTagName = selectedTag.split(':')[0].trim();
+        if (!vehicle.tags) return false;
+
+        return vehicle.tags.split(',')
+          .map(tag => tag.trim().split(':')[0].trim())
+          .includes(selectedTagName);
+      });
     }
-  };
 
-  // Filtracja pojazdów - z obsługą komend
-  const filteredVehicles = (() => {
-    // Jeśli to komenda szukaj-urządzenia, wyszukaj urządzenia w czasie rzeczywistym
-    if (searchQuery.startsWith(':szukaj-urządzenia ')) {
-      const deviceQuery = searchQuery.replace(':szukaj-urządzenia ', '').toLowerCase().trim();
-      if (deviceQuery.length > 0) {
-        const foundDevices = devices.filter(device => 
-          device.name.toLowerCase().includes(deviceQuery) ||
-          device.brand?.toLowerCase().includes(deviceQuery) ||
-          device.type?.toLowerCase().includes(deviceQuery) ||
-          device.model?.toLowerCase().includes(deviceQuery)
-        );
-        
-        if (foundDevices.length > 0) {
-          // Podświetl znalezione urządzenia
-          setHighlightedDevices(foundDevices.map(d => d.id));
-          setSearchedDevices(foundDevices);
-          setShowDevicesList(false);
-          
-          // Pokaż pojazdy które mają te urządzenia
-          const vehicleIds = [...new Set(foundDevices.map(d => d.vehicleId))];
-          return allVehicles.filter(v => vehicleIds.includes(v.id)).sort((a, b) => a.name.localeCompare(b.name));
-        }
-      }
-      // Reset jeśli nie ma zapytania lub wyników
-      setHighlightedDevices([]);
-      setSearchedDevices([]);
-      setShowDevicesList(false);
-      return [];
-    }
-    
-    // Jeśli to komenda szukaj-w, wyszukaj w konkretnym pojeździe
-    if (searchQuery.startsWith(':szukaj-w ')) {
-      const parts = searchQuery.replace(':szukaj-w ', '').split(' ');
-      const vehicleName = parts[0]?.toLowerCase() || '';
-      const deviceQuery = parts.slice(1).join(' ').toLowerCase().trim();
-      
-      // Znajdź pojazd
-      const targetVehicle = allVehicles.find(v => 
-        v.name.toLowerCase().includes(vehicleName) ||
-        v.registrationNumber?.toLowerCase().includes(vehicleName)
-      );
-      
-      if (targetVehicle) {
-        const vehicleDevices = devices.filter(d => d.vehicleId === targetVehicle.id);
-        
-        if (deviceQuery.length > 0) {
-          // Wyszukaj urządzenia w tym pojeździe
-          const foundDevices = vehicleDevices.filter(device => 
-            device.name.toLowerCase().includes(deviceQuery) ||
-            device.brand?.toLowerCase().includes(deviceQuery) ||
-            device.type?.toLowerCase().includes(deviceQuery) ||
-            device.model?.toLowerCase().includes(deviceQuery)
-          );
-          
-          setSearchedDevices(foundDevices);
-          setShowDevicesList(foundDevices.length > 0);
-          setHighlightedDevices(foundDevices.map(d => d.id));
-        } else {
-          // Tylko nazwa pojazdu - pokaż wszystkie urządzenia
-          setSearchedDevices(vehicleDevices);
-          setShowDevicesList(false);
-          setHighlightedDevices([]);
-        }
-        
-        return [targetVehicle];
-      }
-      
-      // Reset jeśli nie znaleziono pojazdu
-      setHighlightedDevices([]);
-      setSearchedDevices([]);
-      setShowDevicesList(false);
-      return [];
-    }
-    
-    // Normalne wyszukiwanie
-    return allVehicles.filter(vehicle => {
-      const textMatch =
-        vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        vehicle.registrationNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (vehicle.brand?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-        (vehicle.vin?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-        (vehicle.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-        (vehicle.tags?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
-
-      let tagMatch = true;
-      if (selectedTags.length > 0) {
-        tagMatch = selectedTags.every(selectedTag => {
-          const selectedTagName = selectedTag.split(':')[0].trim();
-          if (!vehicle.tags) return false;
-
-          return vehicle.tags.split(',')
-            .map(tag => tag.trim().split(':')[0].trim())
-            .includes(selectedTagName);
-        });
-      }
-
-      return textMatch && tagMatch;
-    }).sort((a, b) => a.name.localeCompare(b.name));
-  })();
+    return textMatch && tagMatch;
+  }).sort((a, b) => a.name.localeCompare(b.name));
 
   // Pobierz dane wybranego pojazdu i jego urządzeń
   const selectedVehicle = allVehicles.find(v => v.id === selectedVehicleId) || null;
@@ -621,9 +504,6 @@ const Vehicles = () => {
             availableTags={extractAllTags(allVehicles)}
             selectedTags={selectedTags}
             onTagSelect={handleTagSelect}
-            vehicles={allVehicles}
-            devices={devices}
-            onCommandSelect={handleCommandSelect}
           />
         </div>
 
@@ -662,14 +542,6 @@ const Vehicles = () => {
               onViewService={handleViewService}
               onSaveService={() => { }}
               onView={() => { }}
-              highlightedDevices={highlightedDevices}
-              searchedDevices={searchedDevices}
-              showDevicesList={showDevicesList}
-              onDeviceClick={(deviceId) => {
-                const device = devices.find(d => d.id === deviceId);
-                if (device) handleViewDevice(device);
-                setShowDevicesList(false);
-              }}
             />
           </div>
         </div>
