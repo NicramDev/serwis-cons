@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import DashboardCard from '../components/DashboardCard';
 import ServiceItem from '../components/ServiceItem';
@@ -50,12 +49,12 @@ const Index = () => {
       // Set state with processed data
       setVehicles(processedVehicles);
       setDevices(processedDevices);
-      setServiceRecords([]);
+      setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : []);
       
       // Reset localStorage with the initial data to ensure it's always properly loaded
       localStorage.setItem('vehicles', JSON.stringify(processedVehicles));
       localStorage.setItem('devices', JSON.stringify(processedDevices));
-      localStorage.setItem('serviceRecords', JSON.stringify([]));
+      localStorage.setItem('serviceRecords', JSON.stringify(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : []));
       
       // Return data for use in calculateUpcomingServices
       return {
@@ -194,20 +193,29 @@ const Index = () => {
               <h2 className="text-xl font-semibold">Ostatnia Aktywność</h2>
             </div>
             <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto">
-              {serviceRecords.slice(0, 5).map((record, index) => (
-                <div key={record.id} className={`flex items-start opacity-0 animate-fade-in staggered-delay-${index + 1}`}>
-                  <div className="icon-container shrink-0 mr-4">
-                    <Wrench className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      Serwis {record.vehicleId ? 'pojazdu' : 'urządzenia'} - {record.type === 'repair' ? 'naprawa' : record.type === 'maintenance' ? 'konserwacja' : 'inspekcja'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{new Date(record.date).toLocaleDateString()}</p>
-                    <p className="text-sm mt-1">{record.description.substring(0, 60)}...</p>
-                  </div>
+              {serviceRecords.length > 0 ? (
+                serviceRecords
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 5)
+                  .map((record, index) => (
+                    <div key={record.id} className={`flex items-start opacity-0 animate-fade-in staggered-delay-${index + 1}`}>
+                      <div className="icon-container shrink-0 mr-4">
+                        <Wrench className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          Serwis {record.vehicleId ? 'pojazdu' : 'urządzenia'} - {record.type === 'repair' ? 'naprawa' : record.type === 'maintenance' ? 'konserwacja' : 'inspekcja'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{new Date(record.date).toLocaleDateString()}</p>
+                        <p className="text-sm mt-1">{record.description.substring(0, 60)}...</p>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  Brak ostatnich aktywności. Rozpocznij dodając nowy serwis!
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
