@@ -50,12 +50,12 @@ const Index = () => {
       // Set state with processed data
       setVehicles(processedVehicles);
       setDevices(processedDevices);
-      setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords);
+      setServiceRecords([]);
       
       // Reset localStorage with the initial data to ensure it's always properly loaded
       localStorage.setItem('vehicles', JSON.stringify(processedVehicles));
       localStorage.setItem('devices', JSON.stringify(processedDevices));
-      localStorage.setItem('serviceRecords', JSON.stringify(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : initialServiceRecords));
+      localStorage.setItem('serviceRecords', JSON.stringify([]));
       
       // Return data for use in calculateUpcomingServices
       return {
