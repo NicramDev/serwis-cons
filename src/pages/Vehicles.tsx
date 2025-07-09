@@ -31,6 +31,7 @@ import DeviceDetails from '../components/DeviceDetails';
 import ServiceDetails from '../components/ServiceDetails';
 import ServiceForm from '../components/ServiceForm';
 import AddEquipmentForm from '../components/AddEquipmentForm';
+import { FileText } from 'lucide-react';
 
 const Vehicles = () => {
   // Główne stany
@@ -1140,26 +1141,86 @@ const Vehicles = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedEquipmentForView && (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">{selectedEquipmentForView.name}</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <strong>Marka:</strong> {selectedEquipmentForView.brand || 'Brak danych'}
-                </div>
-                <div>
-                  <strong>Model:</strong> {selectedEquipmentForView.model || 'Brak danych'}
-                </div>
-                <div>
-                  <strong>Typ:</strong> {selectedEquipmentForView.type || 'Brak danych'}
-                </div>
-                <div>
-                  <strong>Numer seryjny:</strong> {selectedEquipmentForView.serialNumber || 'Brak danych'}
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                {selectedEquipmentForView.thumbnail && (
+                  <img
+                    src={selectedEquipmentForView.thumbnail}
+                    alt={selectedEquipmentForView.name}
+                    className="w-24 h-24 object-cover rounded-lg border"
+                  />
+                )}
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold">{selectedEquipmentForView.name}</h3>
+                  <p className="text-muted-foreground">{selectedEquipmentForView.brand} • {selectedEquipmentForView.type}</p>
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-lg">Informacje podstawowe</h4>
+                  <div className="space-y-2">
+                    <div><strong>Marka:</strong> {selectedEquipmentForView.brand || 'Brak danych'}</div>
+                    <div><strong>Model:</strong> {selectedEquipmentForView.model || 'Brak danych'}</div>
+                    <div><strong>Typ:</strong> {selectedEquipmentForView.type || 'Brak danych'}</div>
+                    <div><strong>Numer seryjny:</strong> {selectedEquipmentForView.serialNumber || 'Brak danych'}</div>
+                    {selectedEquipmentForView.year && (
+                      <div><strong>Rok produkcji:</strong> {selectedEquipmentForView.year}</div>
+                    )}
+                    {selectedEquipmentForView.purchasePrice && (
+                      <div><strong>Cena zakupu:</strong> {selectedEquipmentForView.purchasePrice} PLN</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {selectedEquipmentForView.notes && (
                 <div>
-                  <strong>Notatki:</strong>
-                  <p className="mt-1">{selectedEquipmentForView.notes}</p>
+                  <h4 className="font-semibold text-lg mb-2">Notatki</h4>
+                  <p className="text-muted-foreground">{selectedEquipmentForView.notes}</p>
+                </div>
+              )}
+
+              {selectedEquipmentForView.images && selectedEquipmentForView.images.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-lg mb-3">Zdjęcia</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {selectedEquipmentForView.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Zdjęcie ${index + 1}`}
+                        className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => window.open(image, '_blank')}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedEquipmentForView.attachments && selectedEquipmentForView.attachments.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-lg mb-3">Dokumenty i załączniki</h4>
+                  <div className="space-y-2">
+                    {selectedEquipmentForView.attachments.map((attachment, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{attachment.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({(attachment.size / 1024 / 1024).toFixed(2)} MB)
+                          </span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(attachment.url, '_blank')}
+                        >
+                          Otwórz
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
