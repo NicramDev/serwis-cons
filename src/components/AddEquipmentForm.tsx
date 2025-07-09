@@ -108,8 +108,10 @@ const AddEquipmentForm = ({
         images: imagePreviews,
         attachments: attachments,
       });
+      // Form will close automatically via the onSubmit handler in the parent component
     } catch (error) {
       console.error('Error submitting equipment:', error);
+      // Don't close the form on error - let the user try again
     }
   };
 

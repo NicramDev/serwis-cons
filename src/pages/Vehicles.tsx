@@ -490,17 +490,18 @@ const Vehicles = () => {
 
       if (error) {
         toast.error("Błąd podczas dodawania wyposażenia.");
-        throw error;
+        return; // Don't close dialog on error
       }
       
       if (data) {
         setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-        setIsAddEquipmentOpen(false);
+        setIsAddEquipmentOpen(false); // Close dialog only on success
         toast.success("Wyposażenie zostało dodane pomyślnie");
       }
     } catch (error) {
       console.error('Error adding equipment:', error);
-      throw error;
+      toast.error("Błąd podczas dodawania wyposażenia.");
+      // Don't close dialog on error
     }
   };
 
@@ -539,7 +540,7 @@ const Vehicles = () => {
 
       if (error) {
         toast.error("Błąd podczas edycji wyposażenia");
-        throw error;
+        return; // Don't close dialog on error
       }
       
       if (data) {
@@ -548,12 +549,13 @@ const Vehicles = () => {
             e.id === updatedEquipmentData.id ? mapSupabaseEquipmentToEquipment(data) : e
           )
         );
-        setIsEditEquipmentOpen(false);
+        setIsEditEquipmentOpen(false); // Close dialog only on success
         toast.success("Wyposażenie zostało zaktualizowane");
       }
     } catch (error) {
       console.error('Error updating equipment:', error);
-      throw error;
+      toast.error("Błąd podczas edycji wyposażenia");
+      // Don't close dialog on error
     }
   };
 
@@ -1153,44 +1155,7 @@ const Vehicles = () => {
       <EquipmentDialogs
         isAddDialogOpen={isAddEquipmentOpen}
         setIsAddDialogOpen={setIsAddEquipmentOpen}
-        onAddEquipment={async (equipmentData) => {
-          if (!selectedVehicleId) return;
-          const newEquipmentData: Equipment = {
-            id: uuidv4(),
-            name: equipmentData.name ?? "",
-            brand: equipmentData.brand ?? "",
-            type: equipmentData.type ?? "",
-            model: equipmentData.model ?? "",
-            serialNumber: equipmentData.serialNumber ?? "",
-            vehicleId: selectedVehicleId,
-            year: equipmentData.year,
-            purchasePrice: equipmentData.purchasePrice,
-            purchaseDate: equipmentData.purchaseDate,
-            lastService: new Date(),
-            nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-            notes: equipmentData.notes ?? "",
-            status: "ok",
-            images: equipmentData.images ?? [],
-            thumbnail: null,
-            attachments: equipmentData.attachments ?? [],
-          };
-          const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
-          
-          const { data, error } = await supabase
-            .from('equipment')
-            .insert(supabaseEquipment)
-            .select()
-            .single();
-
-          if (error) {
-            toast.error("Błąd podczas dodawania wyposażenia");
-            return;
-          }
-          if (data) {
-            setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-            toast.success("Wyposażenie zostało dodane");
-          }
-        }}
+        onAddEquipment={handleAddEquipment}
         isEditDialogOpen={isEditEquipmentOpen}
         setIsEditDialogOpen={setIsEditEquipmentOpen}
         selectedEquipment={selectedEquipment}
