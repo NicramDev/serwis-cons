@@ -1,208 +1,412 @@
-import React, { useState } from 'react';
-import { Equipment, Vehicle } from '../utils/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import VehicleDateField from './vehicle-form/VehicleDateField';
-import FileUploadField from './vehicle-form/FileUploadField';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Equipment, Vehicle } from "../utils/types";
+import { X, Calendar, Maximize, Image, Smartphone } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import FullscreenViewer from "./FullscreenViewer";
+import FileUploadField from "./vehicle-form/FileUploadField";
+import { FileStorageService } from "../services/fileStorageService";
+import { toast } from "sonner";
 
-interface AddEquipmentFormProps {
+const equipmentSchema = z.object({
+  vehicleId: z.string().optional(),
+  name: z.string().min(1, "Nazwa jest wymagana"),
+  brand: z.string().min(1, "Marka jest wymagana"),
+  type: z.string().min(1, "Typ wyposażenia jest wymagany"),
+  serialNumber: z.string().min(1, "Numer seryjny jest wymagany"),
+  year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
+  purchasePrice: z.coerce.number().min(0, "Cena nie może być ujemna").optional(),
+  notes: z.string().optional(),
+});
+
+type EquipmentFormValues = z.infer<typeof equipmentSchema>;
+
+type AddEquipmentFormProps = {
   onSubmit: (equipment: Partial<Equipment>) => void;
   onCancel: () => void;
-  vehicles?: Vehicle[];
+  vehicles: Vehicle[];
   initialEquipment?: Equipment;
   isEditing?: boolean;
-}
+  selectedVehicleId?: string | null;
+};
 
-const AddEquipmentForm = ({ onSubmit, onCancel, vehicles = [], initialEquipment, isEditing = false }: AddEquipmentFormProps) => {
-  const [formData, setFormData] = useState<Partial<Equipment>>({
-    name: initialEquipment?.name || '',
-    brand: initialEquipment?.brand || '',
-    model: initialEquipment?.model || '',
-    type: initialEquipment?.type || '',
-    serialNumber: initialEquipment?.serialNumber || '',
-    vehicleId: initialEquipment?.vehicleId || '',
-    year: initialEquipment?.year || undefined,
-    purchasePrice: initialEquipment?.purchasePrice || undefined,
-    purchaseDate: initialEquipment?.purchaseDate || undefined,
-    notes: initialEquipment?.notes || '',
-    images: initialEquipment?.images || [],
-    attachments: initialEquipment?.attachments || [],
+const AddEquipmentForm = ({ 
+  onSubmit, 
+  onCancel, 
+  vehicles, 
+  initialEquipment, 
+  isEditing = false,
+  selectedVehicleId 
+}: AddEquipmentFormProps) => {
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(initialEquipment?.thumbnail || null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(initialEquipment?.images || []);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [attachments, setAttachments] = useState<{ name: string; url: string; type: string; size: number }[]>(
+    initialEquipment?.attachments || []
+  );
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [fullscreenImageSrc, setFullscreenImageSrc] = useState("");
+  const [purchaseDate, setPurchaseDate] = useState<Date | undefined>(initialEquipment?.purchaseDate);
+
+  const form = useForm<EquipmentFormValues>({
+    resolver: zodResolver(equipmentSchema),
+    defaultValues: {
+      vehicleId: initialEquipment?.vehicleId || selectedVehicleId || "",
+      name: initialEquipment?.name || "",
+      brand: initialEquipment?.brand || "",
+      type: initialEquipment?.type || "",
+      serialNumber: initialEquipment?.serialNumber || "",
+      year: initialEquipment?.year || new Date().getFullYear(),
+      purchasePrice: initialEquipment?.purchasePrice || undefined,
+      notes: initialEquipment?.notes || "",
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name?.trim()) return;
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setThumbnailFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles(prev => [...prev, ...files]);
     
-    onSubmit({
-      ...formData,
-      lastService: new Date(),
-      nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      status: 'ok' as const
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreviews(prev => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
     });
   };
 
-  const handleFileUpload = (files: File[]) => {
-    console.log('Files uploaded:', files);
+  const handleSubmit = async (values: EquipmentFormValues) => {
+    onSubmit({
+      ...values,
+      purchaseDate,
+      thumbnail: thumbnailPreview,
+      images: imagePreviews,
+      attachments: attachments,
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachmentFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const openFullscreen = (src: string) => {
+    setFullscreenImageSrc(src);
+    setIsFullscreenOpen(true);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nazwa wyposażenia *</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
-            placeholder="Wprowadź nazwę wyposażenia"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="brand">Marka</Label>
-          <Input
-            id="brand"
-            value={formData.brand}
-            onChange={(e) => setFormData(prev => ({...prev, brand: e.target.value}))}
-            placeholder="Wprowadź markę"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="model">Model</Label>
-          <Input
-            id="model"
-            value={formData.model}
-            onChange={(e) => setFormData(prev => ({...prev, model: e.target.value}))}
-            placeholder="Wprowadź model"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="type">Typ</Label>
-          <Input
-            id="type"
-            value={formData.type}
-            onChange={(e) => setFormData(prev => ({...prev, type: e.target.value}))}
-            placeholder="Wprowadź typ wyposażenia"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="serialNumber">Numer seryjny</Label>
-          <Input
-            id="serialNumber"
-            value={formData.serialNumber}
-            onChange={(e) => setFormData(prev => ({...prev, serialNumber: e.target.value}))}
-            placeholder="Wprowadź numer seryjny"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="year">Rok produkcji</Label>
-          <Input
-            id="year"
-            type="number"
-            value={formData.year || ''}
-            onChange={(e) => setFormData(prev => ({...prev, year: e.target.value ? parseInt(e.target.value) : undefined}))}
-            placeholder="Wprowadź rok"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="price">Cena zakupu (PLN)</Label>
-          <Input
-            id="price"
-            type="number"
-            step="0.01"
-            value={formData.purchasePrice || ''}
-            onChange={(e) => setFormData(prev => ({...prev, purchasePrice: e.target.value ? parseFloat(e.target.value) : undefined}))}
-            placeholder="Wprowadź cenę"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="purchaseDate">Data zakupu</Label>
-          <Input
-            id="purchaseDate"
-            type="date"
-            value={formData.purchaseDate ? formData.purchaseDate.toISOString().split('T')[0] : ''}
-            onChange={(e) => setFormData(prev => ({...prev, purchaseDate: e.target.value ? new Date(e.target.value) : undefined}))}
-          />
-        </div>
-
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="vehicle">Przypisz do pojazdu</Label>
-          <Select value={formData.vehicleId || "none"} onValueChange={(value) => setFormData(prev => ({...prev, vehicleId: value === "none" ? "" : value}))}>
-            <SelectTrigger>
-              <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Brak przypisania</SelectItem>
-              {vehicles.map((vehicle) => (
-                <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.name} ({vehicle.registrationNumber})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="notes">Notatki</Label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
-            placeholder="Dodatkowe informacje o wyposażeniu"
-            rows={3}
-          />
-        </div>
-
-        <div className="md:col-span-2">
-          <Label>Miniatura</Label>
-          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              Przeciągnij miniaturę tutaj lub kliknij aby wybrać
-            </p>
-            <Input type="file" accept="image/*" className="mt-2" />
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto">
+          {/* Miniatura */}
+          <div className="space-y-2">
+            <FormLabel>Miniatura</FormLabel>
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center relative overflow-hidden">
+                {thumbnailPreview ? (
+                  <img 
+                    src={thumbnailPreview} 
+                    alt="Miniatura" 
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => openFullscreen(thumbnailPreview)}
+                  />
+                ) : (
+                  <Smartphone className="h-8 w-8 text-gray-400" />
+                )}
+              </div>
+              <div className="flex-1">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Wybierz zdjęcie dla miniatury wyposażenia
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="md:col-span-2">
-          <Label>Zdjęcia</Label>
-          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              Przeciągnij zdjęcia tutaj lub kliknij aby wybrać
-            </p>
-            <Input type="file" multiple accept="image/*" className="mt-2" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nazwa wyposażenia *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wprowadź nazwę wyposażenia" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="brand"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Marka *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wprowadź markę" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Typ wyposażenia *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wprowadź typ wyposażenia" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="serialNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Numer seryjny *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wprowadź numer seryjny" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="year"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rok produkcji</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Wprowadź rok" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="purchasePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cena zakupu (PLN)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" placeholder="Wprowadź cenę" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-2">
+              <FormLabel>Data zakupu</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !purchaseDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {purchaseDate ? format(purchaseDate, "dd.MM.yyyy") : "Wybierz datę"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <CalendarComponent
+                    mode="single"
+                    selected={purchaseDate}
+                    onSelect={setPurchaseDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="vehicleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Przypisz do pojazdu</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">Brak przypisania</SelectItem>
+                      {vehicles.map((vehicle) => (
+                        <SelectItem key={vehicle.id} value={vehicle.id}>
+                          {vehicle.name} ({vehicle.registrationNumber})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
           </div>
-        </div>
 
-        <div className="md:col-span-2">
-          <Label>Dokumenty i załączniki</Label>
-          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              Przeciągnij dokumenty tutaj lub kliknij aby wybrać (PDF, DOC, DOCX)
-            </p>
-            <Input type="file" multiple accept=".pdf,.doc,.docx" className="mt-2" />
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notatki</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Dodatkowe informacje o wyposażeniu"
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Zdjęcia */}
+          <div className="space-y-2">
+            <FormLabel>Zdjęcia</FormLabel>
+            <Input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mt-2">
+                {imagePreviews.map((src, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={src}
+                      alt={`Zdjęcie ${index + 1}`}
+                      className="w-full h-20 object-cover rounded cursor-pointer"
+                      onClick={() => openFullscreen(src)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      </div>
 
-      <div className="flex justify-end space-x-3 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Anuluj
-        </Button>
-        <Button type="submit">
-          {isEditing ? 'Zapisz zmiany' : 'Dodaj wyposażenie'}
-        </Button>
-      </div>
-    </form>
+          {/* Załączniki */}
+          <div className="space-y-2">
+            <FormLabel>Dokumenty i załączniki</FormLabel>
+            <Input
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                setAttachmentFiles(prev => [...prev, ...files]);
+                files.forEach(file => {
+                  setAttachments(prev => [...prev, {
+                    name: file.name,
+                    url: URL.createObjectURL(file),
+                    type: file.type,
+                    size: file.size
+                  }]);
+                });
+              }}
+            />
+            <p className="text-xs text-muted-foreground">
+              Obsługiwane formaty: PDF, DOC, DOCX
+            </p>
+          </div>
+
+          {attachments.length > 0 && (
+            <div className="space-y-2">
+              <FormLabel>Załączone dokumenty</FormLabel>
+              <div className="space-y-1">
+                {attachments.map((attachment, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <span className="text-sm">{attachment.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Anuluj
+            </Button>
+            <Button type="submit">
+              {isEditing ? 'Zapisz zmiany' : 'Dodaj wyposażenie'}
+            </Button>
+          </div>
+        </form>
+      </Form>
+
+      {isFullscreenOpen && (
+        <FullscreenViewer
+          url={fullscreenImageSrc}
+          onClose={() => setIsFullscreenOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
