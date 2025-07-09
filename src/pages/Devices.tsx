@@ -1,34 +1,19 @@
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { formatDate } from '../utils/formatting/dateUtils';
-import DeviceCard from '../components/DeviceCard';
-import DeviceDetails from '../components/DeviceDetails';
-import { PlusCircle, Search, Maximize } from 'lucide-react';
-import { Device, Vehicle } from '../utils/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { PlusCircle, Search } from 'lucide-react';
+import { Device } from '../utils/types';
 import { Button } from '@/components/ui/button';
-import AddDeviceForm from '../components/AddDeviceForm';
-import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import FullscreenViewer from '../components/FullscreenViewer';
-import { mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseVehicleToVehicle } from '@/utils/supabaseMappers';
+import DeviceDialogs from '../components/DeviceDialogs';
+import DeviceListSection from '../components/DeviceListSection';
+import { useDeviceData } from '../hooks/useDeviceData';
+import { useDeviceOperations } from '../hooks/useDeviceOperations';
 
 const Devices = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [allDevices, setAllDevices] = useState<Device[]>([]);
-  const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
   const [searchParams] = useSearchParams();
+  
+  // Dialogs state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
@@ -37,30 +22,11 @@ const Devices = () => {
   const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
   
-  useEffect(() => {
-    const fetchData = async () => {
-      const [devicesRes, vehiclesRes] = await Promise.all([
-        supabase.from('devices').select('*'),
-        supabase.from('vehicles').select('*'),
-      ]);
-
-      if (devicesRes.error) {
-        toast.error("Błąd pobierania urządzeń");
-        console.error(devicesRes.error);
-      } else {
-        setAllDevices(devicesRes.data.map(mapSupabaseDeviceToDevice));
-      }
-
-      if (vehiclesRes.error) {
-        toast.error("Błąd pobierania pojazdów");
-        console.error(vehiclesRes.error);
-      } else {
-        setAllVehicles(vehiclesRes.data.map(mapSupabaseVehicleToVehicle));
-      }
-    };
-    fetchData();
-  }, []);
+  // Custom hooks
+  const { allDevices, setAllDevices, allVehicles, loading } = useDeviceData();
+  const { addDevice, updateDevice, deleteDevice } = useDeviceOperations();
   
+  // Handle URL params for direct device access
   useEffect(() => {
     const deviceId = searchParams.get('deviceId');
     const shouldEdit = searchParams.get('edit') === 'true';
@@ -78,83 +44,42 @@ const Devices = () => {
     }
   }, [searchParams, allDevices]);
   
-  const filteredDevices = allDevices
-    .filter(device => 
-      device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (device.model?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      device.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      device.type.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
-
   const handleAddDevice = async (deviceData: Partial<Device>) => {
-    const newDeviceData: Partial<Device> = {
-      ...deviceData,
-      id: uuidv4(),
-      lastService: deviceData.lastService || new Date(),
-      nextService: deviceData.nextService || new Date(new Date().setMonth(new Date().getMonth() + 6)),
-      status: 'ok',
-    };
-
-    const supabaseDevice = mapDeviceToSupabaseDevice(newDeviceData);
-    
-    const { data, error } = await supabase
-      .from('devices')
-      .insert(supabaseDevice)
-      .select()
-      .single();
-
-    if (error) {
-      toast.error("Nie udało się dodać urządzenia.");
-      console.error(error);
-      return;
+    try {
+      const newDevice = await addDevice(deviceData);
+      setAllDevices(prevDevices => [...prevDevices, newDevice]);
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding device:', error);
     }
-    
-    setAllDevices(prevDevices => [...prevDevices, mapSupabaseDeviceToDevice(data)]);
-    setIsAddDialogOpen(false);
-    toast.success("Urządzenie zostało dodane pomyślnie");
   };
 
   const handleUpdateDevice = async (updatedDeviceData: Device) => {
-    const supabaseDevice = mapDeviceToSupabaseDevice(updatedDeviceData);
-    delete supabaseDevice.id;
-
-    const { data, error } = await supabase
-      .from('devices')
-      .update(supabaseDevice)
-      .eq('id', updatedDeviceData.id)
-      .select()
-      .single();
-
-    if (error) {
-      toast.error("Nie udało się zaktualizować urządzenia.");
-      console.error(error);
-      return;
+    try {
+      const updatedDevice = await updateDevice(updatedDeviceData);
+      setAllDevices(prevDevices => 
+        prevDevices.map(device => 
+          device.id === updatedDeviceData.id ? updatedDevice : device
+        )
+      );
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.error('Error updating device:', error);
     }
-
-    setAllDevices(prevDevices => 
-      prevDevices.map(device => 
-        device.id === updatedDeviceData.id ? mapSupabaseDeviceToDevice(data) : device
-      )
-    );
-    setIsEditDialogOpen(false);
-    toast.success("Urządzenie zostało zaktualizowane pomyślnie");
   };
 
   const confirmDeleteDevice = async () => {
-    if (deviceToDelete) {
-      const { error } = await supabase.from('devices').delete().eq('id', deviceToDelete.id);
-
-      if (error) {
-        toast.error("Nie udało się usunąć urządzenia.");
-        console.error(error);
-      } else {
-        setAllDevices(prevDevices => prevDevices.filter(d => d.id !== deviceToDelete.id));
-        toast.success("Urządzenie zostało usunięte pomyślnie");
-      }
+    if (!deviceToDelete) return;
+    
+    try {
+      await deleteDevice(deviceToDelete.id);
+      setAllDevices(prevDevices => prevDevices.filter(d => d.id !== deviceToDelete.id));
+    } catch (error) {
+      console.error('Error deleting device:', error);
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setDeviceToDelete(null);
     }
-    setIsDeleteDialogOpen(false);
-    setDeviceToDelete(null);
   };
   
   const handleEditDevice = (device: Device) => {
@@ -182,6 +107,21 @@ const Devices = () => {
   const closeFullscreen = () => {
     setFullscreenUrl(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Ładowanie urządzeń...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -223,101 +163,34 @@ const Devices = () => {
           </div>
         </div>
         
-        {filteredDevices.length > 0 ? (
-          <div className="flex flex-col space-y-4">
-            {filteredDevices.map((device, index) => (
-              <DeviceCard 
-                key={device.id} 
-                device={device} 
-                delay={index % 5 + 1} 
-                onEdit={handleEditDevice}
-                onDelete={handleDeleteDevice}
-                onViewDetails={handleViewDeviceDetails}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="glass-card rounded-xl p-12 text-center">
-            <div className="icon-container mx-auto mb-4">
-              <Search className="h-5 w-5" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Nie znaleziono urządzeń</h3>
-            <p className="text-muted-foreground">
-              Żadne urządzenia nie pasują do kryteriów wyszukiwania. Spróbuj innego zapytania lub dodaj nowe urządzenie.
-            </p>
-          </div>
-        )}
+        <DeviceListSection
+          devices={allDevices}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onEditDevice={handleEditDevice}
+          onDeleteDevice={handleDeleteDevice}
+          onViewDeviceDetails={handleViewDeviceDetails}
+        />
       </div>
       
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Dodaj nowe urządzenie</DialogTitle>
-            <DialogDescription>
-              Wypełnij formularz, aby dodać nowe urządzenie
-            </DialogDescription>
-          </DialogHeader>
-          <AddDeviceForm 
-            onSubmit={handleAddDevice} 
-            onCancel={() => setIsAddDialogOpen(false)}
-            vehicles={allVehicles}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Edytuj urządzenie</DialogTitle>
-            <DialogDescription>
-              Zaktualizuj informacje o urządzeniu
-            </DialogDescription>
-          </DialogHeader>
-          {selectedDevice && (
-            <AddDeviceForm
-              initialDevice={selectedDevice}
-              onSubmit={handleUpdateDevice}
-              onCancel={() => setIsEditDialogOpen(false)}
-              vehicles={allVehicles}
-              isEditing={true}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Szczegóły urządzenia</DialogTitle>
-            <DialogDescription>
-              Pełne informacje o urządzeniu
-            </DialogDescription>
-          </DialogHeader>
-          {selectedDevice && <DeviceDetails device={selectedDevice} />}
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Czy na pewno chcesz usunąć to urządzenie?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Ta akcja jest nieodwracalna. Spowoduje to usunięcie urządzenia i jego danych.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteDevice} className="bg-destructive text-destructive-foreground">
-              Usuń urządzenie
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeviceDialogs
+        isAddDialogOpen={isAddDialogOpen}
+        setIsAddDialogOpen={setIsAddDialogOpen}
+        onAddDevice={handleAddDevice}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        selectedDevice={selectedDevice}
+        onUpdateDevice={handleUpdateDevice}
+        isDetailsDialogOpen={isDetailsDialogOpen}
+        setIsDetailsDialogOpen={setIsDetailsDialogOpen}
+        isDeleteDialogOpen={isDeleteDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        deviceToDelete={deviceToDelete}
+        onConfirmDelete={confirmDeleteDevice}
+        vehicles={allVehicles}
+      />
     </div>
   );
 };
 
 export default Devices;
-
-// UWAGA: Ten plik ma już 321 linii i staje się za długi. 
-// Warto go refaktoryzować na mniejsze komponenty.
