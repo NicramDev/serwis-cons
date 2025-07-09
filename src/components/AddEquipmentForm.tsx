@@ -101,14 +101,22 @@ const AddEquipmentForm = ({
 
   const handleSubmit = async (values: EquipmentFormValues) => {
     try {
-      await onSubmit({
+      // Fix vehicleId: if "none" is selected, set it to null
+      const processedValues = {
         ...values,
+        vehicleId: values.vehicleId === "none" ? null : values.vehicleId,
         purchaseDate,
         thumbnail: thumbnailPreview,
         images: imagePreviews,
         attachments: attachments,
-      });
-      // Form will close automatically via the onSubmit handler in the parent component
+        lastService: new Date(),
+        nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        status: 'ok' as const,
+      };
+      
+      console.log('Submitting equipment data:', processedValues);
+      await onSubmit(processedValues);
+      console.log('Equipment submitted successfully');
     } catch (error) {
       console.error('Error submitting equipment:', error);
       // Don't close the form on error - let the user try again
