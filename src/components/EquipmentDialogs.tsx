@@ -18,13 +18,13 @@ interface EquipmentDialogsProps {
   // Add dialog
   isAddDialogOpen: boolean;
   setIsAddDialogOpen: (open: boolean) => void;
-  onAddEquipment: (equipment: Partial<Equipment>) => void;
+  onAddEquipment: (equipment: Partial<Equipment>) => Promise<void>;
   
   // Edit dialog
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
   selectedEquipment: Equipment | null;
-  onUpdateEquipment: (equipment: Equipment) => void;
+  onUpdateEquipment: (equipment: Equipment) => Promise<void>;
   
   // Details dialog
   isDetailsDialogOpen: boolean;

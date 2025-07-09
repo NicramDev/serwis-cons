@@ -32,7 +32,7 @@ const equipmentSchema = z.object({
 type EquipmentFormValues = z.infer<typeof equipmentSchema>;
 
 type AddEquipmentFormProps = {
-  onSubmit: (equipment: Partial<Equipment>) => void;
+  onSubmit: (equipment: Partial<Equipment>) => Promise<void>;
   onCancel: () => void;
   vehicles: Vehicle[];
   initialEquipment?: Equipment;
@@ -100,13 +100,17 @@ const AddEquipmentForm = ({
   };
 
   const handleSubmit = async (values: EquipmentFormValues) => {
-    onSubmit({
-      ...values,
-      purchaseDate,
-      thumbnail: thumbnailPreview,
-      images: imagePreviews,
-      attachments: attachments,
-    });
+    try {
+      await onSubmit({
+        ...values,
+        purchaseDate,
+        thumbnail: thumbnailPreview,
+        images: imagePreviews,
+        attachments: attachments,
+      });
+    } catch (error) {
+      console.error('Error submitting equipment:', error);
+    }
   };
 
   const removeImage = (index: number) => {
