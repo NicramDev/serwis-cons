@@ -475,26 +475,32 @@ const Vehicles = () => {
   };
 
   const handleAddEquipment = async (equipmentData: Partial<Equipment>) => {
-    const newEquipmentData = {
-      ...equipmentData,
-      id: uuidv4(),
-    };
-    const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
+    try {
+      const newEquipmentData = {
+        ...equipmentData,
+        id: uuidv4(),
+      };
+      const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
 
-    const { data, error } = await supabase
-      .from('equipment')
-      .insert(supabaseEquipment)
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from('equipment')
+        .insert(supabaseEquipment)
+        .select()
+        .single();
 
-    if (error) {
-      toast.error("Błąd podczas dodawania wyposażenia.");
-      return;
-    }
-    if (data) {
-      setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-      setIsAddEquipmentOpen(false);
-      toast.success("Wyposażenie zostało dodane pomyślnie");
+      if (error) {
+        toast.error("Błąd podczas dodawania wyposażenia.");
+        throw error;
+      }
+      
+      if (data) {
+        setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+        setIsAddEquipmentOpen(false);
+        toast.success("Wyposażenie zostało dodane pomyślnie");
+      }
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+      throw error;
     }
   };
 
@@ -520,28 +526,34 @@ const Vehicles = () => {
   };
 
   const handleUpdateEquipment = async (updatedEquipmentData: Equipment) => {
-    const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedEquipmentData);
-    delete supabaseEquipment.id;
+    try {
+      const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedEquipmentData);
+      delete supabaseEquipment.id;
 
-    const { data, error } = await supabase
-      .from('equipment')
-      .update(supabaseEquipment)
-      .eq('id', updatedEquipmentData.id)
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from('equipment')
+        .update(supabaseEquipment)
+        .eq('id', updatedEquipmentData.id)
+        .select()
+        .single();
 
-    if (error) {
-      toast.error("Błąd podczas edycji wyposażenia");
-      return;
-    }
-    if (data) {
-      setEquipment(prev =>
-        prev.map(e =>
-          e.id === updatedEquipmentData.id ? mapSupabaseEquipmentToEquipment(data) : e
-        )
-      );
-      setIsEditEquipmentOpen(false);
-      toast.success("Wyposażenie zostało zaktualizowane");
+      if (error) {
+        toast.error("Błąd podczas edycji wyposażenia");
+        throw error;
+      }
+      
+      if (data) {
+        setEquipment(prev =>
+          prev.map(e =>
+            e.id === updatedEquipmentData.id ? mapSupabaseEquipmentToEquipment(data) : e
+          )
+        );
+        setIsEditEquipmentOpen(false);
+        toast.success("Wyposażenie zostało zaktualizowane");
+      }
+    } catch (error) {
+      console.error('Error updating equipment:', error);
+      throw error;
     }
   };
 
