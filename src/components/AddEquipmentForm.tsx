@@ -101,11 +101,12 @@ const AddEquipmentForm = ({
 
   const handleSubmit = async (values: EquipmentFormValues) => {
     try {
-      // Fix vehicleId: if "none" is selected, set it to null
+      // Clean up values and handle undefined fields properly
       const processedValues = {
         ...values,
         vehicleId: values.vehicleId === "none" ? null : values.vehicleId,
         purchaseDate,
+        purchasePrice: values.purchasePrice || undefined,
         thumbnail: thumbnailPreview,
         images: imagePreviews,
         attachments: attachments,

@@ -391,6 +391,10 @@ const Vehicles = () => {
   const [isMoveEquipmentDialogOpen, setIsMoveEquipmentDialogOpen] = useState(false);
   const [targetVehicleIdForEquipment, setTargetVehicleIdForEquipment] = useState<string>("");
 
+  // Device to equipment conversion state
+  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
+  const [deviceToConvert, setDeviceToConvert] = useState<Device | null>(null);
+
   // --- Move Device Dialog ---
   const [deviceToMove, setDeviceToMove] = useState<Device | null>(null);
   const [isMoveDeviceDialogOpen, setIsMoveDeviceDialogOpen] = useState(false);
@@ -576,6 +580,57 @@ const Vehicles = () => {
     }
   };
 
+  // Device to equipment conversion
+  const handleConvertToEquipment = (device: Device) => {
+    setDeviceToConvert(device);
+    setIsConvertDialogOpen(true);
+  };
+
+  const confirmConvertToEquipment = async () => {
+    if (!deviceToConvert) return;
+    
+    try {
+      // Convert device to equipment
+      const equipmentData: Equipment = {
+        id: uuidv4(),
+        name: deviceToConvert.name,
+        brand: deviceToConvert.brand,
+        type: deviceToConvert.type,
+        model: deviceToConvert.model,
+        serialNumber: deviceToConvert.serialNumber,
+        vehicleId: deviceToConvert.vehicleId,
+        year: deviceToConvert.year,
+        purchasePrice: deviceToConvert.purchasePrice,
+        purchaseDate: deviceToConvert.purchaseDate,
+        lastService: new Date(),
+        nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        notes: deviceToConvert.notes,
+        status: deviceToConvert.status,
+        images: deviceToConvert.images,
+        thumbnail: deviceToConvert.thumbnail,
+        attachments: deviceToConvert.attachments,
+      };
+      
+      const supabaseEquipment = mapEquipmentToSupabaseEquipment(equipmentData);
+      const { data, error } = await supabase.from('equipment').insert(supabaseEquipment).select().single();
+      
+      if (!error && data) {
+        await supabase.from('devices').delete().eq('id', deviceToConvert.id);
+        setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+        setDevices(prev => prev.filter(d => d.id !== deviceToConvert.id));
+        toast.success("Urządzenie przeniesione do wyposażenia");
+      } else {
+        toast.error("Błąd konwersji urządzenia");
+      }
+    } catch (error) {
+      console.error('Error converting device to equipment:', error);
+      toast.error("Błąd konwersji urządzenia");
+    }
+    
+    setIsConvertDialogOpen(false);
+    setDeviceToConvert(null);
+  };
+
   // Przyciski do serwisów
   const handleViewService = (service: ServiceRecord) => {
     setSelectedServiceForView(service);
@@ -701,40 +756,7 @@ const Vehicles = () => {
                 setIsMoveEquipmentDialogOpen(true);
                 setTargetVehicleIdForEquipment("");
               }}
-              onConvertToEquipment={async (device) => {
-                // Convert device to equipment
-                const equipmentData: Equipment = {
-                  id: uuidv4(),
-                  name: device.name,
-                  brand: device.brand,
-                  type: device.type,
-                  model: device.model,
-                  serialNumber: device.serialNumber,
-                  vehicleId: device.vehicleId,
-                  year: device.year,
-                  purchasePrice: device.purchasePrice,
-                  purchaseDate: device.purchaseDate,
-                  lastService: new Date(),
-                  nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                  notes: device.notes,
-                  status: device.status,
-                  images: device.images,
-                  thumbnail: device.thumbnail,
-                  attachments: device.attachments,
-                };
-                
-                const supabaseEquipment = mapEquipmentToSupabaseEquipment(equipmentData);
-                const { data, error } = await supabase.from('equipment').insert(supabaseEquipment).select().single();
-                
-                if (!error && data) {
-                  await supabase.from('devices').delete().eq('id', device.id);
-                  setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-                  setDevices(prev => prev.filter(d => d.id !== device.id));
-                  toast.success("Urządzenie przeniesione do wyposażenia");
-                } else {
-                  toast.error("Błąd konwersji urządzenia");
-                }
-              }}
+              onConvertToEquipment={handleConvertToEquipment}
               onEditService={handleEditService}
               onDeleteService={handleDeleteService}
               onViewService={handleViewService}
@@ -1146,6 +1168,27 @@ const Vehicles = () => {
               disabled={!(deviceToMove ? targetVehicleId : targetVehicleIdForEquipment)}
             >
               Przenieś do pojazdu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Convert Device to Equipment Confirmation Dialog */}
+      <Dialog open={isConvertDialogOpen} onOpenChange={setIsConvertDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Konwertuj urządzenie na wyposażenie</DialogTitle>
+            <DialogDescription>
+              Czy na pewno chcesz przenieść urządzenie "{deviceToConvert?.name}" do wyposażenia? 
+              Ta operacja usunie urządzenie z listy urządzeń i doda je do wyposażenia.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConvertDialogOpen(false)}>
+              Anuluj
+            </Button>
+            <Button onClick={confirmConvertToEquipment}>
+              Potwierdź przeniesienie
             </Button>
           </DialogFooter>
         </DialogContent>
