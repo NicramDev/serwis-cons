@@ -31,7 +31,11 @@ import DeviceDetails from '../components/DeviceDetails';
 import ServiceDetails from '../components/ServiceDetails';
 import ServiceForm from '../components/ServiceForm';
 import AddEquipmentForm from '../components/AddEquipmentForm';
-import { FileText } from 'lucide-react';
+import EquipmentCard from '../components/EquipmentCard';
+import EquipmentDialogs from '../components/EquipmentDialogs';
+import { FileText, Eye, Edit, Trash2, MoreHorizontal, Shuffle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { formatDate } from '../utils/formatting/dateUtils';
 
 const Vehicles = () => {
   // Główne stany
@@ -375,11 +379,12 @@ const Vehicles = () => {
   const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
 
-  // --- DIALOGI AKCJE WYPOSAŻEŃ ---
-  const [selectedEquipmentForEdit, setSelectedEquipmentForEdit] = useState<Equipment | null>(null);
-  const [isEditEquipmentDialogOpen, setIsEditEquipmentDialogOpen] = useState(false);
-  const [selectedEquipmentForView, setSelectedEquipmentForView] = useState<Equipment | null>(null);
-  const [isViewEquipmentDialogOpen, setIsViewEquipmentDialogOpen] = useState(false);
+  // Equipment states
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [isEquipmentDetailsOpen, setIsEquipmentDetailsOpen] = useState(false);
+  const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
+  const [isEditEquipmentOpen, setIsEditEquipmentOpen] = useState(false);
+  const [isDeleteEquipmentOpen, setIsDeleteEquipmentOpen] = useState(false);
   const [equipmentToDelete, setEquipmentToDelete] = useState<Equipment | null>(null);
   const [isDeleteEquipmentDialogOpen, setIsDeleteEquipmentDialogOpen] = useState(false);
   const [equipmentToMove, setEquipmentToMove] = useState<Equipment | null>(null);
@@ -452,6 +457,89 @@ const Vehicles = () => {
     }
   };
   // Edycja urządzenia - UI logika istniejąca w AddDeviceDialog
+
+  // Equipment handlers
+  const handleViewEquipment = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setIsEquipmentDetailsOpen(true);
+  };
+
+  const handleEditEquipment = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setIsEditEquipmentOpen(true);
+  };
+
+  const handleDeleteEquipment = (equipment: Equipment) => {
+    setEquipmentToDelete(equipment);
+    setIsDeleteEquipmentOpen(true);
+  };
+
+  const handleAddEquipment = async (equipmentData: Partial<Equipment>) => {
+    const newEquipmentData = {
+      ...equipmentData,
+      id: uuidv4(),
+    };
+    const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
+
+    const { data, error } = await supabase
+      .from('equipment')
+      .insert(supabaseEquipment)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd podczas dodawania wyposażenia.");
+      return;
+    }
+    if (data) {
+      setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+      setIsAddEquipmentOpen(false);
+      toast.success("Wyposażenie zostało dodane pomyślnie");
+    }
+  };
+
+  const handleUpdateEquipment = async (updatedEquipmentData: Equipment) => {
+    const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedEquipmentData);
+    delete supabaseEquipment.id;
+
+    const { data, error } = await supabase
+      .from('equipment')
+      .update(supabaseEquipment)
+      .eq('id', updatedEquipmentData.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd podczas edycji wyposażenia");
+      return;
+    }
+    if (data) {
+      setEquipment(prev =>
+        prev.map(e =>
+          e.id === updatedEquipmentData.id ? mapSupabaseEquipmentToEquipment(data) : e
+        )
+      );
+      setIsEditEquipmentOpen(false);
+      toast.success("Wyposażenie zostało zaktualizowane");
+    }
+  };
+
+  const handleConfirmDeleteEquipment = async () => {
+    if (equipmentToDelete) {
+      const { error } = await supabase
+        .from('equipment')
+        .delete()
+        .eq('id', equipmentToDelete.id);
+      if (error) {
+        toast.error("Błąd usuwania wyposażenia");
+      } else {
+        setEquipment(prev => prev.filter(e => e.id !== equipmentToDelete.id));
+        toast.success("Wyposażenie usunięte");
+      }
+      setIsDeleteEquipmentOpen(false);
+      setEquipmentToDelete(null);
+    }
+  };
 
   // Przyciski do serwisów
   const handleViewService = (service: ServiceRecord) => {
@@ -569,18 +657,9 @@ const Vehicles = () => {
               onEditDevice={handleEditDevice}
               onDeleteDevice={handleDeleteDevice}
               onViewDevice={handleViewDevice}
-              onEditEquipment={(equipment) => {
-                setSelectedEquipmentForEdit(equipment);
-                setIsEditEquipmentDialogOpen(true);
-              }}
-              onDeleteEquipment={(equipment) => {
-                setEquipmentToDelete(equipment);
-                setIsDeleteEquipmentDialogOpen(true);
-              }}
-              onViewEquipment={(equipment) => {
-                setSelectedEquipmentForView(equipment);
-                setIsViewEquipmentDialogOpen(true);
-              }}
+              onEditEquipment={handleEditEquipment}
+              onDeleteEquipment={handleDeleteEquipment}
+              onViewEquipment={handleViewEquipment}
               onMoveDevice={handleMoveDevice}
               onMoveEquipment={(equipment) => {
                 setEquipmentToMove(equipment);
@@ -1088,177 +1167,24 @@ const Vehicles = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Equipment Dialog */}
-      <Dialog open={isEditEquipmentDialogOpen} onOpenChange={setIsEditEquipmentDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Edytuj wyposażenie</DialogTitle>
-            <DialogDescription>
-              Zaktualizuj informacje o wyposażeniu
-            </DialogDescription>
-          </DialogHeader>
-          {selectedEquipmentForEdit && (
-            <AddEquipmentForm
-              initialEquipment={selectedEquipmentForEdit}
-              onSubmit={async (equipmentData) => {
-                if (!selectedEquipmentForEdit) return;
-                const updatedData = { ...selectedEquipmentForEdit, ...equipmentData };
-                const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedData);
-                delete supabaseEquipment.id;
+      {/* Equipment Dialogs */}
+      <EquipmentDialogs
+        isAddDialogOpen={isAddEquipmentDialogOpen}
+        setIsAddDialogOpen={setIsAddEquipmentDialogOpen}
+        onAddEquipment={handleAddEquipment}
+        isEditDialogOpen={isEditEquipmentOpen}
+        setIsEditDialogOpen={setIsEditEquipmentOpen}
+        selectedEquipment={selectedEquipment}
+        onUpdateEquipment={handleUpdateEquipment}
+        isDetailsDialogOpen={isEquipmentDetailsOpen}
+        setIsDetailsDialogOpen={setIsEquipmentDetailsOpen}
+        isDeleteDialogOpen={isDeleteEquipmentOpen}
+        setIsDeleteDialogOpen={setIsDeleteEquipmentOpen}
+        equipmentToDelete={equipmentToDelete}
+        onConfirmDelete={handleConfirmDeleteEquipment}
+        vehicles={allVehicles}
+      />
 
-                const { data, error } = await supabase
-                  .from('equipment')
-                  .update(supabaseEquipment)
-                  .eq('id', selectedEquipmentForEdit.id)
-                  .select()
-                  .single();
-
-                if (error) {
-                  toast.error("Błąd podczas aktualizacji wyposażenia");
-                  return;
-                }
-                if (data) {
-                  setEquipment(prev => prev.map(e => e.id === selectedEquipmentForEdit.id ? mapSupabaseEquipmentToEquipment(data) : e));
-                  setIsEditEquipmentDialogOpen(false);
-                  toast.success("Wyposażenie zostało zaktualizowane");
-                }
-              }}
-              onCancel={() => setIsEditEquipmentDialogOpen(false)}
-              vehicles={allVehicles}
-              isEditing={true}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* View Equipment Dialog */}
-      <Dialog open={isViewEquipmentDialogOpen} onOpenChange={setIsViewEquipmentDialogOpen}>
-        <DialogContent className="sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Szczegóły wyposażenia</DialogTitle>
-            <DialogDescription>
-              Pełne informacje o wyposażeniu
-            </DialogDescription>
-          </DialogHeader>
-          {selectedEquipmentForView && (
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                {selectedEquipmentForView.thumbnail && (
-                  <img
-                    src={selectedEquipmentForView.thumbnail}
-                    alt={selectedEquipmentForView.name}
-                    className="w-24 h-24 object-cover rounded-lg border"
-                  />
-                )}
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold">{selectedEquipmentForView.name}</h3>
-                  <p className="text-muted-foreground">{selectedEquipmentForView.brand} • {selectedEquipmentForView.type}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Informacje podstawowe</h4>
-                  <div className="space-y-2">
-                    <div><strong>Marka:</strong> {selectedEquipmentForView.brand || 'Brak danych'}</div>
-                    <div><strong>Model:</strong> {selectedEquipmentForView.model || 'Brak danych'}</div>
-                    <div><strong>Typ:</strong> {selectedEquipmentForView.type || 'Brak danych'}</div>
-                    <div><strong>Numer seryjny:</strong> {selectedEquipmentForView.serialNumber || 'Brak danych'}</div>
-                    {selectedEquipmentForView.year && (
-                      <div><strong>Rok produkcji:</strong> {selectedEquipmentForView.year}</div>
-                    )}
-                    {selectedEquipmentForView.purchasePrice && (
-                      <div><strong>Cena zakupu:</strong> {selectedEquipmentForView.purchasePrice} PLN</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {selectedEquipmentForView.notes && (
-                <div>
-                  <h4 className="font-semibold text-lg mb-2">Notatki</h4>
-                  <p className="text-muted-foreground">{selectedEquipmentForView.notes}</p>
-                </div>
-              )}
-
-              {selectedEquipmentForView.images && selectedEquipmentForView.images.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-lg mb-3">Zdjęcia</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {selectedEquipmentForView.images.map((image, index) => (
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`Zdjęcie ${index + 1}`}
-                        className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => window.open(image, '_blank')}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selectedEquipmentForView.attachments && selectedEquipmentForView.attachments.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-lg mb-3">Dokumenty i załączniki</h4>
-                  <div className="space-y-2">
-                    {selectedEquipmentForView.attachments.map((attachment, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{attachment.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({(attachment.size / 1024 / 1024).toFixed(2)} MB)
-                          </span>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(attachment.url, '_blank')}
-                        >
-                          Otwórz
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Equipment Dialog */}
-      <AlertDialog open={isDeleteEquipmentDialogOpen} onOpenChange={setIsDeleteEquipmentDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Czy na pewno chcesz usunąć to wyposażenie?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Ta akcja jest nieodwracalna. Spowoduje to usunięcie wyposażenia i jego danych.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={async () => {
-                if (!equipmentToDelete) return;
-                const { error } = await supabase.from('equipment').delete().eq('id', equipmentToDelete.id);
-                if (error) {
-                  toast.error("Błąd podczas usuwania wyposażenia");
-                } else {
-                  setEquipment(prev => prev.filter(e => e.id !== equipmentToDelete.id));
-                  toast.success("Wyposażenie zostało usunięte");
-                }
-                setIsDeleteEquipmentDialogOpen(false);
-                setEquipmentToDelete(null);
-              }}
-              className="bg-destructive text-destructive-foreground"
-            >
-              Usuń wyposażenie
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

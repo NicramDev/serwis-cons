@@ -1,141 +1,138 @@
-import React from 'react';
+import { Wrench, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye } from 'lucide-react';
 import { Equipment } from '../utils/types';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Wrench, Calendar, MapPin, FileText, Image as ImageIcon } from 'lucide-react';
 import { formatDate } from '../utils/formatting/dateUtils';
+import { Button } from '@/components/ui/button';
 
 interface EquipmentCardProps {
   equipment: Equipment;
   delay?: number;
+  onEdit?: (equipment: Equipment) => void;
+  onDelete?: (equipment: Equipment) => void;
+  onViewDetails?: (equipment: Equipment) => void;
   actions?: React.ReactNode;
   onAttachmentClick?: (url: string) => void;
 }
 
-const EquipmentCard = ({ equipment, delay = 0, actions, onAttachmentClick }: EquipmentCardProps) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ok': return 'bg-green-100 text-green-800 border-green-200';
-      case 'needs-service': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'in-service': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+const EquipmentCard = ({ 
+  equipment, 
+  delay = 0, 
+  onEdit, 
+  onDelete, 
+  onViewDetails, 
+  actions,
+  onAttachmentClick 
+}: EquipmentCardProps) => {
+  const delayClass = `staggered-delay-${delay}`;
+  
+  const getStatusIcon = () => {
+    switch (equipment.status) {
+      case 'ok':
+        return <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-600"><Check className="h-4 w-4" /></div>;
+      case 'needs-service':
+        return <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Clock className="h-4 w-4" /></div>;
+      case 'in-service':
+        return <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Wrench className="h-4 w-4" /></div>;
+      case 'error':
+        return <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center text-red-600"><AlertTriangle className="h-4 w-4" /></div>;
+      default:
+        return null;
     }
   };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'ok': return 'Sprawne';
-      case 'needs-service': return 'Wymaga serwisu';
-      case 'in-service': return 'W serwisie';
-      case 'error': return 'Błąd';
-      default: return 'Nieznany';
-    }
-  };
-
-  const handleAttachmentClick = (url: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAttachmentClick?.(url);
-  };
-
+  
   return (
-    <Card 
-      className={`w-full border border-border/50 shadow-sm hover:shadow-md transition-all duration-200 bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-left-5`}
-      style={{ animationDelay: `${delay * 100}ms` }}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Wrench className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-foreground truncate">{equipment.name}</h3>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{equipment.brand}</span>
-                  {equipment.model && (
-                    <>
-                      <span>•</span>
-                      <span>{equipment.model}</span>
-                    </>
-                  )}
-                  {equipment.type && (
-                    <>
-                      <span>•</span>
-                      <span>{equipment.type}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <Badge className={getStatusColor(equipment.status)}>
-                {getStatusText(equipment.status)}
-              </Badge>
+    <div className={`glass-card rounded-xl p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all w-full`}>
+      <div className="flex justify-between items-start">
+        <div className="flex gap-3">
+          {equipment.thumbnail ? (
+            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+              <img 
+                src={equipment.thumbnail} 
+                alt={equipment.name} 
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
+                }}
+              />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-              {equipment.serialNumber && (
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Nr seryjny:</span>
-                  <span className="text-muted-foreground">{equipment.serialNumber}</span>
-                </div>
-              )}
-              
-              {equipment.year && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Rok: {equipment.year}</span>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  Następny serwis: {formatDate(equipment.nextService)}
-                </span>
-              </div>
-            </div>
-
-            {equipment.notes && (
-              <div className="mt-3 p-2 bg-muted/50 rounded-md">
-                <p className="text-sm text-muted-foreground">{equipment.notes}</p>
-              </div>
-            )}
-
-            {(equipment.images?.length || equipment.attachments?.length) && (
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-                {equipment.images?.length > 0 && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <ImageIcon className="h-3 w-3" />
-                    <span>{equipment.images.length} zdjęć</span>
-                  </div>
-                )}
-                {equipment.attachments?.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    {equipment.attachments.map((attachment, index) => (
-                      <button
-                        key={index}
-                        onClick={(e) => handleAttachmentClick(attachment.url, e)}
-                        className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <FileText className="h-3 w-3" />
-                        <span>{attachment.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {actions && (
-            <div className="flex items-center gap-1 ml-4">
-              {actions}
+          ) : (
+            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+              <Wrench className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
+          
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="inline-block px-2 py-1 text-xs font-medium bg-secondary text-foreground/70 rounded-full">
+                {equipment.type?.charAt(0).toUpperCase() + equipment.type?.slice(1) || 'Wyposażenie'}
+              </span>
+              <h3 className="text-md font-semibold">{equipment.name}</h3>
+            </div>
+            
+            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">Marka</span>
+                <span className="font-medium">{equipment.brand || '-'}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">S/N</span>
+                <span className="font-medium">{equipment.serialNumber}</span>
+              </div>
+              {equipment.vehicleId && (
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground">Pojazd</span>
+                  <span className="inline-flex items-center">
+                    <Car className="h-3 w-3 mr-1" />
+                    #{equipment.vehicleId.slice(0, 8)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">Rok</span>
+                <span className="font-medium">{equipment.year || '-'}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+        {getStatusIcon()}
+      </div>
+      
+      <div className="flex justify-end mt-3 gap-1">
+        {actions ? (
+          actions
+        ) : (
+          <>
+            <Button 
+              variant="secondary"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onViewDetails && onViewDetails(equipment)}
+            >
+              <Eye className="h-3 w-3 mr-1" />
+              Szczegóły
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onEdit && onEdit(equipment)}
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edytuj
+            </Button>
+            <Button 
+              variant="destructive"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onDelete && onDelete(equipment)}
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Usuń
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
   );
 };
 
