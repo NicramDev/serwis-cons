@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Vehicle, Device, ServiceRecord } from '../utils/types';
+import { Vehicle, Device, Equipment, ServiceRecord } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
 import VehicleDetailHeader from './VehicleDetailHeader';
 import VehicleSummaryInfo from './VehicleSummaryInfo';
@@ -13,42 +13,54 @@ interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
   vehicles: Vehicle[];
   devices: Device[];
+  equipment: Equipment[];
   services: ServiceRecord[];
   showingServiceRecords: boolean;
   onServiceClick: () => void;
   onEdit: (vehicle: Vehicle) => void;
   onAddService: () => void;
   onAddDevice?: () => void;
+  onAddEquipment?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
+  onEditEquipment?: (equipment: Equipment) => void;
+  onDeleteEquipment?: (equipment: Equipment) => void;
+  onViewEquipment?: (equipment: Equipment) => void;
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
   onViewService?: (service: ServiceRecord) => void;
   onSaveService?: () => void;
   onView?: (vehicle: Vehicle) => void;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
+  onMoveEquipment?: (equipment: Equipment, targetVehicleId: string) => void;
 }
 
 const VehicleDetailPanel = ({
   selectedVehicleId,
   vehicles,
   devices,
+  equipment,
   services,
   showingServiceRecords,
   onServiceClick,
   onEdit,
   onAddService,
   onAddDevice,
+  onAddEquipment,
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
+  onEditEquipment,
+  onDeleteEquipment,
+  onViewEquipment,
   onEditService,
   onDeleteService,
   onViewService,
   onSaveService,
   onView,
-  onMoveDevice
+  onMoveDevice,
+  onMoveEquipment
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
@@ -70,6 +82,7 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
+  const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
   
   return (
@@ -91,14 +104,20 @@ const VehicleDetailPanel = ({
               {!showingServiceRecords && !showingReports ? (
                 <VehicleDeviceSection 
                   devices={selectedVehicleDevices}
+                  equipment={selectedVehicleEquipment}
                   allVehicles={vehicles}
                   onAddDevice={onAddDevice}
+                  onAddEquipment={onAddEquipment}
                   onEditDevice={onEditDevice}
                   onDeleteDevice={onDeleteDevice}
                   onViewDevice={onViewDevice}
+                  onEditEquipment={onEditEquipment}
+                  onDeleteEquipment={onDeleteEquipment}
+                  onViewEquipment={onViewEquipment}
                   onOpenAttachment={handleAttachmentOpen}
                   selectedVehicleId={selectedVehicleId}
                   onMoveDevice={onMoveDevice}
+                  onMoveEquipment={onMoveEquipment}
                 />
               ) : showingServiceRecords && !showingReports ? (
                 <VehicleServiceSection 

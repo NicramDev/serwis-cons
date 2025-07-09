@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Device, Vehicle } from '../utils/types';
-import { Cpu, PlusCircle, MoveRight, Search } from 'lucide-react';
+import { Device, Equipment, Vehicle } from '../utils/types';
+import { Cpu, PlusCircle, MoveRight, Search, Wrench, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceList from './DeviceList';
+import EquipmentList from './EquipmentList';
 import { 
   Dialog, 
   DialogContent, 
@@ -25,31 +26,45 @@ import { toast } from 'sonner';
 
 interface VehicleDeviceSectionProps {
   devices: Device[];
+  equipment: Equipment[];
   allVehicles?: Vehicle[];
   onAddDevice?: () => void;
+  onAddEquipment?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
+  onEditEquipment?: (equipment: Equipment) => void;
+  onDeleteEquipment?: (equipment: Equipment) => void;
+  onViewEquipment?: (equipment: Equipment) => void;
   onOpenAttachment: (url: string) => void;
   selectedVehicleId?: string | null;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
+  onMoveEquipment?: (equipment: Equipment, targetVehicleId: string) => void;
 }
 
 const VehicleDeviceSection = ({
   devices,
+  equipment,
   allVehicles = [],
   onAddDevice,
+  onAddEquipment,
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
+  onEditEquipment,
+  onDeleteEquipment,
+  onViewEquipment,
   onOpenAttachment,
   selectedVehicleId,
-  onMoveDevice
+  onMoveDevice,
+  onMoveEquipment
 }: VehicleDeviceSectionProps) => {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [targetVehicleId, setTargetVehicleId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [equipmentSearchQuery, setEquipmentSearchQuery] = useState<string>("");
 
   const handleMoveClick = (device: Device) => {
     setSelectedDevice(device);
@@ -76,6 +91,14 @@ const VehicleDeviceSection = ({
     device.type?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Filter equipment based on search query
+  const filteredEquipment = equipment.filter(item =>
+    item.name.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
+    item.brand?.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
+    item.model?.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
+    item.type?.toLowerCase().includes(equipmentSearchQuery.toLowerCase())
+  );
+
   return (
     <>
       <div className="flex items-center justify-between mb-3">
@@ -98,15 +121,48 @@ const VehicleDeviceSection = ({
             />
           </div>
           
-          {onAddDevice && (
+          <div className="relative">
             <Button 
               size="sm" 
-              onClick={onAddDevice}
+              onClick={() => setShowAddMenu(!showAddMenu)}
+              className="gap-2"
             >
-              <PlusCircle className="h-4 w-4 mr-1" />
-              Dodaj urządzenie
+              <PlusCircle className="h-4 w-4" />
+              Dodaj
+              <ChevronDown className="h-3 w-3" />
             </Button>
-          )}
+            
+            {showAddMenu && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-border rounded-md shadow-lg z-10">
+                <div className="py-1">
+                  {onAddDevice && (
+                    <button
+                      onClick={() => {
+                        onAddDevice();
+                        setShowAddMenu(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <Cpu className="h-4 w-4" />
+                      Dodaj urządzenie
+                    </button>
+                  )}
+                  {onAddEquipment && (
+                    <button
+                      onClick={() => {
+                        onAddEquipment();
+                        setShowAddMenu(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <Wrench className="h-4 w-4" />
+                      Dodaj wyposażenie
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
@@ -117,6 +173,39 @@ const VehicleDeviceSection = ({
         onViewDevice={onViewDevice}
         onOpenAttachment={onOpenAttachment}
         onMoveDevice={handleMoveClick}
+      />
+
+      <div className="flex items-center justify-between mb-3 mt-6">
+        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+          <Wrench className="h-4 w-4" />
+          <span>Wyposażenie ({equipment.length})</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <input
+              type="text"
+              placeholder="Szukaj wyposażenia..."
+              className="pl-9 pr-3 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background"
+              value={equipmentSearchQuery}
+              onChange={(e) => setEquipmentSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <EquipmentList 
+        equipment={filteredEquipment} 
+        onEditEquipment={onEditEquipment}
+        onDeleteEquipment={onDeleteEquipment}
+        onViewEquipment={onViewEquipment}
+        onOpenAttachment={onOpenAttachment}
+        onMoveEquipment={(equipment) => {
+          // TODO: Implement equipment move functionality
+        }}
       />
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>

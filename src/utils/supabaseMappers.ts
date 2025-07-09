@@ -1,5 +1,5 @@
 
-import { Vehicle, Device, ServiceRecord } from './types';
+import { Vehicle, Device, Equipment, ServiceRecord } from './types';
 
 // Helper to map Supabase vehicle to local Vehicle type
 export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
@@ -107,6 +107,44 @@ export const mapSupabaseServiceRecordToServiceRecord = (record: any): ServiceRec
   images: record.images || [],
   attachments: record.attachments || [],
 });
+
+export const mapSupabaseEquipmentToEquipment = (supabaseEquipment: any): Equipment => ({
+  id: supabaseEquipment.id,
+  name: supabaseEquipment.name,
+  brand: supabaseEquipment.brand,
+  type: supabaseEquipment.type,
+  model: supabaseEquipment.model,
+  serialNumber: supabaseEquipment.serialnumber || '',
+  vehicleId: supabaseEquipment.vehicleid,
+  year: supabaseEquipment.year,
+  purchasePrice: supabaseEquipment.purchaseprice,
+  purchaseDate: supabaseEquipment.purchasedate ? new Date(supabaseEquipment.purchasedate) : undefined,
+  lastService: supabaseEquipment.lastservice ? new Date(supabaseEquipment.lastservice) : new Date(),
+  nextService: supabaseEquipment.nextservice ? new Date(supabaseEquipment.nextservice) : new Date(),
+  serviceExpiryDate: supabaseEquipment.serviceexpirydate ? new Date(supabaseEquipment.serviceexpirydate) : undefined,
+  serviceReminderDays: supabaseEquipment.servicereminderdays,
+  notes: supabaseEquipment.notes,
+  status: supabaseEquipment.status || 'ok',
+  images: supabaseEquipment.images || [],
+  thumbnail: supabaseEquipment.thumbnail,
+  attachments: supabaseEquipment.attachments || [],
+});
+
+export const mapEquipmentToSupabaseEquipment = (equipment: Partial<Equipment>): any => {
+    const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, ...rest } = equipment;
+    return {
+        ...rest,
+        id,
+        serialnumber: serialNumber,
+        vehicleid: vehicleId,
+        purchaseprice: purchasePrice,
+        purchasedate: purchaseDate ? purchaseDate.toISOString().slice(0, 10) : null,
+        lastservice: lastService ? lastService.toISOString() : null,
+        nextservice: nextService ? nextService.toISOString() : null,
+        serviceexpirydate: serviceExpiryDate ? serviceExpiryDate.toISOString().slice(0, 10) : null,
+        servicereminderdays: serviceReminderDays,
+    };
+};
 
 export const mapServiceRecordToSupabaseServiceRecord = (record: Partial<ServiceRecord>): any => {
     const { id, vehicleId, deviceId, deviceName, ...rest } = record;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Vehicle, Device, ServiceRecord } from '../utils/types';
+import { Vehicle, Device, Equipment, ServiceRecord } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, 
@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord } from '@/utils/supabaseMappers';
+import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseEquipmentToEquipment, mapEquipmentToSupabaseEquipment, mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord } from '@/utils/supabaseMappers';
 import { extractAllTags } from '@/utils/tagUtils';
 import AddDeviceDialog from '../components/AddDeviceDialog';
 import AddServiceDialog from '../components/AddServiceDialog';
@@ -43,6 +43,7 @@ const Vehicles = () => {
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [services, setServices] = useState<ServiceRecord[]>([]);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -82,6 +83,22 @@ const Vehicles = () => {
       }
     };
     fetchDevices();
+  }, []);
+
+  // Pobierz wyposażenia
+  useEffect(() => {
+    const fetchEquipment = async () => {
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*');
+      if (error) {
+        toast.error("Nie udało się pobrać danych wyposażeń.");
+        setEquipment([]);
+      } else if (data) {
+        setEquipment(data.map(mapSupabaseEquipmentToEquipment));
+      }
+    };
+    fetchEquipment();
   }, []);
 
   // Pobierz serwisy
@@ -527,16 +544,37 @@ const Vehicles = () => {
               selectedVehicleId={selectedVehicleId}
               vehicles={allVehicles}
               devices={devices}
+              equipment={equipment}
               services={services}
               showingServiceRecords={showingServiceRecords}
               onServiceClick={handleServiceClick}
               onEdit={handleEditVehicle}
               onAddService={() => setIsAddServiceDialogOpen(true)}
               onAddDevice={() => setIsAddDeviceDialogOpen(true)}
+              onAddEquipment={() => {
+                // TODO: Implement equipment adding
+                toast.info("Dodawanie wyposażenia będzie dostępne wkrótce");
+              }}
               onEditDevice={handleEditDevice}
               onDeleteDevice={handleDeleteDevice}
               onViewDevice={handleViewDevice}
+              onEditEquipment={() => {
+                // TODO: Implement equipment editing
+                toast.info("Edycja wyposażenia będzie dostępna wkrótce");
+              }}
+              onDeleteEquipment={() => {
+                // TODO: Implement equipment deletion
+                toast.info("Usuwanie wyposażenia będzie dostępne wkrótce");
+              }}
+              onViewEquipment={() => {
+                // TODO: Implement equipment viewing
+                toast.info("Podgląd wyposażenia będzie dostępny wkrótce");
+              }}
               onMoveDevice={handleMoveDevice}
+              onMoveEquipment={() => {
+                // TODO: Implement equipment moving
+                toast.info("Przenoszenie wyposażenia będzie dostępne wkrótce");
+              }}
               onEditService={handleEditService}
               onDeleteService={handleDeleteService}
               onViewService={handleViewService}

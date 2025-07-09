@@ -60,6 +60,33 @@ export interface Device {
   }[];
 }
 
+export interface Equipment {
+  id: string;
+  name: string;
+  brand?: string;
+  type: string;
+  model?: string;
+  serialNumber: string;
+  vehicleId?: string; // If attached to a vehicle
+  year?: number;
+  purchasePrice?: number;
+  purchaseDate?: Date;
+  lastService: Date;
+  nextService: Date;
+  serviceExpiryDate?: Date;
+  serviceReminderDays?: number;
+  notes?: string;
+  status: 'ok' | 'needs-service' | 'in-service' | 'error';
+  images?: string[];
+  thumbnail?: string | null;
+  attachments?: {
+    name: string;
+    type: string;
+    size: number;
+    url: string;
+  }[];
+}
+
 export interface ServiceRecord {
   id: string;
   date: Date;
