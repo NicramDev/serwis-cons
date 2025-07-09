@@ -653,7 +653,7 @@ const Vehicles = () => {
               onEdit={handleEditVehicle}
               onAddService={() => setIsAddServiceDialogOpen(true)}
               onAddDevice={() => setIsAddDeviceDialogOpen(true)}
-              onAddEquipment={() => setIsAddEquipmentDialogOpen(true)}
+              onAddEquipment={() => setIsAddEquipmentOpen(true)}
               onEditDevice={handleEditDevice}
               onDeleteDevice={handleDeleteDevice}
               onViewDevice={handleViewDevice}
@@ -942,60 +942,6 @@ const Vehicles = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      {/* Dodawanie WYPOSAŻENIA */}
-      <Dialog open={isAddEquipmentDialogOpen} onOpenChange={setIsAddEquipmentDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Dodaj nowe wyposażenie</DialogTitle>
-            <DialogDescription>
-              Wypełnij formularz, aby dodać nowe wyposażenie
-            </DialogDescription>
-          </DialogHeader>
-          <AddEquipmentForm 
-            onSubmit={async (equipmentData) => {
-              if (!selectedVehicleId) return;
-              const newEquipmentData: Equipment = {
-                id: uuidv4(),
-                name: equipmentData.name ?? "",
-                brand: equipmentData.brand ?? "",
-                type: equipmentData.type ?? "",
-                model: equipmentData.model ?? "",
-                serialNumber: equipmentData.serialNumber ?? "",
-                vehicleId: selectedVehicleId,
-                year: equipmentData.year,
-                purchasePrice: equipmentData.purchasePrice,
-                purchaseDate: equipmentData.purchaseDate,
-                lastService: new Date(),
-                nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                notes: equipmentData.notes ?? "",
-                status: "ok",
-                images: equipmentData.images ?? [],
-                thumbnail: null,
-                attachments: equipmentData.attachments ?? [],
-              };
-              const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
-              
-              const { data, error } = await supabase
-                .from('equipment')
-                .insert(supabaseEquipment)
-                .select()
-                .single();
-
-              if (error) {
-                toast.error("Błąd podczas dodawania wyposażenia");
-                return;
-              }
-              if (data) {
-                setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-                setIsAddEquipmentDialogOpen(false);
-                toast.success("Wyposażenie zostało dodane");
-              }
-            }}
-            onCancel={() => setIsAddEquipmentDialogOpen(false)}
-            vehicles={allVehicles}
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* Transfer Device/Equipment Dialog */}
       <Dialog open={isMoveDeviceDialogOpen || isMoveEquipmentDialogOpen} onOpenChange={(open) => {
@@ -1169,9 +1115,46 @@ const Vehicles = () => {
 
       {/* Equipment Dialogs */}
       <EquipmentDialogs
-        isAddDialogOpen={isAddEquipmentDialogOpen}
-        setIsAddDialogOpen={setIsAddEquipmentDialogOpen}
-        onAddEquipment={handleAddEquipment}
+        isAddDialogOpen={isAddEquipmentOpen}
+        setIsAddDialogOpen={setIsAddEquipmentOpen}
+        onAddEquipment={async (equipmentData) => {
+          if (!selectedVehicleId) return;
+          const newEquipmentData: Equipment = {
+            id: uuidv4(),
+            name: equipmentData.name ?? "",
+            brand: equipmentData.brand ?? "",
+            type: equipmentData.type ?? "",
+            model: equipmentData.model ?? "",
+            serialNumber: equipmentData.serialNumber ?? "",
+            vehicleId: selectedVehicleId,
+            year: equipmentData.year,
+            purchasePrice: equipmentData.purchasePrice,
+            purchaseDate: equipmentData.purchaseDate,
+            lastService: new Date(),
+            nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+            notes: equipmentData.notes ?? "",
+            status: "ok",
+            images: equipmentData.images ?? [],
+            thumbnail: null,
+            attachments: equipmentData.attachments ?? [],
+          };
+          const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
+          
+          const { data, error } = await supabase
+            .from('equipment')
+            .insert(supabaseEquipment)
+            .select()
+            .single();
+
+          if (error) {
+            toast.error("Błąd podczas dodawania wyposażenia");
+            return;
+          }
+          if (data) {
+            setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+            toast.success("Wyposażenie zostało dodane");
+          }
+        }}
         isEditDialogOpen={isEditEquipmentOpen}
         setIsEditDialogOpen={setIsEditEquipmentOpen}
         selectedEquipment={selectedEquipment}
