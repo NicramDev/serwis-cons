@@ -318,3 +318,6 @@ const Devices = () => {
 };
 
 export default Devices;
+
+// UWAGA: Ten plik ma już 321 linii i staje się za długi. 
+// Warto go refaktoryzować na mniejsze komponenty.

@@ -30,6 +30,7 @@ import VehicleDetails from '../components/VehicleDetails';
 import DeviceDetails from '../components/DeviceDetails';
 import ServiceDetails from '../components/ServiceDetails';
 import ServiceForm from '../components/ServiceForm';
+import AddEquipmentForm from '../components/AddEquipmentForm';
 
 const Vehicles = () => {
   // Główne stany
@@ -51,6 +52,7 @@ const Vehicles = () => {
 
   // Stany dialogów dodawania
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
+  const [isAddEquipmentDialogOpen, setIsAddEquipmentDialogOpen] = useState(false);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
 
   // Pobierz pojazdy
@@ -372,6 +374,17 @@ const Vehicles = () => {
   const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
 
+  // --- DIALOGI AKCJE WYPOSAŻEŃ ---
+  const [selectedEquipmentForEdit, setSelectedEquipmentForEdit] = useState<Equipment | null>(null);
+  const [isEditEquipmentDialogOpen, setIsEditEquipmentDialogOpen] = useState(false);
+  const [selectedEquipmentForView, setSelectedEquipmentForView] = useState<Equipment | null>(null);
+  const [isViewEquipmentDialogOpen, setIsViewEquipmentDialogOpen] = useState(false);
+  const [equipmentToDelete, setEquipmentToDelete] = useState<Equipment | null>(null);
+  const [isDeleteEquipmentDialogOpen, setIsDeleteEquipmentDialogOpen] = useState(false);
+  const [equipmentToMove, setEquipmentToMove] = useState<Equipment | null>(null);
+  const [isMoveEquipmentDialogOpen, setIsMoveEquipmentDialogOpen] = useState(false);
+  const [targetVehicleIdForEquipment, setTargetVehicleIdForEquipment] = useState<string>("");
+
   // --- Move Device Dialog ---
   const [deviceToMove, setDeviceToMove] = useState<Device | null>(null);
   const [isMoveDeviceDialogOpen, setIsMoveDeviceDialogOpen] = useState(false);
@@ -551,29 +564,27 @@ const Vehicles = () => {
               onEdit={handleEditVehicle}
               onAddService={() => setIsAddServiceDialogOpen(true)}
               onAddDevice={() => setIsAddDeviceDialogOpen(true)}
-              onAddEquipment={() => {
-                // TODO: Implement equipment adding
-                toast.info("Dodawanie wyposażenia będzie dostępne wkrótce");
-              }}
+              onAddEquipment={() => setIsAddEquipmentDialogOpen(true)}
               onEditDevice={handleEditDevice}
               onDeleteDevice={handleDeleteDevice}
               onViewDevice={handleViewDevice}
-              onEditEquipment={() => {
-                // TODO: Implement equipment editing
-                toast.info("Edycja wyposażenia będzie dostępna wkrótce");
+              onEditEquipment={(equipment) => {
+                setSelectedEquipmentForEdit(equipment);
+                setIsEditEquipmentDialogOpen(true);
               }}
-              onDeleteEquipment={() => {
-                // TODO: Implement equipment deletion
-                toast.info("Usuwanie wyposażenia będzie dostępne wkrótce");
+              onDeleteEquipment={(equipment) => {
+                setEquipmentToDelete(equipment);
+                setIsDeleteEquipmentDialogOpen(true);
               }}
-              onViewEquipment={() => {
-                // TODO: Implement equipment viewing
-                toast.info("Podgląd wyposażenia będzie dostępny wkrótce");
+              onViewEquipment={(equipment) => {
+                setSelectedEquipmentForView(equipment);
+                setIsViewEquipmentDialogOpen(true);
               }}
               onMoveDevice={handleMoveDevice}
-              onMoveEquipment={() => {
-                // TODO: Implement equipment moving
-                toast.info("Przenoszenie wyposażenia będzie dostępne wkrótce");
+              onMoveEquipment={(equipment) => {
+                setEquipmentToMove(equipment);
+                setIsMoveEquipmentDialogOpen(true);
+                setTargetVehicleIdForEquipment("");
               }}
               onEditService={handleEditService}
               onDeleteService={handleDeleteService}
@@ -809,14 +820,238 @@ const Vehicles = () => {
               Ta akcja jest nieodwracalna.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteService} className="bg-destructive text-destructive-foreground">
-              Usuń serwis
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Anuluj</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteService} className="bg-destructive text-destructive-foreground">
+                Usuń serwis
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      {/* Dodawanie WYPOSAŻENIA */}
+      <Dialog open={isAddEquipmentDialogOpen} onOpenChange={setIsAddEquipmentDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Dodaj nowe wyposażenie</DialogTitle>
+            <DialogDescription>
+              Wypełnij formularz, aby dodać nowe wyposażenie
+            </DialogDescription>
+          </DialogHeader>
+          <AddEquipmentForm 
+            onSubmit={async (equipmentData) => {
+              if (!selectedVehicleId) return;
+              const newEquipmentData: Equipment = {
+                id: uuidv4(),
+                name: equipmentData.name ?? "",
+                brand: equipmentData.brand ?? "",
+                type: equipmentData.type ?? "",
+                model: equipmentData.model ?? "",
+                serialNumber: equipmentData.serialNumber ?? "",
+                vehicleId: selectedVehicleId,
+                year: equipmentData.year,
+                purchasePrice: equipmentData.purchasePrice,
+                purchaseDate: equipmentData.purchaseDate,
+                lastService: new Date(),
+                nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                notes: equipmentData.notes ?? "",
+                status: "ok",
+                images: equipmentData.images ?? [],
+                thumbnail: null,
+                attachments: equipmentData.attachments ?? [],
+              };
+              const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
+              
+              const { data, error } = await supabase
+                .from('equipment')
+                .insert(supabaseEquipment)
+                .select()
+                .single();
+
+              if (error) {
+                toast.error("Błąd podczas dodawania wyposażenia");
+                return;
+              }
+              if (data) {
+                setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+                setIsAddEquipmentDialogOpen(false);
+                toast.success("Wyposażenie zostało dodane");
+              }
+            }}
+            onCancel={() => setIsAddEquipmentDialogOpen(false)}
+            vehicles={allVehicles}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Transfer Device/Equipment Dialog */}
+      <Dialog open={isMoveDeviceDialogOpen || isMoveEquipmentDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsMoveDeviceDialogOpen(false);
+          setIsMoveEquipmentDialogOpen(false);
+          setDeviceToMove(null);
+          setEquipmentToMove(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {deviceToMove ? 'Przenieś urządzenie' : 'Przenieś wyposażenie'}
+            </DialogTitle>
+            <DialogDescription>
+              Wybierz pojazd docelowy lub przenieś do wyposażenia/urządzeń.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Przenieś do pojazdu:</label>
+              <select
+                className="border rounded w-full p-2"
+                value={deviceToMove ? targetVehicleId : targetVehicleIdForEquipment}
+                onChange={e => deviceToMove ? setTargetVehicleId(e.target.value) : setTargetVehicleIdForEquipment(e.target.value)}
+              >
+                <option value="">Wybierz pojazd</option>
+                {allVehicles.filter(v => v.id !== (deviceToMove?.vehicleId || equipmentToMove?.vehicleId)).map(vehicle => (
+                  <option key={vehicle.id} value={vehicle.id}>
+                    {vehicle.name} ({vehicle.registrationNumber})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {deviceToMove && (
+              <div>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={async () => {
+                    // Convert device to equipment
+                    const equipmentData: Equipment = {
+                      id: uuidv4(),
+                      name: deviceToMove.name,
+                      brand: deviceToMove.brand,
+                      type: deviceToMove.type,
+                      model: deviceToMove.model,
+                      serialNumber: deviceToMove.serialNumber,
+                      vehicleId: deviceToMove.vehicleId,
+                      year: deviceToMove.year,
+                      purchasePrice: deviceToMove.purchasePrice,
+                      purchaseDate: deviceToMove.purchaseDate,
+                      lastService: new Date(),
+                      nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                      notes: deviceToMove.notes,
+                      status: deviceToMove.status,
+                      images: deviceToMove.images,
+                      thumbnail: deviceToMove.thumbnail,
+                      attachments: deviceToMove.attachments,
+                    };
+                    
+                    const supabaseEquipment = mapEquipmentToSupabaseEquipment(equipmentData);
+                    const { data, error } = await supabase.from('equipment').insert(supabaseEquipment).select().single();
+                    
+                    if (!error && data) {
+                      await supabase.from('devices').delete().eq('id', deviceToMove.id);
+                      setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+                      setDevices(prev => prev.filter(d => d.id !== deviceToMove.id));
+                      toast.success("Urządzenie przeniesione do wyposażenia");
+                      setIsMoveDeviceDialogOpen(false);
+                      setDeviceToMove(null);
+                    } else {
+                      toast.error("Błąd przenoszenia");
+                    }
+                  }}
+                >
+                  Przenieś do wyposażenia
+                </Button>
+              </div>
+            )}
+            
+            {equipmentToMove && (
+              <div>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={async () => {
+                    // Convert equipment to device
+                    const deviceData: Device = {
+                      id: uuidv4(),
+                      name: equipmentToMove.name,
+                      brand: equipmentToMove.brand,
+                      type: equipmentToMove.type,
+                      model: equipmentToMove.model,
+                      serialNumber: equipmentToMove.serialNumber,
+                      vehicleId: equipmentToMove.vehicleId,
+                      year: equipmentToMove.year,
+                      purchasePrice: equipmentToMove.purchasePrice,
+                      purchaseDate: equipmentToMove.purchaseDate,
+                      lastService: new Date(),
+                      nextService: new Date(new Date().setMonth(new Date().getMonth() + 6)),
+                      serviceExpiryDate: undefined,
+                      serviceReminderDays: 30,
+                      notes: equipmentToMove.notes,
+                      status: equipmentToMove.status,
+                      images: equipmentToMove.images,
+                      thumbnail: equipmentToMove.thumbnail,
+                      attachments: equipmentToMove.attachments,
+                    };
+                    
+                    const supabaseDevice = mapDeviceToSupabaseDevice(deviceData);
+                    const { data, error } = await supabase.from('devices').insert(supabaseDevice).select().single();
+                    
+                    if (!error && data) {
+                      await supabase.from('equipment').delete().eq('id', equipmentToMove.id);
+                      setDevices(prev => [...prev, mapSupabaseDeviceToDevice(data)]);
+                      setEquipment(prev => prev.filter(e => e.id !== equipmentToMove.id));
+                      toast.success("Wyposażenie przeniesione do urządzeń");
+                      setIsMoveEquipmentDialogOpen(false);
+                      setEquipmentToMove(null);
+                    } else {
+                      toast.error("Błąd przenoszenia");
+                    }
+                  }}
+                >
+                  Przenieś do urządzeń
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Anuluj</Button>
+            </DialogClose>
+            <Button
+              onClick={async () => {
+                const targetId = deviceToMove ? targetVehicleId : targetVehicleIdForEquipment;
+                if (targetId) {
+                  if (deviceToMove) {
+                    await confirmMoveDevice();
+                  } else if (equipmentToMove) {
+                    const updates = { vehicleid: targetId };
+                    const { error } = await supabase
+                      .from('equipment')
+                      .update(updates)
+                      .eq('id', equipmentToMove.id);
+                    
+                    if (!error) {
+                      setEquipment(prev => prev.map(e => e.id === equipmentToMove.id ? { ...e, vehicleId: targetId } : e));
+                      toast.success("Wyposażenie przeniesione");
+                    } else {
+                      toast.error("Błąd przenoszenia wyposażenia");
+                    }
+                    setIsMoveEquipmentDialogOpen(false);
+                    setEquipmentToMove(null);
+                    setTargetVehicleIdForEquipment("");
+                  }
+                }
+              }}
+              disabled={!(deviceToMove ? targetVehicleId : targetVehicleIdForEquipment)}
+            >
+              Przenieś do pojazdu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
