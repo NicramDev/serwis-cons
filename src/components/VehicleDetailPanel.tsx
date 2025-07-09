@@ -34,6 +34,7 @@ interface VehicleDetailPanelProps {
   onView?: (vehicle: Vehicle) => void;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
   onMoveEquipment?: (equipment: Equipment, targetVehicleId: string) => void;
+  onConvertToEquipment?: (device: Device) => void;
 }
 
 const VehicleDetailPanel = ({
@@ -60,7 +61,8 @@ const VehicleDetailPanel = ({
   onSaveService,
   onView,
   onMoveDevice,
-  onMoveEquipment
+  onMoveEquipment,
+  onConvertToEquipment
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
@@ -118,6 +120,7 @@ const VehicleDetailPanel = ({
                   selectedVehicleId={selectedVehicleId}
                   onMoveDevice={onMoveDevice}
                   onMoveEquipment={onMoveEquipment}
+                  onConvertToEquipment={onConvertToEquipment}
                 />
               ) : showingServiceRecords && !showingReports ? (
                 <VehicleServiceSection 

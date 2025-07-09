@@ -40,6 +40,7 @@ interface VehicleDeviceSectionProps {
   selectedVehicleId?: string | null;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
   onMoveEquipment?: (equipment: Equipment, targetVehicleId: string) => void;
+  onConvertToEquipment?: (device: Device) => void;
 }
 
 const VehicleDeviceSection = ({
@@ -57,7 +58,8 @@ const VehicleDeviceSection = ({
   onOpenAttachment,
   selectedVehicleId,
   onMoveDevice,
-  onMoveEquipment
+  onMoveEquipment,
+  onConvertToEquipment
 }: VehicleDeviceSectionProps) => {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -173,6 +175,7 @@ const VehicleDeviceSection = ({
         onViewDevice={onViewDevice}
         onOpenAttachment={onOpenAttachment}
         onMoveDevice={handleMoveClick}
+        onConvertToEquipment={onConvertToEquipment}
       />
 
       <div className="flex items-center justify-between mb-3 mt-6">

@@ -137,12 +137,12 @@ const AddEquipmentForm = ({ onSubmit, onCancel, vehicles = [], initialEquipment,
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="vehicle">Przypisz do pojazdu</Label>
-          <Select value={formData.vehicleId} onValueChange={(value) => setFormData(prev => ({...prev, vehicleId: value}))}>
+          <Select value={formData.vehicleId || "none"} onValueChange={(value) => setFormData(prev => ({...prev, vehicleId: value === "none" ? "" : value}))}>
             <SelectTrigger>
               <SelectValue placeholder="Wybierz pojazd (opcjonalnie)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Brak przypisania</SelectItem>
+              <SelectItem value="none">Brak przypisania</SelectItem>
               {vehicles.map((vehicle) => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
                   {vehicle.name} ({vehicle.registrationNumber})

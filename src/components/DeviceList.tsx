@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Device } from '../utils/types';
-import { Edit, Trash2, Eye, FileText, MoveRight } from 'lucide-react';
+import { Edit, Trash2, Eye, FileText, MoveRight, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceCard from './DeviceCard';
 
@@ -12,6 +12,7 @@ interface DeviceListProps {
   onViewDevice?: (device: Device) => void;
   onOpenAttachment?: (url: string) => void;
   onMoveDevice?: (device: Device) => void;
+  onConvertToEquipment?: (device: Device) => void;
 }
 
 const DeviceList = ({ 
@@ -20,7 +21,8 @@ const DeviceList = ({
   onDeleteDevice, 
   onViewDevice,
   onOpenAttachment,
-  onMoveDevice
+  onMoveDevice,
+  onConvertToEquipment
 }: DeviceListProps) => {
   if (devices.length === 0) {
     return (
@@ -64,8 +66,22 @@ const DeviceList = ({
                   <MoveRight className="h-3.5 w-3.5 mr-1" />
                   Przenieś
                 </Button>
-              )}
-              {onEditDevice && (
+               )}
+               {onConvertToEquipment && (
+                 <Button
+                   variant="outline"
+                   size="sm"
+                   className="h-7 px-2 text-xs"
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     onConvertToEquipment(device);
+                   }}
+                 >
+                   <Package className="h-3.5 w-3.5 mr-1" />
+                   Do wyposażenia
+                 </Button>
+               )}
+               {onEditDevice && (
                 <Button
                   variant="outline"
                   size="sm"

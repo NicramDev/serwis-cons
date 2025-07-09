@@ -586,6 +586,40 @@ const Vehicles = () => {
                 setIsMoveEquipmentDialogOpen(true);
                 setTargetVehicleIdForEquipment("");
               }}
+              onConvertToEquipment={async (device) => {
+                // Convert device to equipment
+                const equipmentData: Equipment = {
+                  id: uuidv4(),
+                  name: device.name,
+                  brand: device.brand,
+                  type: device.type,
+                  model: device.model,
+                  serialNumber: device.serialNumber,
+                  vehicleId: device.vehicleId,
+                  year: device.year,
+                  purchasePrice: device.purchasePrice,
+                  purchaseDate: device.purchaseDate,
+                  lastService: new Date(),
+                  nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                  notes: device.notes,
+                  status: device.status,
+                  images: device.images,
+                  thumbnail: device.thumbnail,
+                  attachments: device.attachments,
+                };
+                
+                const supabaseEquipment = mapEquipmentToSupabaseEquipment(equipmentData);
+                const { data, error } = await supabase.from('equipment').insert(supabaseEquipment).select().single();
+                
+                if (!error && data) {
+                  await supabase.from('devices').delete().eq('id', device.id);
+                  setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
+                  setDevices(prev => prev.filter(d => d.id !== device.id));
+                  toast.success("Urządzenie przeniesione do wyposażenia");
+                } else {
+                  toast.error("Błąd konwersji urządzenia");
+                }
+              }}
               onEditService={handleEditService}
               onDeleteService={handleDeleteService}
               onViewService={handleViewService}
