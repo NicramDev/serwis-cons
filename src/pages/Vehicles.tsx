@@ -1086,6 +1086,118 @@ const Vehicles = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Equipment Dialog */}
+      <Dialog open={isEditEquipmentDialogOpen} onOpenChange={setIsEditEquipmentDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Edytuj wyposażenie</DialogTitle>
+            <DialogDescription>
+              Zaktualizuj informacje o wyposażeniu
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEquipmentForEdit && (
+            <AddEquipmentForm
+              initialEquipment={selectedEquipmentForEdit}
+              onSubmit={async (equipmentData) => {
+                if (!selectedEquipmentForEdit) return;
+                const updatedData = { ...selectedEquipmentForEdit, ...equipmentData };
+                const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedData);
+                delete supabaseEquipment.id;
+
+                const { data, error } = await supabase
+                  .from('equipment')
+                  .update(supabaseEquipment)
+                  .eq('id', selectedEquipmentForEdit.id)
+                  .select()
+                  .single();
+
+                if (error) {
+                  toast.error("Błąd podczas aktualizacji wyposażenia");
+                  return;
+                }
+                if (data) {
+                  setEquipment(prev => prev.map(e => e.id === selectedEquipmentForEdit.id ? mapSupabaseEquipmentToEquipment(data) : e));
+                  setIsEditEquipmentDialogOpen(false);
+                  toast.success("Wyposażenie zostało zaktualizowane");
+                }
+              }}
+              onCancel={() => setIsEditEquipmentDialogOpen(false)}
+              vehicles={allVehicles}
+              isEditing={true}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Equipment Dialog */}
+      <Dialog open={isViewEquipmentDialogOpen} onOpenChange={setIsViewEquipmentDialogOpen}>
+        <DialogContent className="sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Szczegóły wyposażenia</DialogTitle>
+            <DialogDescription>
+              Pełne informacje o wyposażeniu
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEquipmentForView && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">{selectedEquipmentForView.name}</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Marka:</strong> {selectedEquipmentForView.brand || 'Brak danych'}
+                </div>
+                <div>
+                  <strong>Model:</strong> {selectedEquipmentForView.model || 'Brak danych'}
+                </div>
+                <div>
+                  <strong>Typ:</strong> {selectedEquipmentForView.type || 'Brak danych'}
+                </div>
+                <div>
+                  <strong>Numer seryjny:</strong> {selectedEquipmentForView.serialNumber || 'Brak danych'}
+                </div>
+              </div>
+              {selectedEquipmentForView.notes && (
+                <div>
+                  <strong>Notatki:</strong>
+                  <p className="mt-1">{selectedEquipmentForView.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Equipment Dialog */}
+      <AlertDialog open={isDeleteEquipmentDialogOpen} onOpenChange={setIsDeleteEquipmentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć to wyposażenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta akcja jest nieodwracalna. Spowoduje to usunięcie wyposażenia i jego danych.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={async () => {
+                if (!equipmentToDelete) return;
+                const { error } = await supabase.from('equipment').delete().eq('id', equipmentToDelete.id);
+                if (error) {
+                  toast.error("Błąd podczas usuwania wyposażenia");
+                } else {
+                  setEquipment(prev => prev.filter(e => e.id !== equipmentToDelete.id));
+                  toast.success("Wyposażenie zostało usunięte");
+                }
+                setIsDeleteEquipmentDialogOpen(false);
+                setEquipmentToDelete(null);
+              }}
+              className="bg-destructive text-destructive-foreground"
+            >
+              Usuń wyposażenie
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

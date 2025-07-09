@@ -164,12 +164,32 @@ const AddEquipmentForm = ({ onSubmit, onCancel, vehicles = [], initialEquipment,
         </div>
 
         <div className="md:col-span-2">
-          <Label>Zdjęcia i załączniki</Label>
+          <Label>Miniatura</Label>
           <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Przeciągnij pliki tutaj lub kliknij aby wybrać
+            <p className="text-sm text-muted-foreground mb-2">
+              Przeciągnij miniaturę tutaj lub kliknij aby wybrać
             </p>
-            <Input type="file" multiple className="mt-2" />
+            <Input type="file" accept="image/*" className="mt-2" />
+          </div>
+        </div>
+
+        <div className="md:col-span-2">
+          <Label>Zdjęcia</Label>
+          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-2">
+              Przeciągnij zdjęcia tutaj lub kliknij aby wybrać
+            </p>
+            <Input type="file" multiple accept="image/*" className="mt-2" />
+          </div>
+        </div>
+
+        <div className="md:col-span-2">
+          <Label>Dokumenty i załączniki</Label>
+          <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-2">
+              Przeciągnij dokumenty tutaj lub kliknij aby wybrać (PDF, DOC, DOCX)
+            </p>
+            <Input type="file" multiple accept=".pdf,.doc,.docx" className="mt-2" />
           </div>
         </div>
       </div>
