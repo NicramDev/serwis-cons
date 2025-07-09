@@ -67,6 +67,11 @@ const VehicleDeviceSection = ({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [equipmentSearchQuery, setEquipmentSearchQuery] = useState<string>("");
+  
+  // Equipment move state
+  const [isMoveEquipmentDialogOpen, setIsMoveEquipmentDialogOpen] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [targetVehicleIdForEquipment, setTargetVehicleIdForEquipment] = useState<string>("");
 
   const handleMoveClick = (device: Device) => {
     setSelectedDevice(device);
@@ -80,6 +85,20 @@ const VehicleDeviceSection = ({
     onMoveDevice(selectedDevice, targetVehicleId);
     setIsMoveDialogOpen(false);
     toast.success(`Urządzenie zostało przeniesione do innego pojazdu`);
+  };
+
+  const handleMoveEquipmentClick = (equipment: Equipment) => {
+    setSelectedEquipment(equipment);
+    setTargetVehicleIdForEquipment("");
+    setIsMoveEquipmentDialogOpen(true);
+  };
+
+  const handleMoveEquipment = () => {
+    if (!selectedEquipment || !targetVehicleIdForEquipment || !onMoveEquipment) return;
+    
+    onMoveEquipment(selectedEquipment, targetVehicleIdForEquipment);
+    setIsMoveEquipmentDialogOpen(false);
+    toast.success(`Wyposażenie zostało przeniesione do innego pojazdu`);
   };
 
   // Filter out the current vehicle from the list of available vehicles
@@ -206,9 +225,7 @@ const VehicleDeviceSection = ({
         onDeleteEquipment={onDeleteEquipment}
         onViewEquipment={onViewEquipment}
         onOpenAttachment={onOpenAttachment}
-        onMoveEquipment={(equipment) => {
-          // TODO: Implement equipment move functionality
-        }}
+        onMoveEquipment={handleMoveEquipmentClick}
       />
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
@@ -250,6 +267,50 @@ const VehicleDeviceSection = ({
             >
               <MoveRight className="h-4 w-4" />
               Przenieś urządzenie
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isMoveEquipmentDialogOpen} onOpenChange={setIsMoveEquipmentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Przenieś wyposażenie do innego pojazdu</DialogTitle>
+            <DialogDescription>
+              Czy na pewno chcesz przenieść wyposażenie "{selectedEquipment?.name}" do innego pojazdu?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Label htmlFor="target-vehicle-equipment" className="text-sm mb-2 block">Wybierz pojazd docelowy:</Label>
+            <Select
+              value={targetVehicleIdForEquipment}
+              onValueChange={setTargetVehicleIdForEquipment}
+            >
+              <SelectTrigger className="w-full bg-white" id="target-vehicle-equipment">
+                <SelectValue placeholder="Wybierz pojazd" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableVehicles.map((vehicle) => (
+                  <SelectItem key={vehicle.id} value={vehicle.id}>
+                    {vehicle.name} ({vehicle.registrationNumber})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Anuluj</Button>
+            </DialogClose>
+            <Button 
+              onClick={handleMoveEquipment} 
+              disabled={!targetVehicleIdForEquipment}
+              className="gap-2"
+            >
+              <MoveRight className="h-4 w-4" />
+              Przenieś wyposażenie
             </Button>
           </DialogFooter>
         </DialogContent>

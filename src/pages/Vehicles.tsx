@@ -498,6 +498,27 @@ const Vehicles = () => {
     }
   };
 
+  const handleMoveEquipment = async (equipment: Equipment, targetVehicleId: string) => {
+    const updates = { vehicleid: targetVehicleId };
+    const { data, error } = await supabase
+      .from('equipment')
+      .update(updates)
+      .eq('id', equipment.id)
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Błąd przenoszenia wyposażenia");
+    } else if (data) {
+      setEquipment(prev =>
+        prev.map(e =>
+          e.id === equipment.id ? { ...e, vehicleId: targetVehicleId } : e
+        )
+      );
+      toast.success("Wyposażenie przeniesione");
+    }
+  };
+
   const handleUpdateEquipment = async (updatedEquipmentData: Equipment) => {
     const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedEquipmentData);
     delete supabaseEquipment.id;
@@ -958,7 +979,10 @@ const Vehicles = () => {
               {deviceToMove ? 'Przenieś urządzenie' : 'Przenieś wyposażenie'}
             </DialogTitle>
             <DialogDescription>
-              Wybierz pojazd docelowy lub przenieś do wyposażenia/urządzeń.
+              {equipmentToMove ? 
+                `Czy na pewno chcesz przenieść wyposażenie "${equipmentToMove.name}" do innego pojazdu? Wybierz pojazd docelowy.` :
+                `Wybierz pojazd docelowy lub przenieś do wyposażenia/urządzeń.`
+              }
             </DialogDescription>
           </DialogHeader>
           
