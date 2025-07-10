@@ -37,6 +37,7 @@ interface EquipmentDialogsProps {
   onConfirmDelete: () => void;
   
   vehicles: any[];
+  selectedVehicleId?: string | null;
 }
 
 const EquipmentDialogs = ({
@@ -53,7 +54,8 @@ const EquipmentDialogs = ({
   setIsDeleteDialogOpen,
   equipmentToDelete,
   onConfirmDelete,
-  vehicles
+  vehicles,
+  selectedVehicleId
 }: EquipmentDialogsProps) => {
   return (
     <>
@@ -70,6 +72,7 @@ const EquipmentDialogs = ({
             onSubmit={onAddEquipment} 
             onCancel={() => setIsAddDialogOpen(false)}
             vehicles={vehicles}
+            selectedVehicleId={selectedVehicleId}
           />
         </DialogContent>
       </Dialog>

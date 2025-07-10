@@ -1210,6 +1210,7 @@ const Vehicles = () => {
         equipmentToDelete={equipmentToDelete}
         onConfirmDelete={handleConfirmDeleteEquipment}
         vehicles={allVehicles}
+        selectedVehicleId={selectedVehicleId}
       />
 
     </div>
