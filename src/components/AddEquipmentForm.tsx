@@ -110,8 +110,8 @@ const AddEquipmentForm = ({
         thumbnail: thumbnailPreview,
         images: imagePreviews,
         attachments: attachments,
-        lastService: new Date(),
-        nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        lastService: null,
+        nextService: null,
         status: 'ok' as const,
       };
       
