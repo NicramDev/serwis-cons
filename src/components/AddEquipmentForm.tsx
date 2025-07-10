@@ -104,7 +104,7 @@ const AddEquipmentForm = ({
       // Clean up values and handle undefined fields properly
       const processedValues = {
         ...values,
-        vehicleId: values.vehicleId === "none" ? null : values.vehicleId,
+        vehicleId: values.vehicleId === "none" || values.vehicleId === "" ? null : values.vehicleId,
         purchaseDate,
         purchasePrice: values.purchasePrice || undefined,
         thumbnail: thumbnailPreview,
