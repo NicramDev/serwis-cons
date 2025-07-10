@@ -10,13 +10,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { DateInput } from '@/components/ui/date-input';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Calendar as CalendarIcon, PlusCircle, FileText, ArrowDown, Printer } from 'lucide-react';
+import { PlusCircle, FileText, ArrowDown, Printer } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import {
@@ -465,48 +464,18 @@ const Costs = () => {
               
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Data od</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, "dd.MM.yyyy") : "Wybierz datę"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={dateFrom}
-                      onSelect={setDateFrom}
-                      locale={pl}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DateInput
+                  value={dateFrom}
+                  onChange={setDateFrom}
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">Data do</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, "dd.MM.yyyy") : "Wybierz datę"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={dateTo}
-                      onSelect={setDateTo}
-                      locale={pl}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <DateInput
+                  value={dateTo}
+                  onChange={setDateTo}
+                />
               </div>
               
               <Button 

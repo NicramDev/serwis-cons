@@ -7,12 +7,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Equipment, Vehicle } from "../utils/types";
-import { X, Calendar, Maximize, Image, Smartphone } from "lucide-react";
+import { X, Maximize, Image, Smartphone } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { DateInput } from "@/components/ui/date-input";
 import FullscreenViewer from "./FullscreenViewer";
 import FileUploadField from "./vehicle-form/FileUploadField";
 import { FileStorageService } from "../services/fileStorageService";
@@ -259,28 +256,11 @@ const AddEquipmentForm = ({
 
             <div className="space-y-2">
               <FormLabel>Data zakupu</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !purchaseDate && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {purchaseDate ? format(purchaseDate, "dd.MM.yyyy") : "Wybierz datę"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarComponent
-                    mode="single"
-                    selected={purchaseDate}
-                    onSelect={setPurchaseDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <DateInput
+                value={purchaseDate}
+                onChange={setPurchaseDate}
+                pastDatesOnly={true}
+              />
             </div>
 
             <FormField
