@@ -50,6 +50,8 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<any[]>([]);
 
   useEffect(() => {
     const allTags: string[] = [];
@@ -106,6 +108,9 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
       if (vehicle.thumbnail) {
         setThumbnailPreview(vehicle.thumbnail);
       }
+      // Initialize existing files
+      setExistingImages(vehicle.images || []);
+      setExistingAttachments(vehicle.attachments || []);
     }
   }, [form, isEditing, vehicle]);
 
@@ -130,13 +135,16 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
         ...values,
         id: vehicleId,
         thumbnail: uploadedThumbnail || vehicle?.thumbnail,
-        images: uploadedImages.length > 0 ? uploadedImages : vehicle?.images || [],
-        attachments: uploadedAttachments.length > 0 ? uploadedAttachments.map((url, index) => ({
-          name: attachments[index]?.name || `attachment-${index}`,
-          type: attachments[index]?.type || 'application/octet-stream',
-          size: attachments[index]?.size || 0,
-          url: url
-        })) : vehicle?.attachments || [],
+        images: [...existingImages, ...uploadedImages],
+        attachments: [
+          ...existingAttachments,
+          ...uploadedAttachments.map((url, index) => ({
+            name: attachments[index]?.name || `attachment-${index}`,
+            type: attachments[index]?.type || 'application/octet-stream',
+            size: attachments[index]?.size || 0,
+            url: url
+          }))
+        ],
       };
       
       if (isEditing && vehicle) {
@@ -249,8 +257,18 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
           files={images}
           accept="image/*"
           multiple={true}
+          existingFiles={existingImages.map((url, index) => ({
+            name: `image-${index}.jpg`,
+            type: 'image/jpeg',
+            size: 0,
+            url: url
+          }))}
+          onRemoveExisting={(index) => {
+            setExistingImages(prev => prev.filter((_, i) => i !== index));
+          }}
           onRemove={removeImage}
           isImage={true}
+          helpText="Przeciągnij i upuść zdjęcia lub kliknij, aby wybrać"
         />
         
         <FileUploadField 
@@ -258,7 +276,12 @@ const AddVehicleForm = ({ onSubmit, onCancel, allVehicles = [], onRemoveTag, veh
           onChange={handleAttachmentsChange}
           files={attachments}
           multiple={true}
+          existingFiles={existingAttachments}
+          onRemoveExisting={(index) => {
+            setExistingAttachments(prev => prev.filter((_, i) => i !== index));
+          }}
           onRemove={removeAttachment}
+          helpText="Przeciągnij i upuść pliki lub kliknij, aby wybrać"
         />
         
         <div className="flex justify-end space-x-2 pt-4 border-t border-border">
