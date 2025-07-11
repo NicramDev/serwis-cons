@@ -82,7 +82,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
             }
             return
           }
-          // Check past dates only restriction
+          // Check past dates only restriction (only reject future dates if pastDatesOnly is true)
           if (pastDatesOnly && parsedDate > new Date()) {
             // Reset to previous valid value
             if (value) {
@@ -93,6 +93,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
             }
             return
           }
+          // If all validations pass, accept the date
           onChange(parsedDate)
         } else {
           // Invalid date, reset to previous valid value
