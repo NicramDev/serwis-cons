@@ -19,6 +19,7 @@ export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
   gpsSystemNumber: supabaseVehicle.gpssystemnumber,
   driverName: supabaseVehicle.drivername,
   insuranceExpiryDate: supabaseVehicle.insuranceexpirydate ? new Date(supabaseVehicle.insuranceexpirydate) : undefined,
+  insurancePolicyNumber: supabaseVehicle.insurancepolicynumber,
   insuranceReminderDays: supabaseVehicle.insurancereminderdays,
   inspectionReminderDays: supabaseVehicle.inspectionreminderdays,
   serviceReminderDays: supabaseVehicle.servicereminderdays,
@@ -33,7 +34,7 @@ export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
 
 // Helper to map local Vehicle to Supabase vehicle for insert/update
 export const mapVehicleToSupabaseVehicle = (vehicle: Partial<Vehicle>): any => {
-    const { id, registrationNumber, purchaseDate, inspectionExpiryDate, serviceExpiryDate, insuranceExpiryDate, lastService, nextService, fuelCardNumber, gpsSystemNumber, driverName, insuranceReminderDays, inspectionReminderDays, serviceReminderDays, vehicleType, ...rest } = vehicle;
+    const { id, registrationNumber, purchaseDate, inspectionExpiryDate, serviceExpiryDate, insuranceExpiryDate, insurancePolicyNumber, lastService, nextService, fuelCardNumber, gpsSystemNumber, driverName, insuranceReminderDays, inspectionReminderDays, serviceReminderDays, vehicleType, ...rest } = vehicle;
     return {
         ...rest,
         id,
@@ -42,6 +43,7 @@ export const mapVehicleToSupabaseVehicle = (vehicle: Partial<Vehicle>): any => {
         inspectionexpirydate: inspectionExpiryDate ? inspectionExpiryDate.toISOString().slice(0, 10) : null,
         serviceexpirydate: serviceExpiryDate ? serviceExpiryDate.toISOString().slice(0, 10) : null,
         insuranceexpirydate: insuranceExpiryDate ? insuranceExpiryDate.toISOString().slice(0, 10) : null,
+        insurancepolicynumber: insurancePolicyNumber,
         lastservice: lastService ? lastService.toISOString() : null,
         nextservice: nextService ? nextService.toISOString() : null,
         fuelcardnumber: fuelCardNumber,

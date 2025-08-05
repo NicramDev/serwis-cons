@@ -16,6 +16,7 @@ export interface Vehicle {
   gpsSystemNumber?: string;
   driverName?: string;
   insuranceExpiryDate?: Date;
+  insurancePolicyNumber?: string; // Added for insurance policy number
   insuranceReminderDays?: number; // Added for insurance reminder
   inspectionReminderDays?: number; // Added for inspection reminder
   serviceReminderDays?: number; // Added for service reminder

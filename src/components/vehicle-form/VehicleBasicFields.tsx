@@ -134,6 +134,20 @@ const VehicleBasicFields = ({
       
       <FormField
         control={form.control}
+        name="insurancePolicyNumber"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nr polisy ubezpieczeniowej</FormLabel>
+            <FormControl>
+              <Input placeholder="Wpisz numer polisy ubezpieczeniowej" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={form.control}
         name="driverName"
         render={({ field }) => (
           <FormItem>
