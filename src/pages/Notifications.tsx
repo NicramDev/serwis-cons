@@ -1,47 +1,16 @@
 
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
 import NotificationItem from '@/components/notification/NotificationItem';
 import EmptyNotifications from '@/components/notification/EmptyNotifications';
-import { generateNotifications, saveNotifications } from '@/services/notificationService';
-import { Device, Vehicle } from '../utils/types';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const Notifications = () => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Resetuj stare powiadomienia i dane!
-    localStorage.removeItem('notifications');
-    localStorage.removeItem('vehicles');
-    localStorage.removeItem('devices');
-
-    const savedVehicles = localStorage.getItem('vehicles');
-    const loadedVehicles = savedVehicles ? JSON.parse(savedVehicles) : [];
-    setVehicles(loadedVehicles);
-
-    const savedDevices = localStorage.getItem('devices');
-    const loadedDevices = savedDevices ? JSON.parse(savedDevices) : [];
-    setDevices(loadedDevices);
-
-    // Generate notifications only for aktualnych danych
-    const allNotifications = generateNotifications(loadedVehicles, loadedDevices);
-    setNotifications(allNotifications);
-
-    saveNotifications(allNotifications);
-  }, []);
+  const { notifications, loading, markAsRead } = useNotifications();
   
   const handleMarkAsRead = (id: string) => {
-    const updatedNotifications = notifications.filter(n => n.id !== id);
-    setNotifications(updatedNotifications);
-    
-    // Update localStorage with the updated notifications
-    saveNotifications(updatedNotifications);
-    
+    markAsRead(id);
     toast.success("Powiadomienie oznaczono jako przeczytane");
   };
 
@@ -55,6 +24,19 @@ const Notifications = () => {
     }
   };
   
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Powiadomienia</h1>
+            <p className="text-muted-foreground">Ładowanie powiadomień...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">

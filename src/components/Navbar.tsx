@@ -55,10 +55,22 @@ const Navbar = () => {
     checkNotifications();
     
     // Set up interval to check for notifications regularly
-    const interval = setInterval(checkNotifications, 60000); // Check every minute
+    const interval = setInterval(checkNotifications, 30000); // Check every 30 seconds
     
-    // Clean up interval on unmount
-    return () => clearInterval(interval);
+    // Listen for storage changes to update immediately when notifications change
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'notifications') {
+        checkNotifications();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Clean up interval and event listener on unmount
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const NavItems = () => (
