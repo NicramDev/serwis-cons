@@ -86,13 +86,13 @@ const VehicleCard = ({
   
   return (
     <div 
-      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-auto`}
+      className={`rounded-lg p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all ${getCardClass()} backdrop-blur-card cursor-pointer w-full h-auto min-w-0`}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4 w-full">
+      <div className="flex items-start justify-between min-w-0">
+        <div className="flex items-center gap-4 w-full min-w-0">
           {vehicle.thumbnail ? (
-            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-[88px] w-20 sm:w-32 md:w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -100,21 +100,23 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-[88px] w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
-              <Car className="h-14 w-14 text-muted-foreground" />
+            <div className="h-[88px] w-20 sm:w-32 md:w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+              <Car className="h-8 sm:h-12 md:h-14 w-8 sm:w-12 md:w-14 text-muted-foreground" />
             </div>
           )}
-          <div className="flex flex-col justify-between h-[88px] flex-grow">
-            <div>
-              <h3 className="text-xs font-semibold">{vehicle.name}</h3>
-              <p className="text-xs text-muted-foreground">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
-              <div className="flex items-center whitespace-nowrap text-xs text-muted-foreground mt-1">
-                <span>Następny serwis: {nextServiceFormatted}</span>
+          <div className="flex flex-col justify-between h-[88px] flex-grow min-w-0">
+            <div className="min-w-0">
+              <h3 className="text-xs font-semibold truncate">{vehicle.name}</h3>
+              <p className="text-xs text-muted-foreground truncate">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
+              <div className="flex items-center text-xs text-muted-foreground mt-1 min-w-0">
+                <span className="truncate">Następny serwis: {nextServiceFormatted}</span>
               </div>
             </div>
           </div>
         </div>
-        {getStatusIcon()}
+        <div className="flex-shrink-0">
+          {getStatusIcon()}
+        </div>
       </div>
       
       <div className="flex justify-end items-center mt-2">
