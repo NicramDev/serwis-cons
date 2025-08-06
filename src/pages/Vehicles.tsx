@@ -716,8 +716,8 @@ const Vehicles = () => {
           />
         </div>
 
-        <div className="flex gap-5">
-          <div className="w-full md:w-1/3 xl:w-1/4">
+        <div className="flex gap-3 lg:gap-5 min-w-0 overflow-hidden">
+          <div className="w-full md:w-1/3 xl:w-1/4 min-w-0 flex-shrink-0">
             {filteredVehicles.length > 0 ? (
               <VehicleList
                 vehicles={filteredVehicles}
@@ -731,7 +731,7 @@ const Vehicles = () => {
               <NoVehiclesFound />
             )}
           </div>
-          <div className="w-full md:w-2/3 xl:w-3/4">
+          <div className="w-full md:w-2/3 xl:w-3/4 min-w-0 flex-shrink">
             <VehicleDetailPanel
               selectedVehicleId={selectedVehicleId}
               vehicles={allVehicles}
