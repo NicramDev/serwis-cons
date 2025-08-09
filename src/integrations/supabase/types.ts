@@ -240,6 +240,7 @@ export type Database = {
           insurancepolicynumber: string | null
           insurancereminderdays: number | null
           lastservice: string | null
+          mdvrnumber: string | null
           model: string | null
           name: string
           nextservice: string | null
@@ -269,6 +270,7 @@ export type Database = {
           insurancepolicynumber?: string | null
           insurancereminderdays?: number | null
           lastservice?: string | null
+          mdvrnumber?: string | null
           model?: string | null
           name: string
           nextservice?: string | null
@@ -298,6 +300,7 @@ export type Database = {
           insurancepolicynumber?: string | null
           insurancereminderdays?: number | null
           lastservice?: string | null
+          mdvrnumber?: string | null
           model?: string | null
           name?: string
           nextservice?: string | null
