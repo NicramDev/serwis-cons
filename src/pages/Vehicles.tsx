@@ -36,8 +36,10 @@ import EquipmentDialogs from '../components/EquipmentDialogs';
 import { FileText, Eye, Edit, Trash2, MoreHorizontal, Shuffle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatDate } from '../utils/formatting/dateUtils';
+import { useSearchParams } from 'react-router-dom';
 
 const Vehicles = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   // Główne stany
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -124,7 +126,27 @@ const Vehicles = () => {
     fetchServices();
   }, []);
 
-  // Dodawanie pojazdu
+// Obsługa parametrów zapytania z /vehicles?vehicleId=...&edit=true
+useEffect(() => {
+  const vId = searchParams.get('vehicleId');
+  if (vId) {
+    setSelectedVehicleId(vId);
+  }
+}, [searchParams]);
+
+useEffect(() => {
+  const vId = searchParams.get('vehicleId');
+  const edit = searchParams.get('edit');
+  if (edit === 'true' && vId && allVehicles.length) {
+    const v = allVehicles.find(vh => vh.id === vId);
+    if (v) {
+      setSelectedVehicleForEdit(v);
+      setIsEditDialogOpen(true);
+    }
+  }
+}, [searchParams, allVehicles]);
+
+// Dodawanie pojazdu
   const handleAddVehicle = async (vehicleData: Partial<Vehicle>) => {
     const newVehicleData = {
       ...vehicleData,
