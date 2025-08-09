@@ -15,8 +15,7 @@ export const useNotifications = () => {
       // Fetch vehicles from Supabase
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (vehiclesError) {
         console.error('Error fetching vehicles:', vehiclesError);
@@ -26,8 +25,7 @@ export const useNotifications = () => {
       // Fetch devices from Supabase
       const { data: devicesData, error: devicesError } = await supabase
         .from('devices')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (devicesError) {
         console.error('Error fetching devices:', devicesError);
