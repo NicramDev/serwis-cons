@@ -96,6 +96,7 @@ const ServiceFormFields = ({ control }: ServiceFormFieldsProps) => {
                   <SelectItem value="repair">Naprawa</SelectItem>
                   <SelectItem value="maintenance">Serwis</SelectItem>
                   <SelectItem value="inspection">Przegląd</SelectItem>
+                  <SelectItem value="replacement">Wymiana</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

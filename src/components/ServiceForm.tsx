@@ -27,7 +27,7 @@ const serviceSchema = z.object({
   description: z.string().min(1, "Opis serwisu/naprawy jest wymagany"),
   cost: z.coerce.number().min(0, "Koszt nie może być ujemny"),
   technician: z.string().min(1, "Technik jest wymagany"),
-  type: z.enum(["repair", "maintenance", "inspection"]),
+  type: z.enum(["repair", "maintenance", "inspection", "replacement"]),
 });
 
 type ServiceFormValues = z.infer<typeof serviceSchema>;

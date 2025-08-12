@@ -33,6 +33,8 @@ const VehicleReportForm = ({
         return 'Konserwacja';
       case 'inspection':
         return 'Przegląd';
+      case 'replacement':
+        return 'Wymiana';
       default:
         return 'Inne';
     }

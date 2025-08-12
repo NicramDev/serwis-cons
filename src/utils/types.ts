@@ -96,7 +96,7 @@ export interface ServiceRecord {
   deviceId?: string;
   deviceName?: string;
   location?: string;
-  type: 'repair' | 'maintenance' | 'inspection';
+  type: 'repair' | 'maintenance' | 'inspection' | 'replacement';
   description: string;
   cost: number;
   technician: string;

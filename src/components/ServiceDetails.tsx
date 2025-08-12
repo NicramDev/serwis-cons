@@ -46,6 +46,8 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
         return 'Serwis';
       case 'inspection':
         return 'Przegląd';
+      case 'replacement':
+        return 'Wymiana';
       default:
         return 'Inne';
     }

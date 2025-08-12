@@ -48,6 +48,8 @@ const ServiceRecordList = ({
         return 'Serwis';
       case 'inspection':
         return 'Przegląd';
+      case 'replacement':
+        return 'Wymiana';
       default:
         return 'Inne';
     }
@@ -62,6 +64,8 @@ const ServiceRecordList = ({
         return 'bg-blue-100 text-blue-700';
       case 'inspection':
         return 'bg-green-100 text-green-700';
+      case 'replacement':
+        return 'bg-purple-100 text-purple-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
