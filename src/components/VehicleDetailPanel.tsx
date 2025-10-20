@@ -84,7 +84,7 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
-  const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId);
+  const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId || !item.vehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
   
   return (
