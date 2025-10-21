@@ -773,11 +773,7 @@ useEffect(() => {
               onDeleteEquipment={handleDeleteEquipment}
               onViewEquipment={handleViewEquipment}
               onMoveDevice={handleMoveDevice}
-              onMoveEquipment={(equipment) => {
-                setEquipmentToMove(equipment);
-                setIsMoveEquipmentDialogOpen(true);
-                setTargetVehicleIdForEquipment("");
-              }}
+              onMoveEquipment={handleMoveEquipment}
               onConvertToEquipment={handleConvertToEquipment}
               onEditService={handleEditService}
               onDeleteService={handleDeleteService}
