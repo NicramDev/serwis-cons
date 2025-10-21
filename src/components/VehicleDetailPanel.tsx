@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Vehicle, Device, Equipment, ServiceRecord } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
@@ -84,7 +83,8 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
-  const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId || !item.vehicleId);
+  // Only show equipment assigned to the selected vehicle
+  const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
   
   return (

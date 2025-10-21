@@ -94,8 +94,10 @@ const Vehicles = () => {
     fetchDevices();
   }, []);
 
-  // Pobierz wyposażenia
+  // Pobierz wyposażenia + realtime
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     const fetchEquipment = async () => {
       const { data, error } = await supabase
         .from('equipment')
@@ -107,7 +109,25 @@ const Vehicles = () => {
         setEquipment(data.map(mapSupabaseEquipmentToEquipment));
       }
     };
+
     fetchEquipment();
+
+    channel = supabase
+      .channel('realtime-equipment')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setEquipment((prev) => [...prev, mapSupabaseEquipmentToEquipment(payload.new)]);
+        } else if (payload.eventType === 'UPDATE') {
+          setEquipment((prev) => prev.map((e) => (e.id === payload.new.id ? mapSupabaseEquipmentToEquipment(payload.new) : e)));
+        } else if (payload.eventType === 'DELETE') {
+          setEquipment((prev) => prev.filter((e) => e.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
   }, []);
 
   // Pobierz serwisy
