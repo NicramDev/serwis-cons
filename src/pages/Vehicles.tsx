@@ -94,14 +94,19 @@ const Vehicles = () => {
     fetchDevices();
   }, []);
 
-  // Pobierz wyposażenia + realtime
+  // Pobierz wyposażenie wybranego pojazdu + realtime
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const fetchEquipment = async () => {
+      if (!selectedVehicleId) {
+        setEquipment([]);
+        return;
+      }
       const { data, error } = await supabase
         .from('equipment')
-        .select('*');
+        .select('*')
+        .eq('vehicleid', selectedVehicleId);
       if (error) {
         toast.error("Nie udało się pobrać danych wyposażeń.");
         setEquipment([]);
@@ -113,14 +118,22 @@ const Vehicles = () => {
     fetchEquipment();
 
     channel = supabase
-      .channel('realtime-equipment')
+      .channel(`realtime-equipment-${selectedVehicleId ?? 'none'}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setEquipment((prev) => [...prev, mapSupabaseEquipmentToEquipment(payload.new)]);
-        } else if (payload.eventType === 'UPDATE') {
-          setEquipment((prev) => prev.map((e) => (e.id === payload.new.id ? mapSupabaseEquipmentToEquipment(payload.new) : e)));
+        const mapped = payload.new ? mapSupabaseEquipmentToEquipment(payload.new) : null;
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          if (mapped && mapped.vehicleId === selectedVehicleId) {
+            setEquipment((prev) => {
+              const exists = prev.some(e => e.id === mapped.id);
+              return exists ? prev.map(e => e.id === mapped.id ? mapped : e) : [...prev, mapped];
+            });
+          } else if (mapped && mapped.vehicleId !== selectedVehicleId) {
+            // Usunięto z aktualnego pojazdu
+            setEquipment((prev) => prev.filter(e => e.id !== mapped.id));
+          }
         } else if (payload.eventType === 'DELETE') {
-          setEquipment((prev) => prev.filter((e) => e.id !== payload.old.id));
+          const deletedId = payload.old?.id as string;
+          setEquipment((prev) => prev.filter((e) => e.id !== deletedId));
         }
       })
       .subscribe();
@@ -128,7 +141,7 @@ const Vehicles = () => {
     return () => {
       if (channel) supabase.removeChannel(channel);
     };
-  }, []);
+  }, [selectedVehicleId]);
 
   // Pobierz serwisy
   useEffect(() => {

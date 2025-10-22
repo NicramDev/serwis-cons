@@ -19,7 +19,7 @@ const equipmentSchema = z.object({
   vehicleId: z.string().optional(),
   name: z.string().min(1, "Nazwa jest wymagana"),
   brand: z.string().min(1, "Marka/Typ jest wymagana"),
-  type: z.string().min(1, "Ilość sztuk jest wymagana"),
+  type: z.string().optional(),
   serialNumber: z.string().min(1, "Numer seryjny jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   purchasePrice: z.coerce.number().min(0, "Cena nie może być ujemna").optional(),
@@ -63,7 +63,7 @@ const AddEquipmentForm = ({
       vehicleId: initialEquipment?.vehicleId || selectedVehicleId || "",
       name: initialEquipment?.name || "",
       brand: initialEquipment?.brand || "",
-      type: initialEquipment?.type || "",
+      type: initialEquipment?.type || (isEditing ? "1" : ""),
       serialNumber: initialEquipment?.serialNumber || "",
       year: initialEquipment?.year || new Date().getFullYear(),
       purchasePrice: initialEquipment?.purchasePrice || undefined,
@@ -203,7 +203,7 @@ const AddEquipmentForm = ({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ilość sztuk *</FormLabel>
+                  <FormLabel>Ilość sztuk</FormLabel>
                   <FormControl>
                     <Input placeholder="Wprowadź ilość sztuk" {...field} />
                   </FormControl>

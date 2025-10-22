@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Device, ServiceRecord, Vehicle } from '../utils/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Device, ServiceRecord, Vehicle, Equipment } from '../utils/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
@@ -13,6 +13,7 @@ interface VehicleReportFormProps {
   onClose: () => void;
   vehicle: Vehicle;
   devices: Device[];
+  equipment: Equipment[];
   services: ServiceRecord[];
 }
 
@@ -21,9 +22,10 @@ const VehicleReportForm = ({
   onClose, 
   vehicle, 
   devices, 
+  equipment,
   services 
 }: VehicleReportFormProps) => {
-  const [reportType, setReportType] = useState<'devices' | 'services'>('devices');
+  const [selectedReports, setSelectedReports] = useState({ devices: true, equipment: false, services: false });
 
   const getServiceTypeText = (type: string) => {
     switch (type) {
@@ -38,6 +40,10 @@ const VehicleReportForm = ({
       default:
         return 'Inne';
     }
+  };
+
+  const toggle = (key: 'devices' | 'equipment' | 'services') => {
+    setSelectedReports(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handlePrint = () => {
@@ -66,6 +72,30 @@ const VehicleReportForm = ({
       </table>
     `;
 
+    const equipmentTable = `
+      <h2>Wyposażenie dla pojazdu: ${vehicle.name} (${vehicle.registrationNumber})</h2>
+      <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+        <thead>
+          <tr style="background-color: #f2f2f2;">
+            <th>Nazwa</th>
+            <th>Marka/Typ</th>
+            <th>Nr seryjny</th>
+            <th>Ilość sztuk</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${equipment.map(item => `
+            <tr>
+              <td>${item.name}</td>
+              <td>${item.brand ?? '-'}</td>
+              <td>${item.serialNumber ?? '-'}</td>
+              <td>${item.type ?? '-'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    
     const serviceTable = `
       <h2>Historia serwisowa dla pojazdu: ${vehicle.name} (${vehicle.registrationNumber})</h2>
       <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%;">
@@ -98,7 +128,7 @@ const VehicleReportForm = ({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Zestawienie - ${reportType === 'devices' ? 'Urządzenia' : 'Serwisy'}</title>
+          <title>Zestawienie</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
             h2 { color: #333; }
@@ -111,7 +141,11 @@ const VehicleReportForm = ({
           </style>
         </head>
         <body>
-          ${reportType === 'devices' ? deviceTable : serviceTable}
+          ${[
+            selectedReports.devices ? deviceTable : '',
+            selectedReports.equipment ? equipmentTable : '',
+            selectedReports.services ? serviceTable : ''
+          ].filter(Boolean).join('<hr style="margin:30px 0;" />')}
           <div style="margin-top: 30px; text-align: center;">
             <button onclick="window.print()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">Drukuj</button>
           </div>
@@ -127,23 +161,24 @@ const VehicleReportForm = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Generowanie zestawienia</DialogTitle>
+          <DialogDescription>Wybierz jeden lub wiele rodzajów zestawienia do wygenerowania</DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
-          <RadioGroup
-            value={reportType}
-            onValueChange={(value) => setReportType(value as 'devices' | 'services')}
-            className="flex flex-col space-y-3"
-          >
+          <div className="flex flex-col space-y-3">
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="devices" id="devices" />
+              <Checkbox id="devices" checked={selectedReports.devices} onCheckedChange={() => toggle('devices')} />
               <Label htmlFor="devices">Zestawienie urządzeń</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="services" id="services" />
+              <Checkbox id="equipment" checked={selectedReports.equipment} onCheckedChange={() => toggle('equipment')} />
+              <Label htmlFor="equipment">Zestawienie wyposażenia</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="services" checked={selectedReports.services} onCheckedChange={() => toggle('services')} />
               <Label htmlFor="services">Zestawienie historii serwisowej</Label>
             </div>
-          </RadioGroup>
+          </div>
         </div>
         
         <DialogFooter>
