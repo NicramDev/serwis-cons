@@ -18,8 +18,8 @@ import { toast } from "sonner";
 const equipmentSchema = z.object({
   vehicleId: z.string().optional(),
   name: z.string().min(1, "Nazwa jest wymagana"),
-  brand: z.string().min(1, "Marka jest wymagana"),
-  type: z.string().min(1, "Typ wyposażenia jest wymagany"),
+  brand: z.string().min(1, "Marka/Typ jest wymagana"),
+  type: z.string().min(1, "Ilość sztuk jest wymagana"),
   serialNumber: z.string().min(1, "Numer seryjny jest wymagany"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   purchasePrice: z.coerce.number().min(0, "Cena nie może być ujemna").optional(),
@@ -189,9 +189,9 @@ const AddEquipmentForm = ({
               name="brand"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Marka *</FormLabel>
+                  <FormLabel>Marka/Typ *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Wprowadź markę" {...field} />
+                    <Input placeholder="Wprowadź markę/typ" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -203,9 +203,9 @@ const AddEquipmentForm = ({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Typ wyposażenia *</FormLabel>
+                  <FormLabel>Ilość sztuk *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Wprowadź typ wyposażenia" {...field} />
+                    <Input placeholder="Wprowadź ilość sztuk" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

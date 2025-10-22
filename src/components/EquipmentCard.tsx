@@ -71,7 +71,7 @@ const EquipmentCard = ({
             
             <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Marka</span>
+                <span className="text-muted-foreground">Marka/Typ</span>
                 <span className="font-medium">{equipment.brand || '-'}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
