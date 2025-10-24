@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Vehicle, Device, Equipment, ServiceRecord } from '../utils/types';
+import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { mapSupabaseEquipmentToEquipment } from '@/utils/supabaseMappers';
@@ -15,6 +15,7 @@ interface VehicleDetailPanelProps {
   vehicles: Vehicle[];
   devices: Device[];
   equipment: Equipment[];
+  vehicleEquipment?: VehicleEquipment[];
   services: ServiceRecord[];
   showingServiceRecords: boolean;
   onServiceClick: () => void;
@@ -44,6 +45,7 @@ const VehicleDetailPanel = ({
   vehicles,
   devices,
   equipment,
+  vehicleEquipment = [],
   services,
   showingServiceRecords,
   onServiceClick,
@@ -69,12 +71,12 @@ const VehicleDetailPanel = ({
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
-  const [vehicleEquipment, setVehicleEquipment] = useState<Equipment[]>([]);
+  const [selectedVehicleEquipment, setSelectedVehicleEquipment] = useState<Equipment[]>([]);
 
   // Pobierz wyposażenie dla wybranego pojazdu
   useEffect(() => {
     if (!selectedVehicleId) {
-      setVehicleEquipment([]);
+      setSelectedVehicleEquipment([]);
       return;
     }
 
@@ -86,10 +88,10 @@ const VehicleDetailPanel = ({
       
       if (error) {
         console.error('Error fetching equipment:', error);
-        setVehicleEquipment([]);
+        setSelectedVehicleEquipment([]);
       } else if (data) {
         const mapped = data.map(mapSupabaseEquipmentToEquipment);
-        setVehicleEquipment(mapped);
+        setSelectedVehicleEquipment(mapped);
         console.info('[VehicleDetailPanel] Equipment loaded for vehicle:', selectedVehicleId, mapped.length);
       }
     };
@@ -109,13 +111,13 @@ const VehicleDetailPanel = ({
         (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const mapped = mapSupabaseEquipmentToEquipment(payload.new);
-            setVehicleEquipment((prev) => {
+            setSelectedVehicleEquipment((prev) => {
               const exists = prev.some(e => e.id === mapped.id);
               return exists ? prev.map(e => e.id === mapped.id ? mapped : e) : [...prev, mapped];
             });
           } else if (payload.eventType === 'DELETE') {
             const deletedId = payload.old?.id as string;
-            setVehicleEquipment((prev) => prev.filter((e) => e.id !== deletedId));
+            setSelectedVehicleEquipment((prev) => prev.filter((e) => e.id !== deletedId));
           }
         }
       )
@@ -163,7 +165,8 @@ const VehicleDetailPanel = ({
               {!showingServiceRecords && !showingReports ? (
                 <VehicleDeviceSection 
                   devices={selectedVehicleDevices}
-                  equipment={vehicleEquipment}
+                  equipment={selectedVehicleEquipment}
+                  vehicleEquipment={vehicleEquipment}
                   allVehicles={vehicles}
                   onAddDevice={onAddDevice}
                   onAddEquipment={onAddEquipment}
@@ -205,7 +208,7 @@ const VehicleDetailPanel = ({
           }}
           vehicle={vehicle}
           devices={selectedVehicleDevices}
-          equipment={vehicleEquipment}
+          equipment={selectedVehicleEquipment}
           services={selectedVehicleServices}
         />
       )}

@@ -858,6 +858,7 @@ useEffect(() => {
               vehicles={allVehicles}
               devices={devices}
               equipment={equipment}
+              vehicleEquipment={vehicleEquipmentList}
               services={services}
               showingServiceRecords={showingServiceRecords}
               onServiceClick={handleServiceClick}

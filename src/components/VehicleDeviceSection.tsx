@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Device, Equipment, Vehicle } from '../utils/types';
+import { Device, Equipment, Vehicle, VehicleEquipment } from '../utils/types';
 import { Cpu, PlusCircle, MoveRight, Search, Wrench, ChevronDown, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceList from './DeviceList';
 import EquipmentList from './EquipmentList';
+import VehicleEquipmentList from './VehicleEquipmentList';
 import { 
   Dialog, 
   DialogContent, 
@@ -27,6 +28,7 @@ import { toast } from 'sonner';
 interface VehicleDeviceSectionProps {
   devices: Device[];
   equipment: Equipment[];
+  vehicleEquipment?: VehicleEquipment[];
   allVehicles?: Vehicle[];
   onAddDevice?: () => void;
   onAddEquipment?: () => void;
@@ -47,6 +49,7 @@ interface VehicleDeviceSectionProps {
 const VehicleDeviceSection = ({
   devices,
   equipment,
+  vehicleEquipment = [],
   allVehicles = [],
   onAddDevice,
   onAddEquipment,
@@ -121,6 +124,9 @@ const VehicleDeviceSection = ({
     item.model?.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
     item.type?.toLowerCase().includes(equipmentSearchQuery.toLowerCase())
   );
+
+  // Filter vehicle equipment by selected vehicle
+  const filteredVehicleEquipment = vehicleEquipment.filter(item => item.vehicleId === selectedVehicleId);
 
   return (
     <>
@@ -241,6 +247,15 @@ const VehicleDeviceSection = ({
         onOpenAttachment={onOpenAttachment}
         onMoveEquipment={handleMoveEquipmentClick}
       />
+
+      <div className="flex items-center justify-between mb-3 mt-6">
+        <div className="flex items-center gap-2 text-sm font-medium text-primary">
+          <Box className="h-4 w-4" />
+          <span>Equipment (nowa baza) ({filteredVehicleEquipment.length})</span>
+        </div>
+      </div>
+
+      <VehicleEquipmentList vehicleEquipment={filteredVehicleEquipment} />
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
         <DialogContent className="sm:max-w-md">
