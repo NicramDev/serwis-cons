@@ -1,13 +1,7 @@
 import React from 'react';
 import { VehicleEquipment } from '../utils/types';
 import { Button } from '@/components/ui/button';
-import { Eye, Edit, Trash2, MoreHorizontal, Box, MoveRight } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Eye, Edit, Trash2, Box, MoveRight } from 'lucide-react';
 
 interface VehicleEquipmentCardProps {
   vehicleEquipment: VehicleEquipment;
@@ -93,50 +87,62 @@ const VehicleEquipmentCard = ({
           )}
         </div>
         
-        <div className="flex items-center gap-2">
-          <div className={`px-2 py-1 rounded text-xs font-medium border ${status.className}`}>
-            {status.label}
-          </div>
-          
-          {actions || (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onViewDetails && (
-                  <DropdownMenuItem onClick={() => onViewDetails(vehicleEquipment)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Podgląd
-                  </DropdownMenuItem>
-                )}
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(vehicleEquipment)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edytuj
-                  </DropdownMenuItem>
-                )}
-                {onMove && (
-                  <DropdownMenuItem onClick={() => onMove(vehicleEquipment)}>
-                    <MoveRight className="mr-2 h-4 w-4" />
-                    Przenieś
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem 
-                    onClick={() => onDelete(vehicleEquipment)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Usuń
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+        <div className={`px-2 py-1 rounded text-xs font-medium border ${status.className}`}>
+          {status.label}
         </div>
+      </div>
+      
+      <div className="flex justify-end mt-3 gap-1">
+        {actions ? (
+          actions
+        ) : (
+          <>
+            {onViewDetails && (
+              <Button 
+                variant="secondary"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onViewDetails(vehicleEquipment)}
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                Szczegóły
+              </Button>
+            )}
+            {onEdit && (
+              <Button 
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onEdit(vehicleEquipment)}
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                Edytuj
+              </Button>
+            )}
+            {onMove && (
+              <Button 
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onMove(vehicleEquipment)}
+              >
+                <MoveRight className="h-3 w-3 mr-1" />
+                Przenieś
+              </Button>
+            )}
+            {onDelete && (
+              <Button 
+                variant="destructive"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onDelete(vehicleEquipment)}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Usuń
+              </Button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
