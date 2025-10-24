@@ -59,32 +59,23 @@ const VehicleEquipmentCard = ({
         )}
         
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-sm mb-1">{vehicleEquipment.name}</h4>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            {vehicleEquipment.brand && (
-              <div>
-                <span className="font-medium">Marka:</span> {vehicleEquipment.brand}
+          <h4 className="font-medium text-sm mb-2">{vehicleEquipment.name}</h4>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span className="font-medium">Marka, Typ:</span>
+              <span>{vehicleEquipment.brand || '-'}, {vehicleEquipment.type || '-'}</span>
+            </div>
+            {vehicleEquipment.nextService && (
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span className="font-medium">Wymagany serwis:</span>
+                <span>{new Date(vehicleEquipment.nextService).toLocaleDateString('pl-PL')}</span>
               </div>
             )}
-            {vehicleEquipment.type && (
-              <div>
-                <span className="font-medium">Typ:</span> {vehicleEquipment.type}
-              </div>
-            )}
-            {vehicleEquipment.serialNumber && (
-              <div>
-                <span className="font-medium">Nr seryjny:</span> {vehicleEquipment.serialNumber}
-              </div>
-            )}
-            {vehicleEquipment.year && (
-              <div>
-                <span className="font-medium">Rok:</span> {vehicleEquipment.year}
-              </div>
-            )}
+            <div className="flex justify-between items-center text-muted-foreground">
+              <span className="font-medium">Ilość:</span>
+              <span>{vehicleEquipment.quantity || '-'}</span>
+            </div>
           </div>
-          {vehicleEquipment.notes && (
-            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{vehicleEquipment.notes}</p>
-          )}
         </div>
         
         <div className={`px-2 py-1 rounded text-xs font-medium border ${status.className}`}>

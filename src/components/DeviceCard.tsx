@@ -62,36 +62,28 @@ const DeviceCard = ({
           )}
           
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="inline-block px-2 py-1 text-xs font-medium bg-secondary text-foreground/70 rounded-full">
-                {device.type === 'scanner' ? 'Skaner' : 
-                 device.type === 'diagnostic' ? 'Diagnostyka' : 
-                 device.type === 'tablet' ? 'Tablet' : 
-                 device.type.charAt(0).toUpperCase() + device.type.slice(1)}
-              </span>
-              <h3 className="text-md font-semibold">{device.name}</h3>
-            </div>
+            <h3 className="text-md font-semibold mb-2">{device.name}</h3>
             
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+            <div className="mt-2 space-y-1">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Model</span>
-                <span className="font-medium">{device.model}</span>
+                <span className="text-muted-foreground">Marka urządzenia</span>
+                <span className="font-medium">{device.brand || '-'}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">S/N</span>
+                <span className="text-muted-foreground">Typ urządzenia</span>
+                <span className="font-medium">
+                  {device.type === 'scanner' ? 'Skaner' : 
+                   device.type === 'diagnostic' ? 'Diagnostyka' : 
+                   device.type === 'tablet' ? 'Tablet' : 
+                   device.type.charAt(0).toUpperCase() + device.type.slice(1)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">Numer seryjny</span>
                 <span className="font-medium">{device.serialNumber}</span>
               </div>
-              {device.vehicleId && (
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted-foreground">Pojazd</span>
-                  <span className="inline-flex items-center">
-                    <Car className="h-3 w-3 mr-1" />
-                    #{device.vehicleId.slice(0, 8)}
-                  </span>
-                </div>
-              )}
               <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Serwis</span>
+                <span className="text-muted-foreground">Wymagany serwis</span>
                 <span className="font-medium">{formatDate(device.nextService)}</span>
               </div>
             </div>
