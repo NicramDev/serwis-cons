@@ -1,5 +1,5 @@
 
-import { Vehicle, Device, Equipment, ServiceRecord } from './types';
+import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from './types';
 
 // Helper to map Supabase vehicle to local Vehicle type
 export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
@@ -138,6 +138,44 @@ export const mapSupabaseEquipmentToEquipment = (supabaseEquipment: any): Equipme
 
 export const mapEquipmentToSupabaseEquipment = (equipment: Partial<Equipment>): any => {
     const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, ...rest } = equipment;
+    return {
+        ...rest,
+        id,
+        serialnumber: serialNumber,
+        vehicleid: vehicleId,
+        purchaseprice: purchasePrice,
+        purchasedate: purchaseDate ? purchaseDate.toISOString().slice(0, 10) : null,
+        lastservice: lastService ? lastService.toISOString() : null,
+        nextservice: nextService ? nextService.toISOString() : null,
+        serviceexpirydate: serviceExpiryDate ? serviceExpiryDate.toISOString().slice(0, 10) : null,
+        servicereminderdays: serviceReminderDays,
+    };
+};
+
+export const mapSupabaseVehicleEquipmentToVehicleEquipment = (supabaseVE: any): VehicleEquipment => ({
+  id: supabaseVE.id,
+  name: supabaseVE.name,
+  brand: supabaseVE.brand,
+  type: supabaseVE.type,
+  model: supabaseVE.model,
+  serialNumber: supabaseVE.serialnumber || '',
+  vehicleId: supabaseVE.vehicleid,
+  year: supabaseVE.year,
+  purchasePrice: supabaseVE.purchaseprice,
+  purchaseDate: supabaseVE.purchasedate ? new Date(supabaseVE.purchasedate) : undefined,
+  lastService: supabaseVE.lastservice ? new Date(supabaseVE.lastservice) : new Date(),
+  nextService: supabaseVE.nextservice ? new Date(supabaseVE.nextservice) : new Date(),
+  serviceExpiryDate: supabaseVE.serviceexpirydate ? new Date(supabaseVE.serviceexpirydate) : undefined,
+  serviceReminderDays: supabaseVE.servicereminderdays,
+  notes: supabaseVE.notes,
+  status: supabaseVE.status || 'ok',
+  images: supabaseVE.images || [],
+  thumbnail: supabaseVE.thumbnail,
+  attachments: supabaseVE.attachments || [],
+});
+
+export const mapVehicleEquipmentToSupabaseVehicleEquipment = (ve: Partial<VehicleEquipment>): any => {
+    const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, ...rest } = ve;
     return {
         ...rest,
         id,

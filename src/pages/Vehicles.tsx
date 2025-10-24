@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Vehicle, Device, Equipment, ServiceRecord } from '../utils/types';
+import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, 
@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseEquipmentToEquipment, mapEquipmentToSupabaseEquipment, mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord } from '@/utils/supabaseMappers';
+import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseEquipmentToEquipment, mapEquipmentToSupabaseEquipment, mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord, mapSupabaseVehicleEquipmentToVehicleEquipment, mapVehicleEquipmentToSupabaseVehicleEquipment } from '@/utils/supabaseMappers';
 import { extractAllTags } from '@/utils/tagUtils';
 import AddDeviceDialog from '../components/AddDeviceDialog';
 import AddServiceDialog from '../components/AddServiceDialog';
@@ -31,6 +31,7 @@ import DeviceDetails from '../components/DeviceDetails';
 import ServiceDetails from '../components/ServiceDetails';
 import ServiceForm from '../components/ServiceForm';
 import AddEquipmentForm from '../components/AddEquipmentForm';
+import AddVehicleEquipmentForm from '../components/AddVehicleEquipmentForm';
 import EquipmentCard from '../components/EquipmentCard';
 import EquipmentDialogs from '../components/EquipmentDialogs';
 import { FileText, Eye, Edit, Trash2, MoreHorizontal, Shuffle } from 'lucide-react';
@@ -52,6 +53,7 @@ const Vehicles = () => {
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [vehicleEquipmentList, setVehicleEquipmentList] = useState<VehicleEquipment[]>([]);
   const [services, setServices] = useState<ServiceRecord[]>([]);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -60,6 +62,7 @@ const Vehicles = () => {
   // Stany dialogów dodawania
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
   const [isAddEquipmentDialogOpen, setIsAddEquipmentDialogOpen] = useState(false);
+  const [isAddVehicleEquipmentDialogOpen, setIsAddVehicleEquipmentDialogOpen] = useState(false);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
 
   // Pobierz pojazdy
@@ -126,6 +129,47 @@ const Vehicles = () => {
         } else if (payload.eventType === 'DELETE') {
           const deletedId = payload.old?.id as string;
           setEquipment((prev) => prev.filter((e) => e.id !== deletedId));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Pobierz vehicle_equipment + realtime
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const fetchAllVehicleEquipment = async () => {
+      const { data, error } = await supabase
+        .from('vehicle_equipment')
+        .select('*');
+      if (error) {
+        toast.error("Nie udało się pobrać danych vehicle_equipment.");
+        setVehicleEquipmentList([]);
+      } else if (data) {
+        const mapped = data.map(mapSupabaseVehicleEquipmentToVehicleEquipment);
+        setVehicleEquipmentList(mapped);
+        console.info('VehicleEquipment fetched:', mapped.length);
+      }
+    };
+
+    fetchAllVehicleEquipment();
+
+    channel = supabase
+      .channel('realtime-vehicle-equipment')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicle_equipment' }, (payload) => {
+        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          const mapped = mapSupabaseVehicleEquipmentToVehicleEquipment(payload.new);
+          setVehicleEquipmentList((prev) => {
+            const exists = prev.some(e => e.id === mapped.id);
+            return exists ? prev.map(e => e.id === mapped.id ? mapped : e) : [...prev, mapped];
+          });
+        } else if (payload.eventType === 'DELETE') {
+          const deletedId = payload.old?.id as string;
+          setVehicleEquipmentList((prev) => prev.filter((e) => e.id !== deletedId));
         }
       })
       .subscribe();
@@ -556,6 +600,36 @@ useEffect(() => {
     }
   };
 
+  const handleAddVehicleEquipment = async (veData: Partial<VehicleEquipment>) => {
+    try {
+      const newVEData = {
+        ...veData,
+        id: uuidv4(),
+      };
+      const supabaseVE = mapVehicleEquipmentToSupabaseVehicleEquipment(newVEData);
+
+      const { data, error } = await supabase
+        .from('vehicle_equipment')
+        .insert(supabaseVE)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Błąd podczas dodawania vehicle equipment.");
+        return;
+      }
+      
+      if (data) {
+        setVehicleEquipmentList(prev => [...prev, mapSupabaseVehicleEquipmentToVehicleEquipment(data)]);
+        setIsAddVehicleEquipmentDialogOpen(false);
+        toast.success("Vehicle Equipment zostało dodane pomyślnie");
+      }
+    } catch (error) {
+      console.error('Error adding vehicle equipment:', error);
+      toast.error("Błąd podczas dodawania vehicle equipment.");
+    }
+  };
+
   const handleMoveEquipment = async (equipment: Equipment, targetVehicleId: string) => {
     const updates = { vehicleid: targetVehicleId };
     const { data, error } = await supabase
@@ -791,6 +865,7 @@ useEffect(() => {
               onAddService={() => setIsAddServiceDialogOpen(true)}
               onAddDevice={() => setIsAddDeviceDialogOpen(true)}
               onAddEquipment={() => setIsAddEquipmentOpen(true)}
+              onAddVehicleEquipment={() => setIsAddVehicleEquipmentDialogOpen(true)}
               onEditDevice={handleEditDevice}
               onDeleteDevice={handleDeleteDevice}
               onViewDevice={handleViewDevice}
@@ -1255,6 +1330,24 @@ useEffect(() => {
         vehicles={allVehicles}
         selectedVehicleId={selectedVehicleId}
       />
+
+      {/* Vehicle Equipment Dialog */}
+      <Dialog open={isAddVehicleEquipmentDialogOpen} onOpenChange={setIsAddVehicleEquipmentDialogOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Dodaj equipment (nowa baza)</DialogTitle>
+            <DialogDescription>
+              Wypełnij formularz, aby dodać equipment do nowej bazy danych
+            </DialogDescription>
+          </DialogHeader>
+          <AddVehicleEquipmentForm 
+            onSubmit={handleAddVehicleEquipment} 
+            onCancel={() => setIsAddVehicleEquipmentDialogOpen(false)}
+            vehicles={allVehicles}
+            selectedVehicleId={selectedVehicleId}
+          />
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

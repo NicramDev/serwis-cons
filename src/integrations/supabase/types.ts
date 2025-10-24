@@ -228,6 +228,72 @@ export type Database = {
           },
         ]
       }
+      vehicle_equipment: {
+        Row: {
+          attachments: Json | null
+          brand: string | null
+          id: string
+          images: Json | null
+          lastservice: string | null
+          model: string | null
+          name: string
+          nextservice: string | null
+          notes: string | null
+          purchasedate: string | null
+          purchaseprice: number | null
+          serialnumber: string | null
+          serviceexpirydate: string | null
+          servicereminderdays: number | null
+          status: string | null
+          thumbnail: string | null
+          type: string | null
+          vehicleid: string | null
+          year: number | null
+        }
+        Insert: {
+          attachments?: Json | null
+          brand?: string | null
+          id?: string
+          images?: Json | null
+          lastservice?: string | null
+          model?: string | null
+          name: string
+          nextservice?: string | null
+          notes?: string | null
+          purchasedate?: string | null
+          purchaseprice?: number | null
+          serialnumber?: string | null
+          serviceexpirydate?: string | null
+          servicereminderdays?: number | null
+          status?: string | null
+          thumbnail?: string | null
+          type?: string | null
+          vehicleid?: string | null
+          year?: number | null
+        }
+        Update: {
+          attachments?: Json | null
+          brand?: string | null
+          id?: string
+          images?: Json | null
+          lastservice?: string | null
+          model?: string | null
+          name?: string
+          nextservice?: string | null
+          notes?: string | null
+          purchasedate?: string | null
+          purchaseprice?: number | null
+          serialnumber?: string | null
+          serviceexpirydate?: string | null
+          servicereminderdays?: number | null
+          status?: string | null
+          thumbnail?: string | null
+          type?: string | null
+          vehicleid?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       vehicles: {
         Row: {
           attachments: Json | null

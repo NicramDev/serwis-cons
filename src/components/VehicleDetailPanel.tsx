@@ -22,6 +22,7 @@ interface VehicleDetailPanelProps {
   onAddService: () => void;
   onAddDevice?: () => void;
   onAddEquipment?: () => void;
+  onAddVehicleEquipment?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
@@ -50,6 +51,7 @@ const VehicleDetailPanel = ({
   onAddService,
   onAddDevice,
   onAddEquipment,
+  onAddVehicleEquipment,
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
@@ -165,6 +167,7 @@ const VehicleDetailPanel = ({
                   allVehicles={vehicles}
                   onAddDevice={onAddDevice}
                   onAddEquipment={onAddEquipment}
+                  onAddVehicleEquipment={onAddVehicleEquipment}
                   onEditDevice={onEditDevice}
                   onDeleteDevice={onDeleteDevice}
                   onViewDevice={onViewDevice}

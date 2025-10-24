@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Device, Equipment, Vehicle } from '../utils/types';
-import { Cpu, PlusCircle, MoveRight, Search, Wrench, ChevronDown } from 'lucide-react';
+import { Cpu, PlusCircle, MoveRight, Search, Wrench, ChevronDown, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceList from './DeviceList';
 import EquipmentList from './EquipmentList';
@@ -30,6 +30,7 @@ interface VehicleDeviceSectionProps {
   allVehicles?: Vehicle[];
   onAddDevice?: () => void;
   onAddEquipment?: () => void;
+  onAddVehicleEquipment?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
@@ -49,6 +50,7 @@ const VehicleDeviceSection = ({
   allVehicles = [],
   onAddDevice,
   onAddEquipment,
+  onAddVehicleEquipment,
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
@@ -154,7 +156,7 @@ const VehicleDeviceSection = ({
             </Button>
             
             {showAddMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-border rounded-md shadow-lg z-10">
+              <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-border rounded-md shadow-lg z-10">
                 <div className="py-1">
                   {onAddDevice && (
                     <button
@@ -178,6 +180,18 @@ const VehicleDeviceSection = ({
                     >
                       <Wrench className="h-4 w-4" />
                       Dodaj wyposażenie
+                    </button>
+                  )}
+                  {onAddVehicleEquipment && (
+                    <button
+                      onClick={() => {
+                        onAddVehicleEquipment();
+                        setShowAddMenu(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
+                    >
+                      <Box className="h-4 w-4" />
+                      Dodaj equipment
                     </button>
                   )}
                 </div>
