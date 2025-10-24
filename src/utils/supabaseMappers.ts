@@ -167,6 +167,8 @@ export const mapSupabaseVehicleEquipmentToVehicleEquipment = (supabaseVE: any): 
   nextService: supabaseVE.nextservice ? new Date(supabaseVE.nextservice) : new Date(),
   serviceExpiryDate: supabaseVE.serviceexpirydate ? new Date(supabaseVE.serviceexpirydate) : undefined,
   serviceReminderDays: supabaseVE.servicereminderdays,
+  quantity: supabaseVE.quantity,
+  serviceIntervalHours: supabaseVE.serviceintervalhours,
   notes: supabaseVE.notes,
   status: supabaseVE.status || 'ok',
   images: supabaseVE.images || [],
@@ -175,7 +177,7 @@ export const mapSupabaseVehicleEquipmentToVehicleEquipment = (supabaseVE: any): 
 });
 
 export const mapVehicleEquipmentToSupabaseVehicleEquipment = (ve: Partial<VehicleEquipment>): any => {
-    const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, ...rest } = ve;
+    const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, quantity, serviceIntervalHours, ...rest } = ve;
     return {
         ...rest,
         id,
@@ -187,6 +189,8 @@ export const mapVehicleEquipmentToSupabaseVehicleEquipment = (ve: Partial<Vehicl
         nextservice: nextService ? nextService.toISOString() : null,
         serviceexpirydate: serviceExpiryDate ? serviceExpiryDate.toISOString().slice(0, 10) : null,
         servicereminderdays: serviceReminderDays,
+        quantity,
+        serviceintervalhours: serviceIntervalHours,
     };
 };
 

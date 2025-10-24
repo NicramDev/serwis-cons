@@ -19,12 +19,14 @@ const vehicleEquipmentSchema = z.object({
   vehicleId: z.string().optional(),
   name: z.string().min(1, "Nazwa jest wymagana").max(100, "Nazwa musi być krótsza niż 100 znaków"),
   brand: z.string().max(100, "Marka musi być krótsza niż 100 znaków").optional(),
-  type: z.string().min(1, "Typ jest wymagany").max(100, "Typ musi być krótszy niż 100 znaków"),
+  type: z.string().max(100, "Typ musi być krótszy niż 100 znaków").optional(),
   serialNumber: z.string().max(100, "Numer seryjny musi być krótszy niż 100 znaków").optional(),
+  quantity: z.coerce.number().int().min(1, "Ilość musi być większa niż 0").optional(),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły").optional(),
   purchasePrice: z.coerce.number().min(0, "Cena nie może być ujemna").optional(),
   serviceExpiryDate: z.date().optional(),
   serviceReminderDays: z.coerce.number().min(0).max(365).optional(),
+  serviceIntervalHours: z.coerce.number().int().min(0, "Interwał nie może być ujemny").optional(),
   notes: z.string().max(1000, "Notatki muszą być krótsze niż 1000 znaków").optional(),
 });
 
@@ -63,10 +65,12 @@ const AddVehicleEquipmentForm = ({
       brand: initialVehicleEquipment?.brand || "",
       type: initialVehicleEquipment?.type || "",
       serialNumber: initialVehicleEquipment?.serialNumber || "",
+      quantity: initialVehicleEquipment?.quantity || undefined,
       year: initialVehicleEquipment?.year || undefined,
       purchasePrice: initialVehicleEquipment?.purchasePrice || undefined,
       serviceExpiryDate: initialVehicleEquipment?.serviceExpiryDate ? new Date(initialVehicleEquipment.serviceExpiryDate) : undefined,
       serviceReminderDays: initialVehicleEquipment?.serviceReminderDays || 30,
+      serviceIntervalHours: initialVehicleEquipment?.serviceIntervalHours || undefined,
       notes: initialVehicleEquipment?.notes || "",
     },
   });
@@ -264,9 +268,9 @@ const AddVehicleEquipmentForm = ({
               name="brand"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Marka</FormLabel>
+                  <FormLabel>Marka, Typ</FormLabel>
                   <FormControl>
-                    <Input placeholder="Wpisz markę" {...field} />
+                    <Input placeholder="Np. Bosch, Narzędzie" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -277,12 +281,12 @@ const AddVehicleEquipmentForm = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="type"
+              name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Typ</FormLabel>
+                  <FormLabel>Ilość sztuk</FormLabel>
                   <FormControl>
-                    <Input placeholder="Np. Narzędzie, Wyposażenie" {...field} />
+                    <Input type="number" placeholder="Np. 1, 2, 5" {...field} onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -373,6 +377,26 @@ const AddVehicleEquipmentForm = ({
               )}
             />
           </div>
+          
+          <FormField
+            control={form.control}
+            name="serviceIntervalHours"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Interwał serwisu (motogodziny/godziny)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="Np. 250, 500"
+                    min={0}
+                    {...field} 
+                    onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
           <FormField
             control={form.control}

@@ -105,6 +105,8 @@ export interface VehicleEquipment {
   nextService: Date;
   serviceExpiryDate?: Date;
   serviceReminderDays?: number;
+  quantity?: number;
+  serviceIntervalHours?: number;
   notes?: string;
   status: 'ok' | 'needs-service' | 'in-service' | 'error';
   images?: string[];

@@ -241,8 +241,10 @@ export type Database = {
           notes: string | null
           purchasedate: string | null
           purchaseprice: number | null
+          quantity: number | null
           serialnumber: string | null
           serviceexpirydate: string | null
+          serviceintervalhours: number | null
           servicereminderdays: number | null
           status: string | null
           thumbnail: string | null
@@ -262,8 +264,10 @@ export type Database = {
           notes?: string | null
           purchasedate?: string | null
           purchaseprice?: number | null
+          quantity?: number | null
           serialnumber?: string | null
           serviceexpirydate?: string | null
+          serviceintervalhours?: number | null
           servicereminderdays?: number | null
           status?: string | null
           thumbnail?: string | null
@@ -283,8 +287,10 @@ export type Database = {
           notes?: string | null
           purchasedate?: string | null
           purchaseprice?: number | null
+          quantity?: number | null
           serialnumber?: string | null
           serviceexpirydate?: string | null
+          serviceintervalhours?: number | null
           servicereminderdays?: number | null
           status?: string | null
           thumbnail?: string | null

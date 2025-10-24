@@ -1450,9 +1450,9 @@ useEffect(() => {
       <Dialog open={isAddVehicleEquipmentDialogOpen} onOpenChange={setIsAddVehicleEquipmentDialogOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Dodaj equipment (nowa baza)</DialogTitle>
+            <DialogTitle>Equipment pojazdu</DialogTitle>
             <DialogDescription>
-              Wypełnij formularz, aby dodać equipment do nowej bazy danych
+              Wypełnij formularz, aby dodać equipment do pojazdu
             </DialogDescription>
           </DialogHeader>
           <AddVehicleEquipmentForm 
