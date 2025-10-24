@@ -61,16 +61,22 @@ const VehicleEquipmentCard = ({
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm mb-2">{vehicleEquipment.name}</h4>
           <div className="space-y-1 text-xs">
-            <div className="flex justify-between items-center text-muted-foreground">
-              <span className="font-medium">Marka, Typ:</span>
-              <span>{vehicleEquipment.brand || '-'}, {vehicleEquipment.type || '-'}</span>
-            </div>
-            {vehicleEquipment.nextService && (
+            <div className="grid grid-cols-3 gap-x-4">
               <div className="flex justify-between items-center text-muted-foreground">
-                <span className="font-medium">Wymagany serwis:</span>
-                <span>{new Date(vehicleEquipment.nextService).toLocaleDateString('pl-PL')}</span>
+                <span className="font-medium">Marka:</span>
+                <span>{vehicleEquipment.brand || '-'}</span>
               </div>
-            )}
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span className="font-medium">Typ:</span>
+                <span>{vehicleEquipment.type || '-'}</span>
+              </div>
+              {vehicleEquipment.nextService && (
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span className="font-medium">Wymagany serwis:</span>
+                  <span>{new Date(vehicleEquipment.nextService).toLocaleDateString('pl-PL')}</span>
+                </div>
+              )}
+            </div>
             <div className="flex justify-between items-center text-muted-foreground">
               <span className="font-medium">Ilość:</span>
               <span>{vehicleEquipment.quantity || '-'}</span>

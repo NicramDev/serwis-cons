@@ -65,26 +65,30 @@ const DeviceCard = ({
             <h3 className="text-md font-semibold mb-2">{device.name}</h3>
             
             <div className="mt-2 space-y-1">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Marka urządzenia</span>
-                <span className="font-medium">{device.brand || '-'}</span>
+              <div className="grid grid-cols-2 gap-x-4 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Marka urządzenia</span>
+                  <span className="font-medium">{device.brand || '-'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Typ urządzenia</span>
+                  <span className="font-medium">
+                    {device.type === 'scanner' ? 'Skaner' : 
+                     device.type === 'diagnostic' ? 'Diagnostyka' : 
+                     device.type === 'tablet' ? 'Tablet' : 
+                     device.type.charAt(0).toUpperCase() + device.type.slice(1)}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Typ urządzenia</span>
-                <span className="font-medium">
-                  {device.type === 'scanner' ? 'Skaner' : 
-                   device.type === 'diagnostic' ? 'Diagnostyka' : 
-                   device.type === 'tablet' ? 'Tablet' : 
-                   device.type.charAt(0).toUpperCase() + device.type.slice(1)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Numer seryjny</span>
-                <span className="font-medium">{device.serialNumber}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Wymagany serwis</span>
-                <span className="font-medium">{formatDate(device.nextService)}</span>
+              <div className="grid grid-cols-2 gap-x-4 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Numer seryjny</span>
+                  <span className="font-medium">{device.serialNumber}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Wymagany serwis</span>
+                  <span className="font-medium">{formatDate(device.nextService)}</span>
+                </div>
               </div>
             </div>
           </div>
