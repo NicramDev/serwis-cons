@@ -44,13 +44,24 @@ const DeviceList = ({
             <>
               {onViewDevice && (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={() => onViewDevice(device)}
                 >
                   <Eye className="h-3.5 w-3.5 mr-1" />
                   Podgląd
+                </Button>
+              )}
+              {onEditDevice && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => onEditDevice(device)}
+                >
+                  <Edit className="h-3.5 w-3.5 mr-1" />
+                  Edycja
                 </Button>
               )}
               {onMoveDevice && (
@@ -65,31 +76,6 @@ const DeviceList = ({
                 >
                   <MoveRight className="h-3.5 w-3.5 mr-1" />
                   Przenieś
-                </Button>
-               )}
-               {onConvertToEquipment && (
-                 <Button
-                   variant="outline"
-                   size="sm"
-                   className="h-7 px-2 text-xs"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     onConvertToEquipment(device);
-                   }}
-                 >
-                   <Package className="h-3.5 w-3.5 mr-1" />
-                   Do wyposażenia
-                 </Button>
-               )}
-               {onEditDevice && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => onEditDevice(device)}
-                >
-                  <Edit className="h-3.5 w-3.5 mr-1" />
-                  Edytuj
                 </Button>
               )}
               {onDeleteDevice && (
