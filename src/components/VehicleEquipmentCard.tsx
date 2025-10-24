@@ -49,11 +49,11 @@ const VehicleEquipmentCard = ({
           <img 
             src={vehicleEquipment.thumbnail} 
             alt={vehicleEquipment.name}
-            className="h-16 w-16 rounded object-cover border border-border/50"
+            className="h-[67px] w-[67px] rounded object-cover border border-border/50"
             onError={handleImageError}
           />
         ) : (
-          <div className="h-16 w-16 rounded bg-muted/30 flex items-center justify-center border border-border/50">
+          <div className="h-[67px] w-[67px] rounded bg-muted/30 flex items-center justify-center border border-border/50">
             <Box className="h-8 w-8 text-muted-foreground" />
           </div>
         )}

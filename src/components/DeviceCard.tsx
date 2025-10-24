@@ -44,7 +44,7 @@ const DeviceCard = ({
       <div className="flex justify-between items-start">
         <div className="flex gap-3">
           {device.thumbnail ? (
-            <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+            <div className="h-[67px] w-[67px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
               <img 
                 src={device.thumbnail} 
                 alt={device.name} 
@@ -56,7 +56,7 @@ const DeviceCard = ({
               />
             </div>
           ) : (
-            <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+            <div className="h-[67px] w-[67px] rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
               <Smartphone className="h-8 w-8 text-muted-foreground" />
             </div>
           )}
@@ -66,13 +66,13 @@ const DeviceCard = ({
             
             <div className="mt-2 space-y-1">
               <div className="grid grid-cols-2 gap-x-4 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Marka urządzenia</span>
-                  <span className="font-medium">{device.brand || '-'}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Marka urządzenia:</span>
+                  <span className="font-medium text-black dark:text-white">{device.brand || '-'}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Typ urządzenia</span>
-                  <span className="font-medium">
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Typ Urządzenia:</span>
+                  <span className="font-medium text-black dark:text-white">
                     {device.type === 'scanner' ? 'Skaner' : 
                      device.type === 'diagnostic' ? 'Diagnostyka' : 
                      device.type === 'tablet' ? 'Tablet' : 
@@ -81,13 +81,13 @@ const DeviceCard = ({
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-x-4 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Numer seryjny</span>
-                  <span className="font-medium">{device.serialNumber}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Nr. Seryjny:</span>
+                  <span className="font-medium text-black dark:text-white">{device.serialNumber}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Wymagany serwis</span>
-                  <span className="font-medium">{formatDate(device.nextService)}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Wymagany serwis:</span>
+                  <span className="font-medium text-black dark:text-white">{formatDate(device.nextService)}</span>
                 </div>
               </div>
             </div>
