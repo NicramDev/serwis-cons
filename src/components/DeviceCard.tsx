@@ -1,7 +1,8 @@
-import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye } from 'lucide-react';
+import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye, MoveRight } from 'lucide-react';
 import { Device } from '../utils/types';
 import { formatDate } from '../utils/formatting/dateUtils';
 import { Button } from '@/components/ui/button';
+
 interface DeviceCardProps {
   device: Device;
   delay?: number;
@@ -11,17 +12,18 @@ interface DeviceCardProps {
   actions?: React.ReactNode; // Added actions prop
   onAttachmentClick?: (url: string) => void; // Added onAttachmentClick prop
 }
-const DeviceCard = ({
-  device,
-  delay = 0,
-  onEdit,
-  onDelete,
-  onViewDetails,
-  actions,
-  // Added actions prop
-  onAttachmentClick
+
+const DeviceCard = ({ 
+  device, 
+  delay = 0, 
+  onEdit, 
+  onDelete, 
+  onViewDetails, 
+  actions, // Added actions prop
+  onAttachmentClick 
 }: DeviceCardProps) => {
   const delayClass = `staggered-delay-${delay}`;
+  
   const getStatusIcon = () => {
     switch (device.status) {
       case 'ok':
@@ -36,45 +38,57 @@ const DeviceCard = ({
         return null;
     }
   };
-  return <div className={`glass-card rounded-xl p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all w-full`}>
+  
+  return (
+    <div className={`glass-card rounded-xl p-3 opacity-0 animate-fade-in ${delayClass} hover:shadow-elevated transition-all w-full`}>
       <div className="flex justify-between items-start">
         <div className="flex gap-3">
-          {device.thumbnail ? <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
-              <img src={device.thumbnail} alt={device.name} className="h-full w-full object-cover" onError={e => {
-            const target = e.target as HTMLImageElement;
-            target.src = '/placeholder.svg';
-          }} />
-            </div> : <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
-              <Smartphone className="h-10 w-10 text-muted-foreground" />
-            </div>}
+          {device.thumbnail ? (
+            <div className="h-[80px] w-[80px] rounded-lg overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+              <img 
+                src={device.thumbnail} 
+                alt={device.name} 
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="h-[80px] w-[80px] rounded-lg overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+              <Smartphone className="h-8 w-8 text-muted-foreground" />
+            </div>
+          )}
           
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="inline-block px-2 py-1 text-xs font-medium bg-secondary text-foreground/70 rounded-full">
-                {device.type === 'scanner' ? 'Skaner' : device.type === 'diagnostic' ? 'Diagnostyka' : device.type === 'tablet' ? 'Tablet' : device.type.charAt(0).toUpperCase() + device.type.slice(1)}
-              </span>
-              <h3 className="text-md font-semibold">{device.name}</h3>
-            </div>
+            <h3 className="text-md font-semibold mb-2">{device.name}</h3>
             
-            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Model</span>
-                <span className="font-medium">{device.model}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">S/N</span>
-                <span className="font-medium">{device.serialNumber}</span>
-              </div>
-              {device.vehicleId && <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted-foreground px-[5px]">Pojazd</span>
-                  <span className="inline-flex items-center">
-                    <Car className="h-3 w-3 mr-1" />
-                    #{device.vehicleId.slice(0, 8)}
+            <div className="mt-2 space-y-1">
+              <div className="grid grid-cols-2 gap-x-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Marka urządzenia:</span>
+                  <span className="font-medium text-black dark:text-white">{device.brand || '-'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Typ Urządzenia:</span>
+                  <span className="font-medium text-black dark:text-white">
+                    {device.type === 'scanner' ? 'Skaner' : 
+                     device.type === 'diagnostic' ? 'Diagnostyka' : 
+                     device.type === 'tablet' ? 'Tablet' : 
+                     device.type.charAt(0).toUpperCase() + device.type.slice(1)}
                   </span>
-                </div>}
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Serwis</span>
-                <span className="font-medium">{formatDate(device.nextService)}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Nr. Seryjny:</span>
+                  <span className="font-medium text-black dark:text-white">{device.serialNumber}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Wymagany serwis:</span>
+                  <span className="font-medium text-black dark:text-white">{formatDate(device.nextService)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -82,22 +96,52 @@ const DeviceCard = ({
         {getStatusIcon()}
       </div>
       
-      <div className="flex justify-end mt-3 gap-1">
-        {actions ? actions : <>
-            <Button variant="secondary" size="sm" className="h-7 px-2 text-xs" onClick={() => onViewDetails && onViewDetails(device)}>
+      <div className="mt-3">
+        {actions ? (
+          actions
+        ) : (
+          <div className="grid grid-cols-4 gap-1">
+            <Button 
+              variant="secondary"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onViewDetails && onViewDetails(device)}
+            >
               <Eye className="h-3 w-3 mr-1" />
-              Szczegóły
+              Podgląd
             </Button>
-            <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => onEdit && onEdit(device)}>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onEdit && onEdit(device)}
+            >
               <Edit className="h-3 w-3 mr-1" />
-              Edytuj
+              Edycja
             </Button>
-            <Button variant="destructive" size="sm" className="h-7 px-2 text-xs" onClick={() => onDelete && onDelete(device)}>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => {}}
+            >
+              <MoveRight className="h-3 w-3 mr-1" />
+              Przenieś
+            </Button>
+            <Button 
+              variant="destructive"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onDelete && onDelete(device)}
+            >
               <Trash2 className="h-3 w-3 mr-1" />
               Usuń
             </Button>
-          </>}
+          </div>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default DeviceCard;
