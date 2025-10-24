@@ -78,9 +78,9 @@ const VehicleReportForm = ({
         <thead>
           <tr style="background-color: #f2f2f2;">
             <th>Nazwa</th>
-            <th>Marka/Typ</th>
+            <th>Marka</th>
+            <th>Typ</th>
             <th>Nr seryjny</th>
-            <th>Ilość sztuk</th>
           </tr>
         </thead>
         <tbody>
@@ -88,8 +88,8 @@ const VehicleReportForm = ({
             <tr>
               <td>${item.name}</td>
               <td>${item.brand ?? '-'}</td>
-              <td>${item.serialNumber ?? '-'}</td>
               <td>${item.type ?? '-'}</td>
+              <td>${item.serialNumber ?? '-'}</td>
             </tr>
           `).join('')}
         </tbody>

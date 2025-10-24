@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Vehicle, Device, Equipment, ServiceRecord } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { mapSupabaseEquipmentToEquipment } from '@/utils/supabaseMappers';
 import VehicleDetailHeader from './VehicleDetailHeader';
 import VehicleSummaryInfo from './VehicleSummaryInfo';
 import VehicleDeviceSection from './VehicleDeviceSection';
@@ -65,6 +67,62 @@ const VehicleDetailPanel = ({
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
+  const [vehicleEquipment, setVehicleEquipment] = useState<Equipment[]>([]);
+
+  // Pobierz wyposażenie dla wybranego pojazdu
+  useEffect(() => {
+    if (!selectedVehicleId) {
+      setVehicleEquipment([]);
+      return;
+    }
+
+    const fetchEquipment = async () => {
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('vehicleid', selectedVehicleId);
+      
+      if (error) {
+        console.error('Error fetching equipment:', error);
+        setVehicleEquipment([]);
+      } else if (data) {
+        const mapped = data.map(mapSupabaseEquipmentToEquipment);
+        setVehicleEquipment(mapped);
+        console.info('[VehicleDetailPanel] Equipment loaded for vehicle:', selectedVehicleId, mapped.length);
+      }
+    };
+
+    fetchEquipment();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel(`equipment-${selectedVehicleId}`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'equipment',
+          filter: `vehicleid=eq.${selectedVehicleId}`
+        }, 
+        (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const mapped = mapSupabaseEquipmentToEquipment(payload.new);
+            setVehicleEquipment((prev) => {
+              const exists = prev.some(e => e.id === mapped.id);
+              return exists ? prev.map(e => e.id === mapped.id ? mapped : e) : [...prev, mapped];
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = payload.old?.id as string;
+            setVehicleEquipment((prev) => prev.filter((e) => e.id !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedVehicleId]);
 
   const handleAttachmentOpen = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer,fullscreen=yes');
@@ -83,18 +141,7 @@ const VehicleDetailPanel = ({
   if (!vehicle) return null;
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
-  // Only show equipment assigned to the selected vehicle
-  const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
-
-  console.info('[VehicleDetailPanel] vehicleId:', selectedVehicleId, {
-    devicesAll: devices.length,
-    equipmentAll: equipment.length,
-    servicesAll: services.length,
-    devicesForVehicle: selectedVehicleDevices.length,
-    equipmentForVehicle: selectedVehicleEquipment.length,
-    servicesForVehicle: selectedVehicleServices.length,
-  });
   return (
     <>
       <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
@@ -114,7 +161,7 @@ const VehicleDetailPanel = ({
               {!showingServiceRecords && !showingReports ? (
                 <VehicleDeviceSection 
                   devices={selectedVehicleDevices}
-                  equipment={selectedVehicleEquipment}
+                  equipment={vehicleEquipment}
                   allVehicles={vehicles}
                   onAddDevice={onAddDevice}
                   onAddEquipment={onAddEquipment}
@@ -155,7 +202,7 @@ const VehicleDetailPanel = ({
           }}
           vehicle={vehicle}
           devices={selectedVehicleDevices}
-          equipment={selectedVehicleEquipment}
+          equipment={vehicleEquipment}
           services={selectedVehicleServices}
         />
       )}
