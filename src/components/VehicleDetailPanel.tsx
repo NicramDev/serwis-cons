@@ -86,7 +86,15 @@ const VehicleDetailPanel = ({
   // Only show equipment assigned to the selected vehicle
   const selectedVehicleEquipment = equipment.filter(item => item.vehicleId === selectedVehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
-  
+
+  console.info('[VehicleDetailPanel] vehicleId:', selectedVehicleId, {
+    devicesAll: devices.length,
+    equipmentAll: equipment.length,
+    servicesAll: services.length,
+    devicesForVehicle: selectedVehicleDevices.length,
+    equipmentForVehicle: selectedVehicleEquipment.length,
+    servicesForVehicle: selectedVehicleServices.length,
+  });
   return (
     <>
       <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
