@@ -18,15 +18,16 @@ import { toast } from "sonner";
 
 const deviceSchema = z.object({
   vehicleId: z.string().optional(),
-  name: z.string().min(1, "Nazwa jest wymagana"),
-  brand: z.string().min(1, "Marka jest wymagana"),
-  type: z.string().min(1, "Typ urządzenia jest wymagany"),
-  serialNumber: z.string().min(1, "Numer seryjny jest wymagany"),
+  name: z.string().min(1, "Nazwa jest wymagana").max(100, "Nazwa musi być krótsza niż 100 znaków"),
+  brand: z.string().min(1, "Marka jest wymagana").max(100, "Marka musi być krótsza niż 100 znaków"),
+  type: z.string().min(1, "Typ urządzenia jest wymagany").max(100, "Typ musi być krótszy niż 100 znaków"),
+  serialNumber: z.string().min(1, "Numer seryjny jest wymagany").max(100, "Numer seryjny musi być krótszy niż 100 znaków"),
   year: z.coerce.number().int().min(1900, "Rok musi być większy niż 1900").max(new Date().getFullYear() + 1, "Rok nie może być przyszły"),
   purchasePrice: z.coerce.number().min(0, "Cena nie może być ujemna").optional(),
   serviceExpiryDate: z.date().optional(),
   serviceReminderDays: z.coerce.number().min(0).max(365).optional(),
-  notes: z.string().optional(),
+  serviceIntervalHours: z.coerce.number().int().min(0, "Interwał musi być liczbą nieujemną").max(100000, "Interwał nie może przekraczać 100000 godzin").optional(),
+  notes: z.string().max(1000, "Notatki muszą być krótsze niż 1000 znaków").optional(),
 });
 
 type DeviceFormValues = z.infer<typeof deviceSchema>;
@@ -68,6 +69,7 @@ const AddDeviceForm = ({
       purchasePrice: initialDevice?.purchasePrice || undefined,
       serviceExpiryDate: initialDevice?.serviceExpiryDate ? new Date(initialDevice.serviceExpiryDate) : undefined,
       serviceReminderDays: initialDevice?.serviceReminderDays || 30,
+      serviceIntervalHours: initialDevice?.serviceIntervalHours || undefined,
       notes: initialDevice?.notes || "",
     },
   });
@@ -376,6 +378,27 @@ const AddDeviceForm = ({
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="serviceIntervalHours"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Interwał serwisu (motogodziny)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="np. 250"
+                    min={0}
+                    max={100000}
+                    {...field} 
+                    onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
           <FormField
             control={form.control}

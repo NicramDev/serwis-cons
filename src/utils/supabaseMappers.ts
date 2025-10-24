@@ -73,6 +73,7 @@ export const mapSupabaseDeviceToDevice = (supabaseDevice: any): Device => ({
   nextService: supabaseDevice.nextservice ? new Date(supabaseDevice.nextservice) : new Date(),
   serviceExpiryDate: supabaseDevice.serviceexpirydate ? new Date(supabaseDevice.serviceexpirydate) : undefined,
   serviceReminderDays: supabaseDevice.servicereminderdays,
+  serviceIntervalHours: supabaseDevice.serviceintervalhours,
   notes: supabaseDevice.notes,
   status: supabaseDevice.status || 'ok',
   images: supabaseDevice.images || [],
@@ -81,7 +82,7 @@ export const mapSupabaseDeviceToDevice = (supabaseDevice: any): Device => ({
 });
 
 export const mapDeviceToSupabaseDevice = (device: Partial<Device>): any => {
-    const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, ...rest } = device;
+    const { id, serialNumber, vehicleId, purchasePrice, purchaseDate, lastService, nextService, serviceExpiryDate, serviceReminderDays, serviceIntervalHours, ...rest } = device;
     return {
         ...rest,
         id,
@@ -93,6 +94,7 @@ export const mapDeviceToSupabaseDevice = (device: Partial<Device>): any => {
         nextservice: nextService ? nextService.toISOString() : null,
         serviceexpirydate: serviceExpiryDate ? serviceExpiryDate.toISOString().slice(0, 10) : null,
         servicereminderdays: serviceReminderDays,
+        serviceintervalhours: serviceIntervalHours,
     };
 };
 

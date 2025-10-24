@@ -50,6 +50,7 @@ export interface Device {
   nextService: Date;
   serviceExpiryDate?: Date;
   serviceReminderDays?: number;
+  serviceIntervalHours?: number; // Service interval in engine hours
   notes?: string; // Added for device description/notes
   status: 'ok' | 'needs-service' | 'in-service' | 'error';
   images?: string[];
