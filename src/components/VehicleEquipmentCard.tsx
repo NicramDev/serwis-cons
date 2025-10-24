@@ -49,11 +49,11 @@ const VehicleEquipmentCard = ({
           <img 
             src={vehicleEquipment.thumbnail} 
             alt={vehicleEquipment.name}
-            className="h-[67px] w-[67px] rounded object-cover border border-border/50"
+            className="h-[75px] w-[75px] rounded object-cover border border-border/50"
             onError={handleImageError}
           />
         ) : (
-          <div className="h-[67px] w-[67px] rounded bg-muted/30 flex items-center justify-center border border-border/50">
+          <div className="h-[75px] w-[75px] rounded bg-muted/30 flex items-center justify-center border border-border/50">
             <Box className="h-8 w-8 text-muted-foreground" />
           </div>
         )}
@@ -62,20 +62,20 @@ const VehicleEquipmentCard = ({
           <h4 className="font-medium text-sm mb-2">{vehicleEquipment.name}</h4>
           <div className="space-y-1 text-xs">
             <div className="grid grid-cols-2 gap-x-4">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <span className="font-medium">Marka, Typ:</span>
-                <span>{vehicleEquipment.brand || '-'}, {vehicleEquipment.type || '-'}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-muted-foreground">Marka, Typ:</span>
+                <span className="text-black dark:text-white">{vehicleEquipment.brand || '-'}, {vehicleEquipment.type || '-'}</span>
               </div>
               {vehicleEquipment.nextService && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <span className="font-medium">Wymagany serwis:</span>
-                  <span>{new Date(vehicleEquipment.nextService).toLocaleDateString('pl-PL')}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-muted-foreground">Wymagany serwis:</span>
+                  <span className="text-black dark:text-white">{new Date(vehicleEquipment.nextService).toLocaleDateString('pl-PL')}</span>
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="font-medium">Ilość:</span>
-              <span>{vehicleEquipment.quantity || '-'}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-muted-foreground">Ilość:</span>
+              <span className="text-black dark:text-white">{vehicleEquipment.quantity || '-'}</span>
             </div>
           </div>
         </div>
