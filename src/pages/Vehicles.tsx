@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "@/integrations/supabase/client";
-import { migrateEquipmentToVehicleEquipment } from '../utils/migrateEquipmentData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, 
   DialogFooter, DialogClose
 } from "@/components/ui/dialog";
@@ -66,7 +65,6 @@ const Vehicles = () => {
   const [isAddEquipmentDialogOpen, setIsAddEquipmentDialogOpen] = useState(false);
   const [isAddVehicleEquipmentDialogOpen, setIsAddVehicleEquipmentDialogOpen] = useState(false);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
-  const [isMigrating, setIsMigrating] = useState(false);
 
   // Pobierz pojazdy
   useEffect(() => {
@@ -864,23 +862,6 @@ useEffect(() => {
     }
   };
 
-  // Migracja danych z Equipment do Vehicle Equipment
-  const handleMigrateEquipment = async () => {
-    setIsMigrating(true);
-    const result = await migrateEquipmentToVehicleEquipment();
-    setIsMigrating(false);
-    
-    if (result.success && result.migrated && result.migrated > 0) {
-      // Odśwież listę vehicle_equipment
-      const { data } = await supabase
-        .from('vehicle_equipment')
-        .select('*');
-      if (data) {
-        setVehicleEquipmentList(data.map(mapSupabaseVehicleEquipmentToVehicleEquipment));
-      }
-    }
-  };
-
   // Przyciski do serwisów
   const handleViewService = (service: ServiceRecord) => {
     setSelectedServiceForView(service);
@@ -956,24 +937,14 @@ useEffect(() => {
             <h1 className="text-3xl font-bold mb-2">Pojazdy</h1>
             <p className="text-muted-foreground">Zarządzaj i śledź wszystkie swoje pojazdy</p>
           </div>
-          <div className="flex gap-2 items-center">
-            <Button
-              onClick={handleMigrateEquipment}
-              variant="outline"
-              size="sm"
-              disabled={isMigrating}
-            >
-              {isMigrating ? "Kopiowanie..." : "Kopiuj Equipment → Vehicle Equipment"}
-            </Button>
-            <VehicleSearchBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onAddVehicle={() => setIsAddDialogOpen(true)}
-              availableTags={extractAllTags(allVehicles)}
-              selectedTags={selectedTags}
-              onTagSelect={handleTagSelect}
-            />
-          </div>
+          <VehicleSearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onAddVehicle={() => setIsAddDialogOpen(true)}
+            availableTags={extractAllTags(allVehicles)}
+            selectedTags={selectedTags}
+            onTagSelect={handleTagSelect}
+          />
         </div>
 
         <div className="flex gap-3 lg:gap-5 min-w-0 overflow-hidden">
