@@ -61,23 +61,19 @@ const VehicleEquipmentCard = ({
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm mb-2">{vehicleEquipment.name}</h4>
           <div className="space-y-1 text-xs">
-            <div className="grid grid-cols-3 gap-x-4">
-              <div className="flex justify-between items-center text-muted-foreground">
-                <span className="font-medium">Marka:</span>
-                <span>{vehicleEquipment.brand || '-'}</span>
-              </div>
-              <div className="flex justify-between items-center text-muted-foreground">
-                <span className="font-medium">Typ:</span>
-                <span>{vehicleEquipment.type || '-'}</span>
+            <div className="grid grid-cols-2 gap-x-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <span className="font-medium">Marka, Typ:</span>
+                <span>{vehicleEquipment.brand || '-'}, {vehicleEquipment.type || '-'}</span>
               </div>
               {vehicleEquipment.nextService && (
-                <div className="flex justify-between items-center text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <span className="font-medium">Wymagany serwis:</span>
                   <span>{new Date(vehicleEquipment.nextService).toLocaleDateString('pl-PL')}</span>
                 </div>
               )}
             </div>
-            <div className="flex justify-between items-center text-muted-foreground">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <span className="font-medium">Ilość:</span>
               <span>{vehicleEquipment.quantity || '-'}</span>
             </div>
@@ -93,7 +89,7 @@ const VehicleEquipmentCard = ({
         {actions ? (
           actions
         ) : (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-4 gap-1">
             {onViewDetails && (
               <Button 
                 variant="secondary"
@@ -128,17 +124,15 @@ const VehicleEquipmentCard = ({
               </Button>
             )}
             {onDelete && (
-              <div className="col-start-3">
-                <Button 
-                  variant="destructive"
-                  size="sm"
-                  className="h-7 px-2 text-xs w-full"
-                  onClick={() => onDelete(vehicleEquipment)}
-                >
-                  <Trash2 className="h-3 w-3 mr-1" />
-                  Usuń
-                </Button>
-              </div>
+              <Button 
+                variant="destructive"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => onDelete(vehicleEquipment)}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Usuń
+              </Button>
             )}
           </div>
         )}

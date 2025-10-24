@@ -44,7 +44,7 @@ const DeviceCard = ({
       <div className="flex justify-between items-start">
         <div className="flex gap-3">
           {device.thumbnail ? (
-            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+            <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
               <img 
                 src={device.thumbnail} 
                 alt={device.name} 
@@ -56,8 +56,8 @@ const DeviceCard = ({
               />
             </div>
           ) : (
-            <div className="h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
-              <Smartphone className="h-10 w-10 text-muted-foreground" />
+            <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
+              <Smartphone className="h-8 w-8 text-muted-foreground" />
             </div>
           )}
           
@@ -100,7 +100,7 @@ const DeviceCard = ({
         {actions ? (
           actions
         ) : (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-4 gap-1">
             <Button 
               variant="secondary"
               size="sm"
@@ -128,17 +128,15 @@ const DeviceCard = ({
               <MoveRight className="h-3 w-3 mr-1" />
               Przenieś
             </Button>
-            <div className="col-start-3">
-              <Button 
-                variant="destructive"
-                size="sm"
-                className="h-7 px-2 text-xs w-full"
-                onClick={() => onDelete && onDelete(device)}
-              >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Usuń
-              </Button>
-            </div>
+            <Button 
+              variant="destructive"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => onDelete && onDelete(device)}
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Usuń
+            </Button>
           </div>
         )}
       </div>
