@@ -1,4 +1,4 @@
-import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye } from 'lucide-react';
+import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye, MoveRight } from 'lucide-react';
 import { Device } from '../utils/types';
 import { formatDate } from '../utils/formatting/dateUtils';
 import { Button } from '@/components/ui/button';
@@ -96,11 +96,11 @@ const DeviceCard = ({
         {getStatusIcon()}
       </div>
       
-      <div className="flex justify-end mt-3 gap-1">
+      <div className="mt-3">
         {actions ? (
           actions
         ) : (
-          <>
+          <div className="grid grid-cols-3 gap-1">
             <Button 
               variant="secondary"
               size="sm"
@@ -108,7 +108,7 @@ const DeviceCard = ({
               onClick={() => onViewDetails && onViewDetails(device)}
             >
               <Eye className="h-3 w-3 mr-1" />
-              Szczegóły
+              Podgląd
             </Button>
             <Button 
               variant="outline"
@@ -117,18 +117,29 @@ const DeviceCard = ({
               onClick={() => onEdit && onEdit(device)}
             >
               <Edit className="h-3 w-3 mr-1" />
-              Edytuj
+              Edycja
             </Button>
             <Button 
-              variant="destructive"
+              variant="outline"
               size="sm"
               className="h-7 px-2 text-xs"
-              onClick={() => onDelete && onDelete(device)}
+              onClick={() => {}}
             >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Usuń
+              <MoveRight className="h-3 w-3 mr-1" />
+              Przenieś
             </Button>
-          </>
+            <div className="col-start-3">
+              <Button 
+                variant="destructive"
+                size="sm"
+                className="h-7 px-2 text-xs w-full"
+                onClick={() => onDelete && onDelete(device)}
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Usuń
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

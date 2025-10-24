@@ -89,11 +89,11 @@ const VehicleEquipmentCard = ({
         </div>
       </div>
       
-      <div className="flex justify-end mt-3 gap-1">
+      <div className="mt-3">
         {actions ? (
           actions
         ) : (
-          <>
+          <div className="grid grid-cols-3 gap-1">
             {onViewDetails && (
               <Button 
                 variant="secondary"
@@ -102,7 +102,7 @@ const VehicleEquipmentCard = ({
                 onClick={() => onViewDetails(vehicleEquipment)}
               >
                 <Eye className="h-3 w-3 mr-1" />
-                Szczegóły
+                Podgląd
               </Button>
             )}
             {onEdit && (
@@ -113,7 +113,7 @@ const VehicleEquipmentCard = ({
                 onClick={() => onEdit(vehicleEquipment)}
               >
                 <Edit className="h-3 w-3 mr-1" />
-                Edytuj
+                Edycja
               </Button>
             )}
             {onMove && (
@@ -128,17 +128,19 @@ const VehicleEquipmentCard = ({
               </Button>
             )}
             {onDelete && (
-              <Button 
-                variant="destructive"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => onDelete(vehicleEquipment)}
-              >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Usuń
-              </Button>
+              <div className="col-start-3">
+                <Button 
+                  variant="destructive"
+                  size="sm"
+                  className="h-7 px-2 text-xs w-full"
+                  onClick={() => onDelete(vehicleEquipment)}
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Usuń
+                </Button>
+              </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
