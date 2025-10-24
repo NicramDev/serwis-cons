@@ -32,6 +32,7 @@ import ServiceDetails from '../components/ServiceDetails';
 import ServiceForm from '../components/ServiceForm';
 import AddEquipmentForm from '../components/AddEquipmentForm';
 import AddVehicleEquipmentForm from '../components/AddVehicleEquipmentForm';
+import VehicleEquipmentDialogs from '../components/VehicleEquipmentDialogs';
 import EquipmentCard from '../components/EquipmentCard';
 import EquipmentDialogs from '../components/EquipmentDialogs';
 import { FileText, Eye, Edit, Trash2, MoreHorizontal, Shuffle } from 'lucide-react';
@@ -486,6 +487,16 @@ useEffect(() => {
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [deviceToConvert, setDeviceToConvert] = useState<Device | null>(null);
 
+  // VehicleEquipment states
+  const [selectedVehicleEquipment, setSelectedVehicleEquipment] = useState<VehicleEquipment | null>(null);
+  const [isVehicleEquipmentDetailsOpen, setIsVehicleEquipmentDetailsOpen] = useState(false);
+  const [isEditVehicleEquipmentOpen, setIsEditVehicleEquipmentOpen] = useState(false);
+  const [isDeleteVehicleEquipmentOpen, setIsDeleteVehicleEquipmentOpen] = useState(false);
+  const [vehicleEquipmentToDelete, setVehicleEquipmentToDelete] = useState<VehicleEquipment | null>(null);
+  const [vehicleEquipmentToMove, setVehicleEquipmentToMove] = useState<VehicleEquipment | null>(null);
+  const [isMoveVehicleEquipmentDialogOpen, setIsMoveVehicleEquipmentDialogOpen] = useState(false);
+  const [targetVehicleIdForVehicleEquipment, setTargetVehicleIdForVehicleEquipment] = useState<string>("");
+
   // --- Move Device Dialog ---
   const [deviceToMove, setDeviceToMove] = useState<Device | null>(null);
   const [isMoveDeviceDialogOpen, setIsMoveDeviceDialogOpen] = useState(false);
@@ -752,6 +763,105 @@ useEffect(() => {
     setDeviceToConvert(null);
   };
 
+  // VehicleEquipment handlers
+  const handleViewVehicleEquipment = (ve: VehicleEquipment) => {
+    setSelectedVehicleEquipment(ve);
+    setIsVehicleEquipmentDetailsOpen(true);
+  };
+
+  const handleEditVehicleEquipment = (ve: VehicleEquipment) => {
+    setSelectedVehicleEquipment(ve);
+    setIsEditVehicleEquipmentOpen(true);
+  };
+
+  const handleDeleteVehicleEquipment = (ve: VehicleEquipment) => {
+    setVehicleEquipmentToDelete(ve);
+    setIsDeleteVehicleEquipmentOpen(true);
+  };
+
+  const handleMoveVehicleEquipment = (ve: VehicleEquipment) => {
+    setVehicleEquipmentToMove(ve);
+    setTargetVehicleIdForVehicleEquipment("");
+    setIsMoveVehicleEquipmentDialogOpen(true);
+  };
+
+  const handleUpdateVehicleEquipment = async (updatedVEData: VehicleEquipment) => {
+    try {
+      const supabaseVE = mapVehicleEquipmentToSupabaseVehicleEquipment(updatedVEData);
+      delete supabaseVE.id;
+
+      const { data, error } = await supabase
+        .from('vehicle_equipment')
+        .update(supabaseVE)
+        .eq('id', updatedVEData.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Błąd podczas edycji equipment.");
+        return;
+      }
+      
+      if (data) {
+        setVehicleEquipmentList(prev =>
+          prev.map(ve =>
+            ve.id === updatedVEData.id
+              ? mapSupabaseVehicleEquipmentToVehicleEquipment(data)
+              : ve
+          )
+        );
+        setIsEditVehicleEquipmentOpen(false);
+        toast.success("Equipment zostało zaktualizowane pomyślnie");
+      }
+    } catch (error) {
+      console.error('Error updating vehicle equipment:', error);
+      toast.error("Błąd podczas edycji equipment.");
+    }
+  };
+
+  const confirmDeleteVehicleEquipment = async () => {
+    if (vehicleEquipmentToDelete) {
+      const { error } = await supabase
+        .from('vehicle_equipment')
+        .delete()
+        .eq('id', vehicleEquipmentToDelete.id);
+      if (error) {
+        toast.error("Błąd usuwania equipment");
+      } else {
+        setVehicleEquipmentList(prev => prev.filter(ve => ve.id !== vehicleEquipmentToDelete.id));
+        toast.success("Equipment usunięte");
+      }
+      setIsDeleteVehicleEquipmentOpen(false);
+      setVehicleEquipmentToDelete(null);
+    }
+  };
+
+  const confirmMoveVehicleEquipment = async () => {
+    if (vehicleEquipmentToMove && targetVehicleIdForVehicleEquipment) {
+      const updates = { vehicleid: targetVehicleIdForVehicleEquipment };
+      const { data, error } = await supabase
+        .from('vehicle_equipment')
+        .update(updates)
+        .eq('id', vehicleEquipmentToMove.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Błąd przenoszenia equipment");
+      } else if (data) {
+        setVehicleEquipmentList(prev =>
+          prev.map(ve =>
+            ve.id === vehicleEquipmentToMove.id ? { ...ve, vehicleId: targetVehicleIdForVehicleEquipment } : ve
+          )
+        );
+        toast.success("Equipment przeniesione");
+      }
+      setIsMoveVehicleEquipmentDialogOpen(false);
+      setVehicleEquipmentToMove(null);
+      setTargetVehicleIdForVehicleEquipment("");
+    }
+  };
+
   // Przyciski do serwisów
   const handleViewService = (service: ServiceRecord) => {
     setSelectedServiceForView(service);
@@ -873,6 +983,10 @@ useEffect(() => {
               onEditEquipment={handleEditEquipment}
               onDeleteEquipment={handleDeleteEquipment}
               onViewEquipment={handleViewEquipment}
+              onEditVehicleEquipment={handleEditVehicleEquipment}
+              onDeleteVehicleEquipment={handleDeleteVehicleEquipment}
+              onViewVehicleEquipment={handleViewVehicleEquipment}
+              onMoveVehicleEquipment={handleMoveVehicleEquipment}
               onMoveDevice={handleMoveDevice}
               onMoveEquipment={handleMoveEquipment}
               onConvertToEquipment={handleConvertToEquipment}
@@ -1347,6 +1461,62 @@ useEffect(() => {
             vehicles={allVehicles}
             selectedVehicleId={selectedVehicleId}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Vehicle Equipment Dialogs */}
+      <VehicleEquipmentDialogs
+        isEditDialogOpen={isEditVehicleEquipmentOpen}
+        setIsEditDialogOpen={setIsEditVehicleEquipmentOpen}
+        selectedVehicleEquipment={selectedVehicleEquipment}
+        onUpdateVehicleEquipment={handleUpdateVehicleEquipment}
+        isDetailsDialogOpen={isVehicleEquipmentDetailsOpen}
+        setIsDetailsDialogOpen={setIsVehicleEquipmentDetailsOpen}
+        isDeleteDialogOpen={isDeleteVehicleEquipmentOpen}
+        setIsDeleteDialogOpen={setIsDeleteVehicleEquipmentOpen}
+        vehicleEquipmentToDelete={vehicleEquipmentToDelete}
+        onConfirmDelete={confirmDeleteVehicleEquipment}
+        vehicles={allVehicles}
+      />
+
+      {/* Move VehicleEquipment Dialog */}
+      <Dialog open={isMoveVehicleEquipmentDialogOpen} onOpenChange={setIsMoveVehicleEquipmentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Przenieś equipment do innego pojazdu</DialogTitle>
+            <DialogDescription>
+              Wybierz pojazd, do którego chcesz przenieść equipment "{vehicleEquipmentToMove?.name}"
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <label htmlFor="target-vehicle-ve" className="text-sm font-medium mb-2 block">Wybierz pojazd docelowy:</label>
+            <select
+              id="target-vehicle-ve"
+              value={targetVehicleIdForVehicleEquipment}
+              onChange={(e) => setTargetVehicleIdForVehicleEquipment(e.target.value)}
+              className="w-full p-2 border border-border rounded-md bg-background"
+            >
+              <option value="">Wybierz pojazd</option>
+              {allVehicles.filter(v => v.id !== selectedVehicleId).map((vehicle) => (
+                <option key={vehicle.id} value={vehicle.id}>
+                  {vehicle.name} ({vehicle.registrationNumber})
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Anuluj</Button>
+            </DialogClose>
+            <Button 
+              onClick={confirmMoveVehicleEquipment} 
+              disabled={!targetVehicleIdForVehicleEquipment}
+            >
+              Przenieś equipment
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

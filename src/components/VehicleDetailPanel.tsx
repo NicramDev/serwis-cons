@@ -30,6 +30,10 @@ interface VehicleDetailPanelProps {
   onEditEquipment?: (equipment: Equipment) => void;
   onDeleteEquipment?: (equipment: Equipment) => void;
   onViewEquipment?: (equipment: Equipment) => void;
+  onEditVehicleEquipment?: (ve: VehicleEquipment) => void;
+  onDeleteVehicleEquipment?: (ve: VehicleEquipment) => void;
+  onViewVehicleEquipment?: (ve: VehicleEquipment) => void;
+  onMoveVehicleEquipment?: (ve: VehicleEquipment) => void;
   onEditService?: (service: ServiceRecord) => void;
   onDeleteService?: (service: ServiceRecord) => void;
   onViewService?: (service: ServiceRecord) => void;
@@ -60,6 +64,10 @@ const VehicleDetailPanel = ({
   onEditEquipment,
   onDeleteEquipment,
   onViewEquipment,
+  onEditVehicleEquipment,
+  onDeleteVehicleEquipment,
+  onViewVehicleEquipment,
+  onMoveVehicleEquipment,
   onEditService,
   onDeleteService,
   onViewService,
@@ -177,6 +185,10 @@ const VehicleDetailPanel = ({
                   onEditEquipment={onEditEquipment}
                   onDeleteEquipment={onDeleteEquipment}
                   onViewEquipment={onViewEquipment}
+                  onEditVehicleEquipment={onEditVehicleEquipment}
+                  onDeleteVehicleEquipment={onDeleteVehicleEquipment}
+                  onViewVehicleEquipment={onViewVehicleEquipment}
+                  onMoveVehicleEquipment={onMoveVehicleEquipment}
                   onOpenAttachment={handleAttachmentOpen}
                   selectedVehicleId={selectedVehicleId}
                   onMoveDevice={onMoveDevice}

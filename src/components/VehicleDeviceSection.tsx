@@ -39,6 +39,10 @@ interface VehicleDeviceSectionProps {
   onEditEquipment?: (equipment: Equipment) => void;
   onDeleteEquipment?: (equipment: Equipment) => void;
   onViewEquipment?: (equipment: Equipment) => void;
+  onEditVehicleEquipment?: (ve: VehicleEquipment) => void;
+  onDeleteVehicleEquipment?: (ve: VehicleEquipment) => void;
+  onViewVehicleEquipment?: (ve: VehicleEquipment) => void;
+  onMoveVehicleEquipment?: (ve: VehicleEquipment) => void;
   onOpenAttachment: (url: string) => void;
   selectedVehicleId?: string | null;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
@@ -60,6 +64,10 @@ const VehicleDeviceSection = ({
   onEditEquipment,
   onDeleteEquipment,
   onViewEquipment,
+  onEditVehicleEquipment,
+  onDeleteVehicleEquipment,
+  onViewVehicleEquipment,
+  onMoveVehicleEquipment,
   onOpenAttachment,
   selectedVehicleId,
   onMoveDevice,
@@ -255,7 +263,14 @@ const VehicleDeviceSection = ({
         </div>
       </div>
 
-      <VehicleEquipmentList vehicleEquipment={filteredVehicleEquipment} />
+      <VehicleEquipmentList 
+        vehicleEquipment={filteredVehicleEquipment}
+        onEditVehicleEquipment={onEditVehicleEquipment}
+        onDeleteVehicleEquipment={onDeleteVehicleEquipment}
+        onViewVehicleEquipment={onViewVehicleEquipment}
+        onOpenAttachment={onOpenAttachment}
+        onMoveVehicleEquipment={onMoveVehicleEquipment}
+      />
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
         <DialogContent className="sm:max-w-md">
