@@ -77,17 +77,6 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                <p className="text-sm text-muted-foreground">Typ:</p>
-                <p className="font-bold text-black">{getServiceTypeText(service.type)}</p>
-              </div>
-              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                <p className="text-sm text-muted-foreground">Koszt:</p>
-                <p className="font-bold text-black">{service.cost.toFixed(2)} PLN</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
                 <p className="text-sm text-muted-foreground">Data</p>
                 <p className="font-medium">{formatDate(service.date)}</p>
               </div>
@@ -128,6 +117,17 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
             <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
               <p className="text-sm text-muted-foreground">Opis</p>
               <p className="font-medium whitespace-pre-wrap">{service.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                <p className="text-sm text-muted-foreground">Typ:</p>
+                <p className="font-bold text-black">{getServiceTypeText(service.type)}</p>
+              </div>
+              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                <p className="text-sm text-muted-foreground">Koszt:</p>
+                <p className="font-bold text-black">{service.cost.toFixed(2)} PLN</p>
+              </div>
             </div>
             
             {service.notes && (
