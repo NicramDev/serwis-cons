@@ -41,7 +41,7 @@ const VehicleEquipmentCard = ({
 
   return (
     <div 
-      className="p-4 border border-border/50 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 animate-in fade-in-50 slide-in-from-bottom-3"
+      className="p-4 border border-border/50 rounded-lg bg-muted/30 hover:bg-muted/50 transition-all duration-200 animate-in fade-in-50 slide-in-from-bottom-3"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex items-start gap-4">
