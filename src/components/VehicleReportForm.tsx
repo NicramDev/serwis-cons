@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Device, ServiceRecord, Vehicle, Equipment } from '../utils/types';
+import { Device, ServiceRecord, Vehicle, VehicleEquipment } from '../utils/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ interface VehicleReportFormProps {
   onClose: () => void;
   vehicle: Vehicle;
   devices: Device[];
-  equipment: Equipment[];
+  vehicleEquipment: VehicleEquipment[];
   services: ServiceRecord[];
 }
 
@@ -22,10 +22,10 @@ const VehicleReportForm = ({
   onClose, 
   vehicle, 
   devices, 
-  equipment,
+  vehicleEquipment,
   services 
 }: VehicleReportFormProps) => {
-  const [selectedReports, setSelectedReports] = useState({ devices: true, equipment: false, services: false });
+  const [selectedReports, setSelectedReports] = useState({ devices: true, vehicleEquipment: false, services: false });
 
   const getServiceTypeText = (type: string) => {
     switch (type) {
@@ -42,7 +42,7 @@ const VehicleReportForm = ({
     }
   };
 
-  const toggle = (key: 'devices' | 'equipment' | 'services') => {
+  const toggle = (key: 'devices' | 'vehicleEquipment' | 'services') => {
     setSelectedReports(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -56,6 +56,7 @@ const VehicleReportForm = ({
         <thead>
           <tr style="background-color: #f2f2f2;">
             <th>Nazwa</th>
+            <th>Marka</th>
             <th>Typ</th>
             <th>Nr seryjny</th>
           </tr>
@@ -64,32 +65,33 @@ const VehicleReportForm = ({
           ${devices.map(device => `
             <tr>
               <td>${device.name}</td>
-              <td>${device.type}</td>
-              <td>${device.serialNumber}</td>
+              <td>${device.brand ?? '-'}</td>
+              <td>${device.type ?? '-'}</td>
+              <td>${device.serialNumber ?? '-'}</td>
             </tr>
           `).join('')}
         </tbody>
       </table>
     `;
 
-    const equipmentTable = `
-      <h2>Wyposażenie dla pojazdu: ${vehicle.name} (${vehicle.registrationNumber})</h2>
+    const vehicleEquipmentTable = `
+      <h2>Equipment pojazdu: ${vehicle.name} (${vehicle.registrationNumber})</h2>
       <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%;">
         <thead>
           <tr style="background-color: #f2f2f2;">
             <th>Nazwa</th>
-            <th>Marka</th>
-            <th>Typ</th>
+            <th>Marka/Typ</th>
             <th>Nr seryjny</th>
+            <th>Ilość sztuk</th>
           </tr>
         </thead>
         <tbody>
-          ${equipment.map(item => `
+          ${vehicleEquipment.map(item => `
             <tr>
               <td>${item.name}</td>
-              <td>${item.brand ?? '-'}</td>
-              <td>${item.type ?? '-'}</td>
+              <td>${[item.brand, item.type].filter(Boolean).join(' / ') || '-'}</td>
               <td>${item.serialNumber ?? '-'}</td>
+              <td>${item.quantity ?? '-'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -102,11 +104,10 @@ const VehicleReportForm = ({
         <thead>
           <tr style="background-color: #f2f2f2;">
             <th>Data</th>
-            <th>Typ</th>
-            <th>Dotyczy</th>
-            <th>Opis</th>
-            <th>Technik</th>
-            <th>Cena</th>
+            <th>Typ serwisu</th>
+            <th>Zakres</th>
+            <th>Miejsce serwisu</th>
+            <th>Koszt</th>
           </tr>
         </thead>
         <tbody>
@@ -114,10 +115,9 @@ const VehicleReportForm = ({
             <tr>
               <td>${formatDate(service.date)}</td>
               <td>${getServiceTypeText(service.type)}</td>
-              <td>${service.deviceName ? service.deviceName : 'Pojazd'}</td>
-              <td>${service.description}</td>
-              <td>${service.technician}</td>
-              <td>${service.cost.toFixed(2)} PLN</td>
+              <td>${service.description ?? '-'}</td>
+              <td>${service.location ?? '-'}</td>
+              <td>${service.cost ? service.cost.toFixed(2) + ' PLN' : '-'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -143,7 +143,7 @@ const VehicleReportForm = ({
         <body>
           ${[
             selectedReports.devices ? deviceTable : '',
-            selectedReports.equipment ? equipmentTable : '',
+            selectedReports.vehicleEquipment ? vehicleEquipmentTable : '',
             selectedReports.services ? serviceTable : ''
           ].filter(Boolean).join('<hr style="margin:30px 0;" />')}
           <div style="margin-top: 30px; text-align: center;">
@@ -171,8 +171,8 @@ const VehicleReportForm = ({
               <Label htmlFor="devices">Zestawienie urządzeń</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="equipment" checked={selectedReports.equipment} onCheckedChange={() => toggle('equipment')} />
-              <Label htmlFor="equipment">Zestawienie wyposażenia</Label>
+              <Checkbox id="vehicleEquipment" checked={selectedReports.vehicleEquipment} onCheckedChange={() => toggle('vehicleEquipment')} />
+              <Label htmlFor="vehicleEquipment">Zestawienie Equipment pojazdu</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox id="services" checked={selectedReports.services} onCheckedChange={() => toggle('services')} />

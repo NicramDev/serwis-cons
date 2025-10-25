@@ -220,7 +220,7 @@ const VehicleDetailPanel = ({
           }}
           vehicle={vehicle}
           devices={selectedVehicleDevices}
-          equipment={selectedVehicleEquipment}
+          vehicleEquipment={selectedVehicleEquipment}
           services={selectedVehicleServices}
         />
       )}
