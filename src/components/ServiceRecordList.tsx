@@ -92,98 +92,101 @@ const ServiceRecordList = ({
             key={service.id} 
             className="p-3 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm border border-border/50 hover:shadow-md transition-all"
           >
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{formatDate(service.date)}</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getServiceTypeColor(service.type)}`}>
-                    {getServiceTypeText(service.type)}
-                  </span>
-                </div>
-                <div className="flex items-start gap-4">
-                  {service.deviceId && device?.thumbnail ? (
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-pointer">
-                          <img 
-                            src={device.thumbnail} 
-                            alt={service.deviceName || 'Device'}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg';
-                            }}
-                          />
-                        </div>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-auto p-0 border-none">
-                        <div className="w-48 h-48 overflow-hidden flex items-center justify-center bg-background">
-                          <img 
-                            src={device.thumbnail} 
-                            alt={service.deviceName || 'Device'} 
-                            className="max-w-full max-h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.svg';
-                            }}
-                          />
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  ) : service.deviceName ? (
-                    <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
-                      <Smartphone className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <Car className="h-5 w-5 mt-1" />
-                  )}
-                  <div>
-                    <h4 className="font-medium">
-                      {service.deviceName || 'Pojazd'}
-                    </h4>
-                    <p className="text-sm mt-1">{service.description}</p>
-                    
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Dotyczy: {service.deviceId ? 'Urządzenia' : 'Pojazdu'}
-                      {service.deviceName && ` - ${service.deviceName}`}
-                    </p>
-
-                    {/* Attachment thumbnails */}
-                    {service.attachments && service.attachments.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {service.attachments.slice(0, 3).map((attachment, idx) => (
-                          <div 
-                            key={idx} 
-                            className="h-6 w-6 rounded-md overflow-hidden border border-border/50 flex items-center justify-center bg-muted cursor-pointer"
-                            onClick={() => onOpenAttachment && onOpenAttachment(attachment.url)}
-                            title={attachment.name}
-                          >
-                            {attachment.type.startsWith('image/') ? (
-                              <img 
-                                src={attachment.url} 
-                                alt={attachment.name} 
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              getFileIcon(attachment.type)
-                            )}
-                          </div>
-                        ))}
-                        {service.attachments.length > 3 && (
-                          <div className="h-6 px-1 rounded-md overflow-hidden border border-border/50 flex items-center justify-center bg-muted text-xs">
-                            +{service.attachments.length - 3}
-                          </div>
-                        )}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{formatDate(service.date)}</span>
+              </div>
+              
+              <div className="flex items-start gap-4">
+                {service.deviceId && device?.thumbnail ? (
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30 cursor-pointer">
+                        <img 
+                          src={device.thumbnail} 
+                          alt={service.deviceName || 'Device'}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
                       </div>
-                    )}
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-auto p-0 border-none">
+                      <div className="w-48 h-48 overflow-hidden flex items-center justify-center bg-background">
+                        <img 
+                          src={device.thumbnail} 
+                          alt={service.deviceName || 'Device'} 
+                          className="max-w-full max-h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                ) : service.deviceName ? (
+                  <div className="h-12 w-12 rounded-md overflow-hidden bg-background/50 flex-shrink-0 flex items-center justify-center border border-border/30">
+                    <Smartphone className="h-5 w-5 text-muted-foreground" />
                   </div>
+                ) : (
+                  <Car className="h-5 w-5 mt-1" />
+                )}
+                <div>
+                  <h4 className="font-medium">
+                    {service.deviceName || 'Pojazd'}
+                  </h4>
+                  <p className="text-sm mt-1">{service.description}</p>
+
+                  {/* Attachment thumbnails */}
+                  {service.attachments && service.attachments.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {service.attachments.slice(0, 3).map((attachment, idx) => (
+                        <div 
+                          key={idx} 
+                          className="h-6 w-6 rounded-md overflow-hidden border border-border/50 flex items-center justify-center bg-muted cursor-pointer"
+                          onClick={() => onOpenAttachment && onOpenAttachment(attachment.url)}
+                          title={attachment.name}
+                        >
+                          {attachment.type.startsWith('image/') ? (
+                            <img 
+                              src={attachment.url} 
+                              alt={attachment.name} 
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            getFileIcon(attachment.type)
+                          )}
+                        </div>
+                      ))}
+                      {service.attachments.length > 3 && (
+                        <div className="h-6 px-1 rounded-md overflow-hidden border border-border/50 flex items-center justify-center bg-muted text-xs">
+                          +{service.attachments.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">Typ:</span>
+                  <span className="text-sm font-bold text-black dark:text-white">{getServiceTypeText(service.type)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">Koszt:</span>
+                  <span className="text-sm font-bold text-black dark:text-white">{service.cost.toFixed(2)} PLN</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-1">
                 {onViewService && (
                   <Button 
-                    variant="outline" 
+                    variant="secondary"
                     size="sm" 
                     className="h-7 px-2 text-xs"
                     onClick={() => onViewService(service)}
@@ -200,7 +203,7 @@ const ServiceRecordList = ({
                     onClick={() => onEditService(service)}
                   >
                     <Edit className="h-3 w-3 mr-1" />
-                    Edytuj
+                    Edycja
                   </Button>
                 )}
                 {onDeleteService && (
@@ -215,10 +218,6 @@ const ServiceRecordList = ({
                   </Button>
                 )}
               </div>
-            </div>
-            <div className="mt-2 pt-2 border-t border-border/50 flex justify-between">
-              <span className="text-xs text-muted-foreground">Technik: {service.technician}</span>
-              <span className="text-xs font-medium">{service.cost.toFixed(2)} PLN</span>
             </div>
           </div>
         )
