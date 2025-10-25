@@ -41,7 +41,7 @@ const DeviceList = ({
           key={device.id}
           device={device}
           actions={
-            <>
+            <div className="grid grid-cols-4 gap-1">
               {onViewDevice && (
                 <Button
                   variant="secondary"
@@ -49,7 +49,7 @@ const DeviceList = ({
                   className="h-7 px-2 text-xs"
                   onClick={() => onViewDevice(device)}
                 >
-                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  <Eye className="h-3 w-3 mr-1" />
                   Podgląd
                 </Button>
               )}
@@ -60,7 +60,7 @@ const DeviceList = ({
                   className="h-7 px-2 text-xs"
                   onClick={() => onEditDevice(device)}
                 >
-                  <Edit className="h-3.5 w-3.5 mr-1" />
+                  <Edit className="h-3 w-3 mr-1" />
                   Edycja
                 </Button>
               )}
@@ -74,7 +74,7 @@ const DeviceList = ({
                     onMoveDevice(device);
                   }}
                 >
-                  <MoveRight className="h-3.5 w-3.5 mr-1" />
+                  <MoveRight className="h-3 w-3 mr-1" />
                   Przenieś
                 </Button>
               )}
@@ -85,11 +85,11 @@ const DeviceList = ({
                   className="h-7 px-2 text-xs"
                   onClick={() => onDeleteDevice(device)}
                 >
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  <Trash2 className="h-3 w-3 mr-1" />
                   Usuń
                 </Button>
               )}
-            </>
+            </div>
           }
           onAttachmentClick={onOpenAttachment}
         />
