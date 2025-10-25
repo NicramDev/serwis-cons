@@ -92,7 +92,7 @@ const VehicleCard = ({
       <div className="flex items-start justify-between min-w-0 max-w-full">
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full min-w-0 max-w-full">
           {vehicle.thumbnail ? (
-            <div className="h-16 w-20 sm:h-20 sm:w-28 md:h-[88px] md:w-36 lg:w-44 xl:w-52 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 md:h-[88px] md:w-24 lg:w-28 xl:w-32 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -100,7 +100,7 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-16 w-20 sm:h-20 sm:w-28 md:h-[88px] md:w-36 lg:w-44 xl:w-52 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 md:h-[88px] md:w-24 lg:w-28 xl:w-32 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <Car className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14 text-muted-foreground" />
             </div>
           )}
