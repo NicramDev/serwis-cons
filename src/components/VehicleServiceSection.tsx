@@ -42,7 +42,7 @@ const VehicleServiceSection = ({
     if (filterType === 'all') return true;
     if (filterType === 'vehicle') return !service.deviceId;
     if (filterType === 'device') {
-      return selectedDeviceId ? service.deviceId === selectedDeviceId : service.deviceId !== undefined;
+      return selectedDeviceId ? service.deviceId === selectedDeviceId : false;
     }
     return true;
   });
@@ -142,14 +142,22 @@ const VehicleServiceSection = ({
         )}
       </div>
       
-      <ServiceRecordList 
-        services={sortedServices}
-        devices={devices}
-        onEditService={onEditService}
-        onDeleteService={onDeleteService}
-        onViewService={onViewService}
-        onOpenAttachment={onOpenAttachment}
-      />
+      {(filterType !== 'device' || selectedDeviceId) && (
+        <ServiceRecordList 
+          services={sortedServices}
+          devices={devices}
+          onEditService={onEditService}
+          onDeleteService={onDeleteService}
+          onViewService={onViewService}
+          onOpenAttachment={onOpenAttachment}
+        />
+      )}
+      
+      {filterType === 'device' && !selectedDeviceId && (
+        <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
+          <p className="text-sm text-muted-foreground">Wybierz urządzenie, aby wyświetlić jego serwisy.</p>
+        </div>
+      )}
     </>
   );
 };
