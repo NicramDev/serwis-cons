@@ -92,7 +92,7 @@ const VehicleCard = ({
       <div className="flex items-start justify-between min-w-0 max-w-full">
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full min-w-0 max-w-full">
           {vehicle.thumbnail ? (
-            <div className="h-16 w-16 sm:h-20 sm:w-20 md:h-[88px] md:w-24 lg:w-32 xl:w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-16 w-20 sm:h-20 sm:w-28 md:h-[88px] md:w-36 lg:w-44 xl:w-52 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <img 
                 src={vehicle.thumbnail} 
                 alt={vehicle.name} 
@@ -100,17 +100,16 @@ const VehicleCard = ({
               />
             </div>
           ) : (
-            <div className="h-16 w-16 sm:h-20 sm:w-20 md:h-[88px] md:w-24 lg:w-32 xl:w-40 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
+            <div className="h-16 w-20 sm:h-20 sm:w-28 md:h-[88px] md:w-36 lg:w-44 xl:w-52 rounded-md overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center">
               <Car className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 xl:h-14 xl:w-14 text-muted-foreground" />
             </div>
           )}
           <div className="flex flex-col justify-between h-16 sm:h-20 md:h-[88px] flex-grow min-w-0 max-w-full overflow-hidden">
-            <div className="min-w-0 max-w-full">
-              <h3 className="text-xs sm:text-sm font-semibold truncate max-w-full">{vehicle.name}</h3>
-              <p className="text-xs text-muted-foreground truncate max-w-full">{vehicle.brand || ''} • {vehicle.registrationNumber}</p>
-              <div className="flex items-center text-xs text-muted-foreground mt-1 min-w-0 max-w-full">
-                <span className="truncate max-w-full">Następny serwis: {nextServiceFormatted}</span>
-              </div>
+            <div className="min-w-0 max-w-full space-y-0.5">
+              <h3 className="text-xs sm:text-sm font-semibold line-clamp-2 max-w-full">{vehicle.name}</h3>
+              <p className="text-xs text-muted-foreground">{vehicle.brand || 'Brak marki'}</p>
+              <p className="text-xs text-muted-foreground">Nr. rejestracyjny: {vehicle.registrationNumber}</p>
+              <p className="text-xs text-muted-foreground">Serwis: {nextServiceFormatted}</p>
             </div>
           </div>
         </div>
