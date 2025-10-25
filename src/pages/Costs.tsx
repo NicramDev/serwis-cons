@@ -371,7 +371,7 @@ const Costs = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Wszystkie pojazdy</SelectItem>
-                    {allVehicles.map(vehicle => (
+                    {[...allVehicles].sort((a, b) => a.name.localeCompare(b.name, 'pl')).map(vehicle => (
                       <SelectItem key={vehicle.id} value={vehicle.id}>
                         {vehicle.name} ({vehicle.registrationNumber})
                       </SelectItem>
