@@ -75,10 +75,15 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
           className="pt-4 animate-in fade-in-50 slide-in-from-bottom-3 p-4 bg-white rounded-b-lg"
         >
           <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                {getServiceTypeText(service.type)}
-              </span>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                <p className="text-sm text-muted-foreground">Typ:</p>
+                <p className="font-bold text-black">{getServiceTypeText(service.type)}</p>
+              </div>
+              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
+                <p className="text-sm text-muted-foreground">Koszt:</p>
+                <p className="font-bold text-black">{service.cost.toFixed(2)} PLN</p>
+              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -89,10 +94,6 @@ const ServiceDetails = ({ service, device }: ServiceDetailsProps) => {
               <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
                 <p className="text-sm text-muted-foreground">Technik</p>
                 <p className="font-medium">{service.technician}</p>
-              </div>
-              <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
-                <p className="text-sm text-muted-foreground">Koszt</p>
-                <p className="font-medium">{service.cost.toFixed(2)} PLN</p>
               </div>
               <div className="space-y-1 p-3 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50">
                 <p className="text-sm text-muted-foreground">Dotyczy</p>

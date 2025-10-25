@@ -32,7 +32,7 @@ const VehicleReportForm = ({
       case 'repair':
         return 'Naprawa';
       case 'maintenance':
-        return 'Konserwacja';
+        return 'Serwis';
       case 'inspection':
         return 'Przegląd';
       case 'replacement':
