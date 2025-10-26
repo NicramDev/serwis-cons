@@ -522,8 +522,19 @@ useEffect(() => {
   };
   const confirmMoveDevice = async () => {
     if (deviceToMove && targetVehicleId) {
-      // Update device in supabase and local state
-      const updates = { vehicleid: targetVehicleId }; // Use snake_case key as expected by Supabase
+      // Find source vehicle info
+      const sourceVehicle = allVehicles.find(v => v.id === deviceToMove.vehicleId);
+      const sourceInfo = sourceVehicle 
+        ? `\n\nPrzeniesione z pojazdu: ${sourceVehicle.name} (${sourceVehicle.registrationNumber || 'brak nr rej.'}) - ${new Date().toLocaleDateString('pl-PL')}`
+        : '';
+      
+      // Update device in supabase and local state with updated notes
+      const updatedNotes = (deviceToMove.notes || '') + sourceInfo;
+      const updates = { 
+        vehicleid: targetVehicleId,
+        notes: updatedNotes
+      };
+      
       const { data, error } = await supabase
         .from('devices')
         .update(updates)
@@ -536,7 +547,7 @@ useEffect(() => {
       } else if (data) {
         setDevices(prev =>
           prev.map(d =>
-            d.id === deviceToMove.id ? { ...d, vehicleId: targetVehicleId } : d
+            d.id === deviceToMove.id ? { ...d, vehicleId: targetVehicleId, notes: updatedNotes } : d
           )
         );
         toast.success("Urządzenie przeniesione");
@@ -642,7 +653,18 @@ useEffect(() => {
   };
 
   const handleMoveEquipment = async (equipment: Equipment, targetVehicleId: string) => {
-    const updates = { vehicleid: targetVehicleId };
+    // Find source vehicle info
+    const sourceVehicle = allVehicles.find(v => v.id === equipment.vehicleId);
+    const sourceInfo = sourceVehicle 
+      ? `\n\nPrzeniesione z pojazdu: ${sourceVehicle.name} (${sourceVehicle.registrationNumber || 'brak nr rej.'}) - ${new Date().toLocaleDateString('pl-PL')}`
+      : '';
+    
+    const updatedNotes = (equipment.notes || '') + sourceInfo;
+    const updates = { 
+      vehicleid: targetVehicleId,
+      notes: updatedNotes
+    };
+    
     const { data, error } = await supabase
       .from('equipment')
       .update(updates)
@@ -655,7 +677,7 @@ useEffect(() => {
     } else if (data) {
       setEquipment(prev =>
         prev.map(e =>
-          e.id === equipment.id ? { ...e, vehicleId: targetVehicleId } : e
+          e.id === equipment.id ? { ...e, vehicleId: targetVehicleId, notes: updatedNotes } : e
         )
       );
       toast.success("Wyposażenie przeniesione");
@@ -838,7 +860,18 @@ useEffect(() => {
 
   const confirmMoveVehicleEquipment = async () => {
     if (vehicleEquipmentToMove && targetVehicleIdForVehicleEquipment) {
-      const updates = { vehicleid: targetVehicleIdForVehicleEquipment };
+      // Find source vehicle info
+      const sourceVehicle = allVehicles.find(v => v.id === vehicleEquipmentToMove.vehicleId);
+      const sourceInfo = sourceVehicle 
+        ? `\n\nPrzeniesione z pojazdu: ${sourceVehicle.name} (${sourceVehicle.registrationNumber || 'brak nr rej.'}) - ${new Date().toLocaleDateString('pl-PL')}`
+        : '';
+      
+      const updatedNotes = (vehicleEquipmentToMove.notes || '') + sourceInfo;
+      const updates = { 
+        vehicleid: targetVehicleIdForVehicleEquipment,
+        notes: updatedNotes
+      };
+      
       const { data, error } = await supabase
         .from('vehicle_equipment')
         .update(updates)
@@ -851,7 +884,7 @@ useEffect(() => {
       } else if (data) {
         setVehicleEquipmentList(prev =>
           prev.map(ve =>
-            ve.id === vehicleEquipmentToMove.id ? { ...ve, vehicleId: targetVehicleIdForVehicleEquipment } : ve
+            ve.id === vehicleEquipmentToMove.id ? { ...ve, vehicleId: targetVehicleIdForVehicleEquipment, notes: updatedNotes } : ve
           )
         );
         toast.success("Equipment przeniesione");

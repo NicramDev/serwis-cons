@@ -114,8 +114,10 @@ const VehicleDeviceSection = ({
     toast.success(`Wyposażenie zostało przeniesione do innego pojazdu`);
   };
 
-  // Filter out the current vehicle from the list of available vehicles
-  const availableVehicles = allVehicles.filter(vehicle => vehicle.id !== selectedVehicleId);
+  // Filter out the current vehicle from the list of available vehicles and sort alphabetically
+  const availableVehicles = allVehicles
+    .filter(vehicle => vehicle.id !== selectedVehicleId)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   // Filter devices based on search query
   const filteredDevices = devices.filter(device =>
