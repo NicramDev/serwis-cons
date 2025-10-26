@@ -109,6 +109,11 @@ const VehicleEquipmentDetails = ({ vehicleEquipment }: VehicleEquipmentDetailsPr
               <div>
                 <p className="text-xs text-muted-foreground">Wymagany serwis</p>
                 <p className="font-medium">{formatDate(vehicleEquipment.serviceExpiryDate)}</p>
+                {vehicleEquipment.notes && vehicleEquipment.notes.includes('Przeniesione z pojazdu:') && (
+                  <p className="text-xs text-muted-foreground mt-1 italic">
+                    {vehicleEquipment.notes.split('\n\n').find(line => line.includes('Przeniesione z pojazdu:'))}
+                  </p>
+                )}
               </div>
             </div>
           )}

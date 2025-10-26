@@ -1531,11 +1531,14 @@ useEffect(() => {
               className="w-full p-2 border border-border rounded-md bg-background"
             >
               <option value="">Wybierz pojazd</option>
-              {allVehicles.filter(v => v.id !== selectedVehicleId).map((vehicle) => (
-                <option key={vehicle.id} value={vehicle.id}>
-                  {vehicle.name} ({vehicle.registrationNumber})
-                </option>
-              ))}
+              {allVehicles
+                .filter(v => v.id !== selectedVehicleId)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((vehicle) => (
+                  <option key={vehicle.id} value={vehicle.id}>
+                    {vehicle.name} ({vehicle.registrationNumber})
+                  </option>
+                ))}
             </select>
           </div>
           
