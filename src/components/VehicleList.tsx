@@ -28,7 +28,7 @@ const VehicleList = ({
   }
 
   return (
-    <div className="space-y-3 overflow-y-auto overflow-x-hidden h-[calc(100vh-200px)] w-full">
+    <div className="space-y-3 w-full">
       {vehicles.map((vehicle, index) => (
         <VehicleCard 
           key={vehicle.id}
