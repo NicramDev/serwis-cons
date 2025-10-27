@@ -18,6 +18,8 @@ export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
   fuelCardNumber: supabaseVehicle.fuelcardnumber,
   gpsSystemNumber: supabaseVehicle.gpssystemnumber,
   mdvrNumber: supabaseVehicle.mdvrnumber,
+  simNumber: supabaseVehicle.sim_number,
+  phoneNumber: supabaseVehicle.phone_number,
   driverName: supabaseVehicle.drivername,
   insuranceExpiryDate: supabaseVehicle.insuranceexpirydate ? new Date(supabaseVehicle.insuranceexpirydate) : undefined,
   insurancePolicyNumber: supabaseVehicle.insurancepolicynumber,
@@ -35,7 +37,7 @@ export const mapSupabaseVehicleToVehicle = (supabaseVehicle: any): Vehicle => ({
 
 // Helper to map local Vehicle to Supabase vehicle for insert/update
 export const mapVehicleToSupabaseVehicle = (vehicle: Partial<Vehicle>): any => {
-    const { id, registrationNumber, purchaseDate, inspectionExpiryDate, serviceExpiryDate, insuranceExpiryDate, insurancePolicyNumber, lastService, nextService, fuelCardNumber, gpsSystemNumber, mdvrNumber, driverName, insuranceReminderDays, inspectionReminderDays, serviceReminderDays, vehicleType, ...rest } = vehicle;
+    const { id, registrationNumber, purchaseDate, inspectionExpiryDate, serviceExpiryDate, insuranceExpiryDate, insurancePolicyNumber, lastService, nextService, fuelCardNumber, gpsSystemNumber, mdvrNumber, simNumber, phoneNumber, driverName, insuranceReminderDays, inspectionReminderDays, serviceReminderDays, vehicleType, ...rest } = vehicle;
     return {
         ...rest,
         id,
@@ -50,6 +52,8 @@ export const mapVehicleToSupabaseVehicle = (vehicle: Partial<Vehicle>): any => {
         fuelcardnumber: fuelCardNumber,
         gpssystemnumber: gpsSystemNumber,
         mdvrnumber: mdvrNumber,
+        sim_number: simNumber,
+        phone_number: phoneNumber,
         drivername: driverName,
         insurancereminderdays: insuranceReminderDays,
         inspectionreminderdays: inspectionReminderDays,

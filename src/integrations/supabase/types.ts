@@ -320,10 +320,12 @@ export type Database = {
           name: string
           nextservice: string | null
           notes: string | null
+          phone_number: string | null
           purchasedate: string | null
           registrationnumber: string | null
           serviceexpirydate: string | null
           servicereminderdays: number | null
+          sim_number: string | null
           status: string | null
           tags: string | null
           thumbnail: string | null
@@ -350,10 +352,12 @@ export type Database = {
           name: string
           nextservice?: string | null
           notes?: string | null
+          phone_number?: string | null
           purchasedate?: string | null
           registrationnumber?: string | null
           serviceexpirydate?: string | null
           servicereminderdays?: number | null
+          sim_number?: string | null
           status?: string | null
           tags?: string | null
           thumbnail?: string | null
@@ -380,10 +384,12 @@ export type Database = {
           name?: string
           nextservice?: string | null
           notes?: string | null
+          phone_number?: string | null
           purchasedate?: string | null
           registrationnumber?: string | null
           serviceexpirydate?: string | null
           servicereminderdays?: number | null
+          sim_number?: string | null
           status?: string | null
           tags?: string | null
           thumbnail?: string | null

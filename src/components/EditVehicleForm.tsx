@@ -25,6 +25,8 @@ const vehicleSchema = z.object({
   fuelCardNumber: z.string().optional(),
   gpsSystemNumber: z.string().optional(),
   mdvrNumber: z.string().optional(),
+  simNumber: z.string().optional(),
+  phoneNumber: z.string().optional(),
   driverName: z.string().optional(),
   tags: z.string().optional(),
   notes: z.string().optional(),

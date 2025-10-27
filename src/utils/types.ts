@@ -15,6 +15,8 @@ export interface Vehicle {
   fuelCardNumber?: string;
   gpsSystemNumber?: string;
   mdvrNumber?: string;
+  simNumber?: string;
+  phoneNumber?: string;
   driverName?: string;
   insuranceExpiryDate?: Date;
   insurancePolicyNumber?: string; // Added for insurance policy number

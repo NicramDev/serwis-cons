@@ -132,14 +132,44 @@ const VehicleBasicFields = ({
         />
       </div>
       
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="mdvrNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nr MDVR</FormLabel>
+              <FormControl>
+                <Input placeholder="Wpisz numer MDVR" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="simNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nr SIM</FormLabel>
+              <FormControl>
+                <Input placeholder="Wpisz numer SIM" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
       <FormField
         control={form.control}
-        name="mdvrNumber"
+        name="phoneNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nr MDVR</FormLabel>
+            <FormLabel>Nr Telefonu</FormLabel>
             <FormControl>
-              <Input placeholder="Wpisz numer MDVR" {...field} />
+              <Input placeholder="Wpisz numer telefonu" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
