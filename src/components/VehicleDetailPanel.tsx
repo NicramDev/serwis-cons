@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { mapSupabaseEquipmentToEquipment } from '@/utils/supabaseMappers';
+import { mapSupabaseEquipmentToEquipment, mapSupabaseVehicleEquipmentToVehicleEquipment } from '@/utils/supabaseMappers';
 import VehicleDetailHeader from './VehicleDetailHeader';
 import VehicleSummaryInfo from './VehicleSummaryInfo';
 import VehicleDeviceSection from './VehicleDeviceSection';
@@ -69,53 +69,53 @@ const VehicleDetailPanel = ({
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
   const [reportFormOpen, setReportFormOpen] = useState(false);
-  const [selectedVehicleEquipment, setSelectedVehicleEquipment] = useState<Equipment[]>([]);
+  const [selectedVehicleEquipmentForReport, setSelectedVehicleEquipmentForReport] = useState<VehicleEquipment[]>([]);
 
-  // Pobierz wyposażenie dla wybranego pojazdu
+  // Pobierz vehicle equipment dla wybranego pojazdu (dla zestawień)
   useEffect(() => {
     if (!selectedVehicleId) {
-      setSelectedVehicleEquipment([]);
+      setSelectedVehicleEquipmentForReport([]);
       return;
     }
 
-    const fetchEquipment = async () => {
+    const fetchVehicleEquipment = async () => {
       const { data, error } = await supabase
-        .from('equipment')
+        .from('vehicle_equipment')
         .select('*')
         .eq('vehicleid', selectedVehicleId);
       
       if (error) {
-        console.error('Error fetching equipment:', error);
-        setSelectedVehicleEquipment([]);
+        console.error('Error fetching vehicle equipment:', error);
+        setSelectedVehicleEquipmentForReport([]);
       } else if (data) {
-        const mapped = data.map(mapSupabaseEquipmentToEquipment);
-        setSelectedVehicleEquipment(mapped);
-        console.info('[VehicleDetailPanel] Equipment loaded for vehicle:', selectedVehicleId, mapped.length);
+        const mapped = data.map(mapSupabaseVehicleEquipmentToVehicleEquipment);
+        setSelectedVehicleEquipmentForReport(mapped);
+        console.info('[VehicleDetailPanel] Vehicle equipment loaded for vehicle:', selectedVehicleId, mapped.length);
       }
     };
 
-    fetchEquipment();
+    fetchVehicleEquipment();
 
     // Realtime subscription
     const channel = supabase
-      .channel(`equipment-${selectedVehicleId}`)
+      .channel(`vehicle-equipment-${selectedVehicleId}`)
       .on('postgres_changes', 
         { 
           event: '*', 
           schema: 'public', 
-          table: 'equipment',
+          table: 'vehicle_equipment',
           filter: `vehicleid=eq.${selectedVehicleId}`
         }, 
         (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            const mapped = mapSupabaseEquipmentToEquipment(payload.new);
-            setSelectedVehicleEquipment((prev) => {
+            const mapped = mapSupabaseVehicleEquipmentToVehicleEquipment(payload.new);
+            setSelectedVehicleEquipmentForReport((prev) => {
               const exists = prev.some(e => e.id === mapped.id);
               return exists ? prev.map(e => e.id === mapped.id ? mapped : e) : [...prev, mapped];
             });
           } else if (payload.eventType === 'DELETE') {
             const deletedId = payload.old?.id as string;
-            setSelectedVehicleEquipment((prev) => prev.filter((e) => e.id !== deletedId));
+            setSelectedVehicleEquipmentForReport((prev) => prev.filter((e) => e.id !== deletedId));
           }
         }
       )
@@ -144,6 +144,7 @@ const VehicleDetailPanel = ({
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
+  const selectedVehicleEquipment = equipment.filter(e => e.vehicleId === selectedVehicleId);
   return (
     <>
       <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
@@ -205,7 +206,7 @@ const VehicleDetailPanel = ({
           }}
           vehicle={vehicle}
           devices={selectedVehicleDevices}
-          vehicleEquipment={selectedVehicleEquipment}
+          vehicleEquipment={selectedVehicleEquipmentForReport}
           services={selectedVehicleServices}
         />
       )}
