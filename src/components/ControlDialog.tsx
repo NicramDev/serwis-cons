@@ -275,7 +275,7 @@ const ControlDialog = ({ open, onOpenChange, vehicleId }: ControlDialogProps) =>
                 </Button>
               </div>
 
-              <ScrollArea className="flex-1 pr-4">
+              <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-2">
                   {items.map((item) => (
                     <div
