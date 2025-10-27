@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
+import { Vehicle, Device, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,6 @@ interface VehicleDetailPanelProps {
   selectedVehicleId: string | null;
   vehicles: Vehicle[];
   devices: Device[];
-  equipment: Equipment[];
   vehicleEquipment?: VehicleEquipment[];
   services: ServiceRecord[];
   showingServiceRecords: boolean;
@@ -44,7 +43,6 @@ const VehicleDetailPanel = ({
   selectedVehicleId,
   vehicles,
   devices,
-  equipment,
   vehicleEquipment = [],
   services,
   showingServiceRecords,
@@ -153,7 +151,6 @@ const VehicleDetailPanel = ({
 
   const selectedVehicleDevices = devices.filter(device => device.vehicleId === selectedVehicleId);
   const selectedVehicleServices = services.filter(service => service.vehicleId === selectedVehicleId);
-  const selectedVehicleEquipment = equipment.filter(e => e.vehicleId === selectedVehicleId);
   return (
     <>
       <ScrollArea className="h-[calc(100vh-280px)]">
@@ -172,25 +169,23 @@ const VehicleDetailPanel = ({
               
               <div className="pt-4 border-t border-border/50">
                 {!showingServiceRecords && !showingReports ? (
-                  <VehicleDeviceSection 
-                    devices={selectedVehicleDevices}
-                    equipment={selectedVehicleEquipment}
-                    vehicleEquipment={vehicleEquipment}
-                    allVehicles={vehicles}
-                    onAddDevice={onAddDevice}
-                    onAddVehicleEquipment={onAddVehicleEquipment}
-                    onEditDevice={onEditDevice}
-                    onDeleteDevice={onDeleteDevice}
-                    onViewDevice={onViewDevice}
-                    onEditVehicleEquipment={onEditVehicleEquipment}
-                    onDeleteVehicleEquipment={onDeleteVehicleEquipment}
-                    onViewVehicleEquipment={onViewVehicleEquipment}
-                    onMoveVehicleEquipment={onMoveVehicleEquipment}
-                    onOpenAttachment={handleAttachmentOpen}
-                    selectedVehicleId={selectedVehicleId}
-                    onMoveDevice={onMoveDevice}
-                    onConvertToEquipment={onConvertToEquipment}
-                  />
+                <VehicleDeviceSection 
+                  devices={selectedVehicleDevices}
+                  vehicleEquipment={vehicleEquipment}
+                  allVehicles={vehicles}
+                  onAddDevice={onAddDevice}
+                  onAddVehicleEquipment={onAddVehicleEquipment}
+                  onEditDevice={onEditDevice}
+                  onDeleteDevice={onDeleteDevice}
+                  onViewDevice={onViewDevice}
+                  onEditVehicleEquipment={onEditVehicleEquipment}
+                  onDeleteVehicleEquipment={onDeleteVehicleEquipment}
+                  onViewVehicleEquipment={onViewVehicleEquipment}
+                  onMoveVehicleEquipment={onMoveVehicleEquipment}
+                  onOpenAttachment={handleAttachmentOpen}
+                  selectedVehicleId={selectedVehicleId}
+                  onMoveDevice={onMoveDevice}
+                />
                 ) : showingServiceRecords && !showingReports ? (
                   <VehicleServiceSection 
                     services={selectedVehicleServices}

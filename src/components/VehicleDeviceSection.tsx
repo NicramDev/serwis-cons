@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Device, Equipment, Vehicle, VehicleEquipment } from '../utils/types';
+import { Device, Vehicle, VehicleEquipment } from '../utils/types';
 import { Cpu, PlusCircle, MoveRight, Search, ChevronDown, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceList from './DeviceList';
@@ -26,7 +26,6 @@ import { toast } from 'sonner';
 
 interface VehicleDeviceSectionProps {
   devices: Device[];
-  equipment: Equipment[];
   vehicleEquipment?: VehicleEquipment[];
   allVehicles?: Vehicle[];
   onAddDevice?: () => void;
@@ -41,12 +40,10 @@ interface VehicleDeviceSectionProps {
   onOpenAttachment: (url: string) => void;
   selectedVehicleId?: string | null;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
-  onConvertToEquipment?: (device: Device) => void;
 }
 
 const VehicleDeviceSection = ({
   devices,
-  equipment,
   vehicleEquipment = [],
   allVehicles = [],
   onAddDevice,
@@ -60,8 +57,7 @@ const VehicleDeviceSection = ({
   onMoveVehicleEquipment,
   onOpenAttachment,
   selectedVehicleId,
-  onMoveDevice,
-  onConvertToEquipment
+  onMoveDevice
 }: VehicleDeviceSectionProps) => {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -174,7 +170,6 @@ const VehicleDeviceSection = ({
         onViewDevice={onViewDevice}
         onOpenAttachment={onOpenAttachment}
         onMoveDevice={handleMoveClick}
-        onConvertToEquipment={onConvertToEquipment}
       />
 
       <div className="flex items-center justify-between mb-3 mt-6">

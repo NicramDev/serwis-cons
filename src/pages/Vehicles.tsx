@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
+import { Vehicle, Device, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, 
@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseEquipmentToEquipment, mapEquipmentToSupabaseEquipment, mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord, mapSupabaseVehicleEquipmentToVehicleEquipment, mapVehicleEquipmentToSupabaseVehicleEquipment } from '@/utils/supabaseMappers';
+import { mapSupabaseVehicleToVehicle, mapVehicleToSupabaseVehicle, mapSupabaseDeviceToDevice, mapDeviceToSupabaseDevice, mapSupabaseServiceRecordToServiceRecord, mapServiceRecordToSupabaseServiceRecord, mapSupabaseVehicleEquipmentToVehicleEquipment, mapVehicleEquipmentToSupabaseVehicleEquipment } from '@/utils/supabaseMappers';
 import { extractAllTags } from '@/utils/tagUtils';
 import AddDeviceDialog from '../components/AddDeviceDialog';
 import AddServiceDialog from '../components/AddServiceDialog';
@@ -31,11 +31,8 @@ import VehicleDetails from '../components/VehicleDetails';
 import DeviceDetails from '../components/DeviceDetails';
 import ServiceDetails from '../components/ServiceDetails';
 import ServiceForm from '../components/ServiceForm';
-import AddEquipmentForm from '../components/AddEquipmentForm';
 import AddVehicleEquipmentForm from '../components/AddVehicleEquipmentForm';
 import VehicleEquipmentDialogs from '../components/VehicleEquipmentDialogs';
-import EquipmentCard from '../components/EquipmentCard';
-import EquipmentDialogs from '../components/EquipmentDialogs';
 import { FileText, Eye, Edit, Trash2, MoreHorizontal, Shuffle } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatDate } from '../utils/formatting/dateUtils';
@@ -54,7 +51,6 @@ const Vehicles = () => {
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [vehicleEquipmentList, setVehicleEquipmentList] = useState<VehicleEquipment[]>([]);
   const [services, setServices] = useState<ServiceRecord[]>([]);
   const [showingServiceRecords, setShowingServiceRecords] = useState(false);
@@ -63,7 +59,6 @@ const Vehicles = () => {
 
   // Stany dialogów dodawania
   const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
-  const [isAddEquipmentDialogOpen, setIsAddEquipmentDialogOpen] = useState(false);
   const [isAddVehicleEquipmentDialogOpen, setIsAddVehicleEquipmentDialogOpen] = useState(false);
   const [isAddServiceDialogOpen, setIsAddServiceDialogOpen] = useState(false);
 
@@ -99,46 +94,6 @@ const Vehicles = () => {
     fetchDevices();
   }, []);
 
-  // Pobierz całe wyposażenie + realtime niezależnie od wybranego pojazdu
-  useEffect(() => {
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-
-    const fetchAllEquipment = async () => {
-      const { data, error } = await supabase
-        .from('equipment')
-        .select('*');
-      if (error) {
-        toast.error("Nie udało się pobrać danych wyposażeń.");
-        setEquipment([]);
-      } else if (data) {
-        const mapped = data.map(mapSupabaseEquipmentToEquipment);
-        setEquipment(mapped);
-        console.info('Equipment fetched:', mapped.length);
-      }
-    };
-
-    fetchAllEquipment();
-
-    channel = supabase
-      .channel('realtime-equipment')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment' }, (payload) => {
-        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          const mapped = mapSupabaseEquipmentToEquipment(payload.new);
-          setEquipment((prev) => {
-            const exists = prev.some(e => e.id === mapped.id);
-            return exists ? prev.map(e => e.id === mapped.id ? mapped : e) : [...prev, mapped];
-          });
-        } else if (payload.eventType === 'DELETE') {
-          const deletedId = payload.old?.id as string;
-          setEquipment((prev) => prev.filter((e) => e.id !== deletedId));
-        }
-      })
-      .subscribe();
-
-    return () => {
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, []);
 
   // Pobierz vehicle_equipment + realtime
   useEffect(() => {
@@ -428,6 +383,36 @@ useEffect(() => {
     }
   };
 
+  const handleAddVehicleEquipment = async (veData: Partial<VehicleEquipment>) => {
+    try {
+      const newVEData = {
+        ...veData,
+        id: uuidv4(),
+      };
+      const supabaseVE = mapVehicleEquipmentToSupabaseVehicleEquipment(newVEData);
+
+      const { data, error } = await supabase
+        .from('vehicle_equipment')
+        .insert(supabaseVE)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Błąd podczas dodawania vehicle equipment.");
+        return;
+      }
+      
+      if (data) {
+        setVehicleEquipmentList(prev => [...prev, mapSupabaseVehicleEquipmentToVehicleEquipment(data)]);
+        setIsAddVehicleEquipmentDialogOpen(false);
+        toast.success("Vehicle Equipment zostało dodane pomyślnie");
+      }
+    } catch (error) {
+      console.error('Error adding vehicle equipment:', error);
+      toast.error("Błąd podczas dodawania vehicle equipment.");
+    }
+  };
+
   // Filtracja pojazdów
   const filteredVehicles = allVehicles.filter(vehicle => {
     const textMatch =
@@ -472,22 +457,6 @@ useEffect(() => {
   const [isViewServiceDialogOpen, setIsViewServiceDialogOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<ServiceRecord | null>(null);
   const [isDeleteServiceDialogOpen, setIsDeleteServiceDialogOpen] = useState(false);
-
-  // Equipment states
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [isEquipmentDetailsOpen, setIsEquipmentDetailsOpen] = useState(false);
-  const [isAddEquipmentOpen, setIsAddEquipmentOpen] = useState(false);
-  const [isEditEquipmentOpen, setIsEditEquipmentOpen] = useState(false);
-  const [isDeleteEquipmentOpen, setIsDeleteEquipmentOpen] = useState(false);
-  const [equipmentToDelete, setEquipmentToDelete] = useState<Equipment | null>(null);
-  const [isDeleteEquipmentDialogOpen, setIsDeleteEquipmentDialogOpen] = useState(false);
-  const [equipmentToMove, setEquipmentToMove] = useState<Equipment | null>(null);
-  const [isMoveEquipmentDialogOpen, setIsMoveEquipmentDialogOpen] = useState(false);
-  const [targetVehicleIdForEquipment, setTargetVehicleIdForEquipment] = useState<string>("");
-
-  // Device to equipment conversion state
-  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
-  const [deviceToConvert, setDeviceToConvert] = useState<Device | null>(null);
 
   // VehicleEquipment states
   const [selectedVehicleEquipment, setSelectedVehicleEquipment] = useState<VehicleEquipment | null>(null);
@@ -576,216 +545,6 @@ useEffect(() => {
     }
   };
   // Edycja urządzenia - UI logika istniejąca w AddDeviceDialog
-
-  // Equipment handlers
-  const handleViewEquipment = (equipment: Equipment) => {
-    setSelectedEquipment(equipment);
-    setIsEquipmentDetailsOpen(true);
-  };
-
-  const handleEditEquipment = (equipment: Equipment) => {
-    setSelectedEquipment(equipment);
-    setIsEditEquipmentOpen(true);
-  };
-
-  const handleDeleteEquipment = (equipment: Equipment) => {
-    setEquipmentToDelete(equipment);
-    setIsDeleteEquipmentOpen(true);
-  };
-
-  const handleAddEquipment = async (equipmentData: Partial<Equipment>) => {
-    try {
-      const newEquipmentData = {
-        ...equipmentData,
-        id: uuidv4(),
-      };
-      const supabaseEquipment = mapEquipmentToSupabaseEquipment(newEquipmentData);
-
-      const { data, error } = await supabase
-        .from('equipment')
-        .insert(supabaseEquipment)
-        .select()
-        .single();
-
-      if (error) {
-        toast.error("Błąd podczas dodawania wyposażenia.");
-        return; // Don't close dialog on error
-      }
-      
-      if (data) {
-        setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-        setIsAddEquipmentOpen(false); // Close dialog only on success
-        toast.success("Wyposażenie zostało dodane pomyślnie");
-      }
-    } catch (error) {
-      console.error('Error adding equipment:', error);
-      toast.error("Błąd podczas dodawania wyposażenia.");
-      // Don't close dialog on error
-    }
-  };
-
-  const handleAddVehicleEquipment = async (veData: Partial<VehicleEquipment>) => {
-    try {
-      const newVEData = {
-        ...veData,
-        id: uuidv4(),
-      };
-      const supabaseVE = mapVehicleEquipmentToSupabaseVehicleEquipment(newVEData);
-
-      const { data, error } = await supabase
-        .from('vehicle_equipment')
-        .insert(supabaseVE)
-        .select()
-        .single();
-
-      if (error) {
-        toast.error("Błąd podczas dodawania vehicle equipment.");
-        return;
-      }
-      
-      if (data) {
-        setVehicleEquipmentList(prev => [...prev, mapSupabaseVehicleEquipmentToVehicleEquipment(data)]);
-        setIsAddVehicleEquipmentDialogOpen(false);
-        toast.success("Vehicle Equipment zostało dodane pomyślnie");
-      }
-    } catch (error) {
-      console.error('Error adding vehicle equipment:', error);
-      toast.error("Błąd podczas dodawania vehicle equipment.");
-    }
-  };
-
-  const handleMoveEquipment = async (equipment: Equipment, targetVehicleId: string) => {
-    // Find source vehicle info
-    const sourceVehicle = allVehicles.find(v => v.id === equipment.vehicleId);
-    const sourceInfo = sourceVehicle 
-      ? `\n\nPrzeniesione z pojazdu: ${sourceVehicle.name} (${sourceVehicle.registrationNumber || 'brak nr rej.'}) - ${new Date().toLocaleDateString('pl-PL')}`
-      : '';
-    
-    const updatedNotes = (equipment.notes || '') + sourceInfo;
-    const updates = { 
-      vehicleid: targetVehicleId,
-      notes: updatedNotes
-    };
-    
-    const { data, error } = await supabase
-      .from('equipment')
-      .update(updates)
-      .eq('id', equipment.id)
-      .select()
-      .single();
-
-    if (error) {
-      toast.error("Błąd przenoszenia wyposażenia");
-    } else if (data) {
-      setEquipment(prev =>
-        prev.map(e =>
-          e.id === equipment.id ? { ...e, vehicleId: targetVehicleId, notes: updatedNotes } : e
-        )
-      );
-      toast.success("Wyposażenie przeniesione");
-    }
-  };
-
-  const handleUpdateEquipment = async (updatedEquipmentData: Equipment) => {
-    try {
-      const supabaseEquipment = mapEquipmentToSupabaseEquipment(updatedEquipmentData);
-      delete supabaseEquipment.id;
-
-      const { data, error } = await supabase
-        .from('equipment')
-        .update(supabaseEquipment)
-        .eq('id', updatedEquipmentData.id)
-        .select()
-        .single();
-
-      if (error) {
-        toast.error("Błąd podczas edycji wyposażenia");
-        return; // Don't close dialog on error
-      }
-      
-      if (data) {
-        setEquipment(prev =>
-          prev.map(e =>
-            e.id === updatedEquipmentData.id ? mapSupabaseEquipmentToEquipment(data) : e
-          )
-        );
-        setIsEditEquipmentOpen(false); // Close dialog only on success
-        toast.success("Wyposażenie zostało zaktualizowane");
-      }
-    } catch (error) {
-      console.error('Error updating equipment:', error);
-      toast.error("Błąd podczas edycji wyposażenia");
-      // Don't close dialog on error
-    }
-  };
-
-  const handleConfirmDeleteEquipment = async () => {
-    if (equipmentToDelete) {
-      const { error } = await supabase
-        .from('equipment')
-        .delete()
-        .eq('id', equipmentToDelete.id);
-      if (error) {
-        toast.error("Błąd usuwania wyposażenia");
-      } else {
-        setEquipment(prev => prev.filter(e => e.id !== equipmentToDelete.id));
-        toast.success("Wyposażenie usunięte");
-      }
-      setIsDeleteEquipmentOpen(false);
-      setEquipmentToDelete(null);
-    }
-  };
-
-  // Device to equipment conversion
-  const handleConvertToEquipment = (device: Device) => {
-    setDeviceToConvert(device);
-    setIsConvertDialogOpen(true);
-  };
-
-  const confirmConvertToEquipment = async () => {
-    if (!deviceToConvert) return;
-    
-    try {
-      // Convert device to equipment
-      const equipmentData: Equipment = {
-        id: uuidv4(),
-        name: deviceToConvert.name,
-        brand: deviceToConvert.brand,
-        type: deviceToConvert.type,
-        model: deviceToConvert.model,
-        serialNumber: deviceToConvert.serialNumber,
-        vehicleId: deviceToConvert.vehicleId,
-        year: deviceToConvert.year,
-        purchasePrice: deviceToConvert.purchasePrice,
-        purchaseDate: deviceToConvert.purchaseDate,
-        lastService: new Date(),
-        nextService: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-        notes: deviceToConvert.notes,
-        status: deviceToConvert.status,
-        images: deviceToConvert.images,
-        thumbnail: deviceToConvert.thumbnail,
-        attachments: deviceToConvert.attachments,
-      };
-      
-      const supabaseEquipment = mapEquipmentToSupabaseEquipment(equipmentData);
-      const { data, error } = await supabase.from('equipment').insert(supabaseEquipment).select().single();
-      
-      if (!error && data) {
-        await supabase.from('devices').delete().eq('id', deviceToConvert.id);
-        setEquipment(prev => [...prev, mapSupabaseEquipmentToEquipment(data)]);
-        setDevices(prev => prev.filter(d => d.id !== deviceToConvert.id));
-        toast.success("Urządzenie przeniesione do wyposażenia");
-      } else {
-        toast.error("Błąd konwersji urządzenia");
-      }
-    } catch (error) {
-      console.error('Error converting device to equipment:', error);
-      toast.error("Błąd konwersji urządzenia");
-    }
-    
-    setIsConvertDialogOpen(false);
-    setDeviceToConvert(null);
-  };
 
   // VehicleEquipment handlers
   const handleViewVehicleEquipment = (ve: VehicleEquipment) => {
@@ -1004,7 +763,6 @@ useEffect(() => {
               selectedVehicleId={selectedVehicleId}
               vehicles={allVehicles}
               devices={devices}
-              equipment={equipment}
               vehicleEquipment={vehicleEquipmentList}
               services={services}
               showingServiceRecords={showingServiceRecords}
