@@ -2,6 +2,7 @@ import { Smartphone, Check, Clock, AlertTriangle, Car, Edit, Trash2, Eye, MoveRi
 import { Device } from '../utils/types';
 import { formatDate } from '../utils/formatting/dateUtils';
 import { Button } from '@/components/ui/button';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface DeviceCardProps {
   device: Device;
@@ -44,17 +45,28 @@ const DeviceCard = ({
       <div className="flex justify-between items-start">
         <div className="flex gap-3">
           {device.thumbnail ? (
-            <div className="h-[80px] w-[80px] rounded-lg overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
-              <img 
-                src={device.thumbnail} 
-                alt={device.name} 
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.svg';
-                }}
-              />
-            </div>
+            <HoverCard openDelay={200}>
+              <HoverCardTrigger asChild>
+                <div className="h-[80px] w-[80px] rounded-lg overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30 cursor-pointer transition-transform hover:scale-105">
+                  <img 
+                    src={device.thumbnail} 
+                    alt={device.name} 
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
+                  />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent side="right" className="w-80 p-0">
+                <img 
+                  src={device.thumbnail} 
+                  alt={device.name}
+                  className="w-full h-auto rounded-md"
+                />
+              </HoverCardContent>
+            </HoverCard>
           ) : (
             <div className="h-[80px] w-[80px] rounded-lg overflow-hidden flex-shrink-0 bg-background/50 flex items-center justify-center border border-border/30">
               <Smartphone className="h-8 w-8 text-muted-foreground" />

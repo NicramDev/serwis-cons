@@ -2,6 +2,7 @@ import React from 'react';
 import { VehicleEquipment } from '../utils/types';
 import { Button } from '@/components/ui/button';
 import { Eye, Edit, Trash2, Box, MoveRight } from 'lucide-react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface VehicleEquipmentCardProps {
   vehicleEquipment: VehicleEquipment;
@@ -46,12 +47,25 @@ const VehicleEquipmentCard = ({
     >
       <div className="flex items-start gap-4">
         {vehicleEquipment.thumbnail && !imageError ? (
-          <img 
-            src={vehicleEquipment.thumbnail} 
-            alt={vehicleEquipment.name}
-            className="h-[80px] w-[80px] rounded-lg object-cover border border-border/50"
-            onError={handleImageError}
-          />
+          <HoverCard openDelay={200}>
+            <HoverCardTrigger asChild>
+              <div className="h-[80px] w-[80px] rounded-lg overflow-hidden border border-border/50 cursor-pointer transition-transform hover:scale-105">
+                <img 
+                  src={vehicleEquipment.thumbnail} 
+                  alt={vehicleEquipment.name}
+                  className="h-full w-full object-cover"
+                  onError={handleImageError}
+                />
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent side="right" className="w-80 p-0">
+              <img 
+                src={vehicleEquipment.thumbnail} 
+                alt={vehicleEquipment.name}
+                className="w-full h-auto rounded-md"
+              />
+            </HoverCardContent>
+          </HoverCard>
         ) : (
           <div className="h-[80px] w-[80px] rounded-lg bg-muted/30 flex items-center justify-center border border-border/50">
             <Box className="h-8 w-8 text-muted-foreground" />
