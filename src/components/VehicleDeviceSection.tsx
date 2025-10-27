@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
 import { Device, Equipment, Vehicle, VehicleEquipment } from '../utils/types';
-import { Cpu, PlusCircle, MoveRight, Search, Wrench, ChevronDown, Box } from 'lucide-react';
+import { Cpu, PlusCircle, MoveRight, Search, ChevronDown, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DeviceList from './DeviceList';
-import EquipmentList from './EquipmentList';
 import VehicleEquipmentList from './VehicleEquipmentList';
 import { 
   Dialog, 
@@ -31,14 +30,10 @@ interface VehicleDeviceSectionProps {
   vehicleEquipment?: VehicleEquipment[];
   allVehicles?: Vehicle[];
   onAddDevice?: () => void;
-  onAddEquipment?: () => void;
   onAddVehicleEquipment?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
-  onEditEquipment?: (equipment: Equipment) => void;
-  onDeleteEquipment?: (equipment: Equipment) => void;
-  onViewEquipment?: (equipment: Equipment) => void;
   onEditVehicleEquipment?: (ve: VehicleEquipment) => void;
   onDeleteVehicleEquipment?: (ve: VehicleEquipment) => void;
   onViewVehicleEquipment?: (ve: VehicleEquipment) => void;
@@ -46,7 +41,6 @@ interface VehicleDeviceSectionProps {
   onOpenAttachment: (url: string) => void;
   selectedVehicleId?: string | null;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
-  onMoveEquipment?: (equipment: Equipment, targetVehicleId: string) => void;
   onConvertToEquipment?: (device: Device) => void;
 }
 
@@ -56,14 +50,10 @@ const VehicleDeviceSection = ({
   vehicleEquipment = [],
   allVehicles = [],
   onAddDevice,
-  onAddEquipment,
   onAddVehicleEquipment,
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
-  onEditEquipment,
-  onDeleteEquipment,
-  onViewEquipment,
   onEditVehicleEquipment,
   onDeleteVehicleEquipment,
   onViewVehicleEquipment,
@@ -71,7 +61,6 @@ const VehicleDeviceSection = ({
   onOpenAttachment,
   selectedVehicleId,
   onMoveDevice,
-  onMoveEquipment,
   onConvertToEquipment
 }: VehicleDeviceSectionProps) => {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
@@ -79,12 +68,6 @@ const VehicleDeviceSection = ({
   const [targetVehicleId, setTargetVehicleId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [equipmentSearchQuery, setEquipmentSearchQuery] = useState<string>("");
-  
-  // Equipment move state
-  const [isMoveEquipmentDialogOpen, setIsMoveEquipmentDialogOpen] = useState(false);
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [targetVehicleIdForEquipment, setTargetVehicleIdForEquipment] = useState<string>("");
 
   const handleMoveClick = (device: Device) => {
     setSelectedDevice(device);
@@ -100,19 +83,6 @@ const VehicleDeviceSection = ({
     toast.success(`Urządzenie zostało przeniesione do innego pojazdu`);
   };
 
-  const handleMoveEquipmentClick = (equipment: Equipment) => {
-    setSelectedEquipment(equipment);
-    setTargetVehicleIdForEquipment("");
-    setIsMoveEquipmentDialogOpen(true);
-  };
-
-  const handleMoveEquipment = () => {
-    if (!selectedEquipment || !targetVehicleIdForEquipment || !onMoveEquipment) return;
-    
-    onMoveEquipment(selectedEquipment, targetVehicleIdForEquipment);
-    setIsMoveEquipmentDialogOpen(false);
-    toast.success(`Wyposażenie zostało przeniesione do innego pojazdu`);
-  };
 
   // Filter out the current vehicle from the list of available vehicles and sort alphabetically
   const availableVehicles = allVehicles
@@ -125,14 +95,6 @@ const VehicleDeviceSection = ({
     device.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     device.model?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     device.type?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Filter equipment based on search query
-  const filteredEquipment = equipment.filter(item =>
-    item.name.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
-    item.brand?.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
-    item.model?.toLowerCase().includes(equipmentSearchQuery.toLowerCase()) ||
-    item.type?.toLowerCase().includes(equipmentSearchQuery.toLowerCase())
   );
 
   // Filter vehicle equipment by selected vehicle
@@ -186,18 +148,6 @@ const VehicleDeviceSection = ({
                       Dodaj urządzenie
                     </button>
                   )}
-                  {onAddEquipment && (
-                    <button
-                      onClick={() => {
-                        onAddEquipment();
-                        setShowAddMenu(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
-                    >
-                      <Wrench className="h-4 w-4" />
-                      Dodaj wyposażenie
-                    </button>
-                  )}
                   {onAddVehicleEquipment && (
                     <button
                       onClick={() => {
@@ -225,37 +175,6 @@ const VehicleDeviceSection = ({
         onOpenAttachment={onOpenAttachment}
         onMoveDevice={handleMoveClick}
         onConvertToEquipment={onConvertToEquipment}
-      />
-
-      <div className="flex items-center justify-between mb-3 mt-6">
-        <div className="flex items-center gap-2 text-sm font-medium text-primary">
-          <Wrench className="h-4 w-4" />
-          <span>Wyposażenie ({equipment.length})</span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <input
-              type="text"
-              placeholder="Szukaj wyposażenia..."
-              className="pl-9 pr-3 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background"
-              value={equipmentSearchQuery}
-              onChange={(e) => setEquipmentSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <EquipmentList 
-        equipment={filteredEquipment} 
-        onEditEquipment={onEditEquipment}
-        onDeleteEquipment={onDeleteEquipment}
-        onViewEquipment={onViewEquipment}
-        onOpenAttachment={onOpenAttachment}
-        onMoveEquipment={handleMoveEquipmentClick}
       />
 
       <div className="flex items-center justify-between mb-3 mt-6">
@@ -313,50 +232,6 @@ const VehicleDeviceSection = ({
             >
               <MoveRight className="h-4 w-4" />
               Przenieś urządzenie
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isMoveEquipmentDialogOpen} onOpenChange={setIsMoveEquipmentDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Przenieś wyposażenie do innego pojazdu</DialogTitle>
-            <DialogDescription>
-              Czy na pewno chcesz przenieść wyposażenie "{selectedEquipment?.name}" do innego pojazdu?
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Label htmlFor="target-vehicle-equipment" className="text-sm mb-2 block">Wybierz pojazd docelowy:</Label>
-            <Select
-              value={targetVehicleIdForEquipment}
-              onValueChange={setTargetVehicleIdForEquipment}
-            >
-              <SelectTrigger className="w-full bg-white" id="target-vehicle-equipment">
-                <SelectValue placeholder="Wybierz pojazd" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableVehicles.map((vehicle) => (
-                  <SelectItem key={vehicle.id} value={vehicle.id}>
-                    {vehicle.name} ({vehicle.registrationNumber})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Anuluj</Button>
-            </DialogClose>
-            <Button 
-              onClick={handleMoveEquipment} 
-              disabled={!targetVehicleIdForEquipment}
-              className="gap-2"
-            >
-              <MoveRight className="h-4 w-4" />
-              Przenieś wyposażenie
             </Button>
           </DialogFooter>
         </DialogContent>

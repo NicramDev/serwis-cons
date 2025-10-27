@@ -1008,20 +1008,15 @@ useEffect(() => {
               onEdit={handleEditVehicle}
               onAddService={() => setIsAddServiceDialogOpen(true)}
               onAddDevice={() => setIsAddDeviceDialogOpen(true)}
-              onAddEquipment={() => setIsAddEquipmentOpen(true)}
               onAddVehicleEquipment={() => setIsAddVehicleEquipmentDialogOpen(true)}
               onEditDevice={handleEditDevice}
               onDeleteDevice={handleDeleteDevice}
               onViewDevice={handleViewDevice}
-              onEditEquipment={handleEditEquipment}
-              onDeleteEquipment={handleDeleteEquipment}
-              onViewEquipment={handleViewEquipment}
               onEditVehicleEquipment={handleEditVehicleEquipment}
               onDeleteVehicleEquipment={handleDeleteVehicleEquipment}
               onViewVehicleEquipment={handleViewVehicleEquipment}
               onMoveVehicleEquipment={handleMoveVehicleEquipment}
               onMoveDevice={handleMoveDevice}
-              onMoveEquipment={handleMoveEquipment}
               onConvertToEquipment={handleConvertToEquipment}
               onEditService={handleEditService}
               onDeleteService={handleDeleteService}

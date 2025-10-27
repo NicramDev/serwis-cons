@@ -22,14 +22,10 @@ interface VehicleDetailPanelProps {
   onEdit: (vehicle: Vehicle) => void;
   onAddService: () => void;
   onAddDevice?: () => void;
-  onAddEquipment?: () => void;
   onAddVehicleEquipment?: () => void;
   onEditDevice?: (device: Device) => void;
   onDeleteDevice?: (device: Device) => void;
   onViewDevice?: (device: Device) => void;
-  onEditEquipment?: (equipment: Equipment) => void;
-  onDeleteEquipment?: (equipment: Equipment) => void;
-  onViewEquipment?: (equipment: Equipment) => void;
   onEditVehicleEquipment?: (ve: VehicleEquipment) => void;
   onDeleteVehicleEquipment?: (ve: VehicleEquipment) => void;
   onViewVehicleEquipment?: (ve: VehicleEquipment) => void;
@@ -40,7 +36,6 @@ interface VehicleDetailPanelProps {
   onSaveService?: () => void;
   onView?: (vehicle: Vehicle) => void;
   onMoveDevice?: (device: Device, targetVehicleId: string) => void;
-  onMoveEquipment?: (equipment: Equipment, targetVehicleId: string) => void;
   onConvertToEquipment?: (device: Device) => void;
 }
 
@@ -56,14 +51,10 @@ const VehicleDetailPanel = ({
   onEdit,
   onAddService,
   onAddDevice,
-  onAddEquipment,
   onAddVehicleEquipment,
   onEditDevice,
   onDeleteDevice,
   onViewDevice,
-  onEditEquipment,
-  onDeleteEquipment,
-  onViewEquipment,
   onEditVehicleEquipment,
   onDeleteVehicleEquipment,
   onViewVehicleEquipment,
@@ -74,7 +65,6 @@ const VehicleDetailPanel = ({
   onSaveService,
   onView,
   onMoveDevice,
-  onMoveEquipment,
   onConvertToEquipment
 }: VehicleDetailPanelProps) => {
   const [showingReports, setShowingReports] = useState(false);
@@ -177,14 +167,10 @@ const VehicleDetailPanel = ({
                   vehicleEquipment={vehicleEquipment}
                   allVehicles={vehicles}
                   onAddDevice={onAddDevice}
-                  onAddEquipment={onAddEquipment}
                   onAddVehicleEquipment={onAddVehicleEquipment}
                   onEditDevice={onEditDevice}
                   onDeleteDevice={onDeleteDevice}
                   onViewDevice={onViewDevice}
-                  onEditEquipment={onEditEquipment}
-                  onDeleteEquipment={onDeleteEquipment}
-                  onViewEquipment={onViewEquipment}
                   onEditVehicleEquipment={onEditVehicleEquipment}
                   onDeleteVehicleEquipment={onDeleteVehicleEquipment}
                   onViewVehicleEquipment={onViewVehicleEquipment}
@@ -192,7 +178,6 @@ const VehicleDetailPanel = ({
                   onOpenAttachment={handleAttachmentOpen}
                   selectedVehicleId={selectedVehicleId}
                   onMoveDevice={onMoveDevice}
-                  onMoveEquipment={onMoveEquipment}
                   onConvertToEquipment={onConvertToEquipment}
                 />
               ) : showingServiceRecords && !showingReports ? (
