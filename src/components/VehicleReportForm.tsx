@@ -104,6 +104,7 @@ const VehicleReportForm = ({
         <thead>
           <tr style="background-color: #f2f2f2;">
             <th>Data</th>
+            <th>Dotyczy</th>
             <th>Typ serwisu</th>
             <th>Zakres</th>
             <th>Miejsce serwisu</th>
@@ -111,15 +112,19 @@ const VehicleReportForm = ({
           </tr>
         </thead>
         <tbody>
-          ${services.map(service => `
-            <tr>
-              <td>${formatDate(service.date)}</td>
-              <td>${getServiceTypeText(service.type)}</td>
-              <td>${service.description ?? '-'}</td>
-              <td>${service.location ?? '-'}</td>
-              <td>${service.cost ? service.cost.toFixed(2) + ' PLN' : '-'}</td>
-            </tr>
-          `).join('')}
+          ${services.map(service => {
+            const subject = service.deviceId ? 'Urządzenie' : 'Pojazd';
+            return `
+              <tr>
+                <td>${formatDate(service.date)}</td>
+                <td>${subject}</td>
+                <td>${getServiceTypeText(service.type)}</td>
+                <td>${service.description ?? '-'}</td>
+                <td>${service.location ?? '-'}</td>
+                <td>${service.cost ? service.cost.toFixed(2) + ' PLN' : '-'}</td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>
     `;
