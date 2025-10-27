@@ -42,7 +42,9 @@ const VehicleServiceSection = ({
     if (filterType === 'all') return true;
     if (filterType === 'vehicle') return !service.deviceId;
     if (filterType === 'device') {
-      return selectedDeviceId ? service.deviceId === selectedDeviceId : false;
+      // Show all device services or specific device if selected
+      if (!selectedDeviceId) return !!service.deviceId;
+      return service.deviceId === selectedDeviceId;
     }
     return true;
   });
@@ -107,57 +109,48 @@ const VehicleServiceSection = ({
           
         {filterType === 'device' && vehicleDevices.length > 0 && (
           <div className="mt-3">
-            {vehicleDevices.length > 0 ? (
-              <div className="space-y-2">
-                <Label htmlFor="device-select" className="text-sm mb-2 block">Wybierz urządzenie:</Label>
-                <Select
-                  value={selectedDeviceId || ""}
-                  onValueChange={(value) => setSelectedDeviceId(value)}
-                >
-                  <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Wybierz urządzenie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {vehicleDevices.map((device) => (
-                      <SelectItem key={device.id} value={device.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            {device.thumbnail ? (
-                              <AvatarImage src={device.thumbnail} alt={device.name} />
-                            ) : (
-                              <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
-                            )}
-                          </Avatar>
-                          <span>{device.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Brak urządzeń dla tego pojazdu.</p>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="device-select" className="text-sm mb-2 block">Wybierz konkretne urządzenie (opcjonalnie):</Label>
+              <Select
+                value={selectedDeviceId || "all"}
+                onValueChange={(value) => setSelectedDeviceId(value === "all" ? null : value)}
+              >
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue placeholder="Wszystkie urządzenia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    Wszystkie urządzenia
+                  </SelectItem>
+                  {vehicleDevices.map((device) => (
+                    <SelectItem key={device.id} value={device.id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          {device.thumbnail ? (
+                            <AvatarImage src={device.thumbnail} alt={device.name} />
+                          ) : (
+                            <AvatarFallback>{device.name.substring(0, 2)}</AvatarFallback>
+                          )}
+                        </Avatar>
+                        <span>{device.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         )}
       </div>
       
-      {(filterType !== 'device' || selectedDeviceId) && (
-        <ServiceRecordList 
-          services={sortedServices}
-          devices={devices}
-          onEditService={onEditService}
-          onDeleteService={onDeleteService}
-          onViewService={onViewService}
-          onOpenAttachment={onOpenAttachment}
-        />
-      )}
-      
-      {filterType === 'device' && !selectedDeviceId && (
-        <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm shadow-sm border border-border/50 text-center">
-          <p className="text-sm text-muted-foreground">Wybierz urządzenie, aby wyświetlić jego serwisy.</p>
-        </div>
-      )}
+      <ServiceRecordList 
+        services={sortedServices}
+        devices={devices}
+        onEditService={onEditService}
+        onDeleteService={onDeleteService}
+        onViewService={onViewService}
+        onOpenAttachment={onOpenAttachment}
+      />
     </>
   );
 };

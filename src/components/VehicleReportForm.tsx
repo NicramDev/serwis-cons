@@ -113,7 +113,11 @@ const VehicleReportForm = ({
         </thead>
         <tbody>
           ${services.map(service => {
-            const subject = service.deviceId ? 'Urządzenie' : 'Pojazd';
+            let subject = vehicle.name;
+            if (service.deviceId) {
+              const device = devices.find(d => d.id === service.deviceId);
+              subject = device ? device.name : 'Urządzenie';
+            }
             return `
               <tr>
                 <td>${formatDate(service.date)}</td>
