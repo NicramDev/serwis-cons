@@ -198,18 +198,6 @@ const VehicleDeviceSection = ({
                       Dodaj wyposażenie
                     </button>
                   )}
-                  {onAddVehicleEquipment && (
-                    <button
-                      onClick={() => {
-                        onAddVehicleEquipment();
-                        setShowAddMenu(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
-                    >
-                      <Box className="h-4 w-4" />
-                      Dodaj equipment
-                    </button>
-                  )}
                 </div>
               </div>
             )}
@@ -258,21 +246,6 @@ const VehicleDeviceSection = ({
         onMoveEquipment={handleMoveEquipmentClick}
       />
 
-      <div className="flex items-center justify-between mb-3 mt-6">
-        <div className="flex items-center gap-2 text-sm font-medium text-primary">
-          <Box className="h-4 w-4" />
-          <span>Equipment pojazdu ({filteredVehicleEquipment.length})</span>
-        </div>
-      </div>
-
-      <VehicleEquipmentList 
-        vehicleEquipment={filteredVehicleEquipment}
-        onEditVehicleEquipment={onEditVehicleEquipment}
-        onDeleteVehicleEquipment={onDeleteVehicleEquipment}
-        onViewVehicleEquipment={onViewVehicleEquipment}
-        onOpenAttachment={onOpenAttachment}
-        onMoveVehicleEquipment={onMoveVehicleEquipment}
-      />
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
         <DialogContent className="sm:max-w-md">
