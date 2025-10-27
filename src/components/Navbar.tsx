@@ -33,7 +33,7 @@ const Navbar = () => {
   // Extract vehicleId from URL if on vehicles page
   const getVehicleIdFromUrl = () => {
     const params = new URLSearchParams(location.search);
-    return params.get('id') || undefined;
+    return params.get('vehicleId') || undefined;
   };
   
   const navItems = [

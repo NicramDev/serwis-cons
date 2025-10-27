@@ -299,6 +299,7 @@ useEffect(() => {
   const handleVehicleClick = (vehicleId: string) => {
     setSelectedVehicleId(vehicleId);
     setShowingServiceRecords(false);
+    setSearchParams({ vehicleId: vehicleId });
   };
 
   const handleEditVehicle = (vehicle: Vehicle) => {
