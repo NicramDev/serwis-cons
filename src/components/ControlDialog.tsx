@@ -19,6 +19,7 @@ import { Device, VehicleEquipment } from '@/utils/types';
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, XCircle, History, MessageSquare } from "lucide-react";
 import InventoryHistoryDialog from './InventoryHistoryDialog';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface ControlDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ interface ControlItem {
   status: ItemStatus;
   notes: string;
   type: 'device' | 'equipment';
+  thumbnail: string | null;
 }
 
 const ControlDialog = ({ open, onOpenChange, vehicleId }: ControlDialogProps) => {
@@ -88,6 +90,7 @@ const ControlDialog = ({ open, onOpenChange, vehicleId }: ControlDialogProps) =>
           status: 'unchecked' as ItemStatus,
           notes: '',
           type: 'device' as const,
+          thumbnail: device.thumbnail,
         };
       });
 
@@ -102,6 +105,7 @@ const ControlDialog = ({ open, onOpenChange, vehicleId }: ControlDialogProps) =>
           status: 'unchecked' as ItemStatus,
           notes: '',
           type: 'equipment' as const,
+          thumbnail: equipment.thumbnail,
         };
       });
 
@@ -289,6 +293,26 @@ const ControlDialog = ({ open, onOpenChange, vehicleId }: ControlDialogProps) =>
                       }`}
                     >
                       <div className="flex items-start gap-4">
+                        {item.thumbnail && (
+                          <HoverCard openDelay={200}>
+                            <HoverCardTrigger asChild>
+                              <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border border-border cursor-pointer transition-transform hover:scale-105">
+                                <img 
+                                  src={item.thumbnail} 
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </HoverCardTrigger>
+                            <HoverCardContent side="right" className="w-80 p-0">
+                              <img 
+                                src={item.thumbnail} 
+                                alt={item.name}
+                                className="w-full h-auto rounded-md"
+                              />
+                            </HoverCardContent>
+                          </HoverCard>
+                        )}
                         <div className="flex-1 grid grid-cols-3 gap-4">
                           <div className="font-medium">{item.name}</div>
                           <div className="text-muted-foreground">{item.brandType}</div>
