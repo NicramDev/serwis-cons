@@ -83,11 +83,14 @@ const ServiceHistoryItem = ({
   
   return (
     <div className={`glass-card rounded-xl p-4 mb-3 opacity-0 animate-fade-in ${delayClass}`}>
-      <div className="flex items-center space-x-2 mb-3">
+      <div className="flex items-center space-x-2 mb-3 flex-wrap gap-2">
         <div className="icon-container">
           {getTypeIcon()}
         </div>
         <span className="text-xs text-muted-foreground">{formatDate(recordDate)}</span>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium">
+          {getTypeLabel()}
+        </span>
         <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${getTypeColor()}`}>
           {getTypeText()}
         </span>
