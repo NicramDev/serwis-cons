@@ -34,6 +34,7 @@ export type Database = {
           status: string | null
           thumbnail: string | null
           type: string | null
+          user_id: string
           vehicleid: string | null
           year: number | null
         }
@@ -56,6 +57,7 @@ export type Database = {
           status?: string | null
           thumbnail?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
           year?: number | null
         }
@@ -78,6 +80,7 @@ export type Database = {
           status?: string | null
           thumbnail?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
           year?: number | null
         }
@@ -110,6 +113,7 @@ export type Database = {
           status: string | null
           thumbnail: string | null
           type: string | null
+          user_id: string
           vehicleid: string | null
           year: number | null
         }
@@ -131,6 +135,7 @@ export type Database = {
           status?: string | null
           thumbnail?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
           year?: number | null
         }
@@ -152,6 +157,7 @@ export type Database = {
           status?: string | null
           thumbnail?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
           year?: number | null
         }
@@ -179,6 +185,7 @@ export type Database = {
           notes: string | null
           technician: string | null
           type: string | null
+          user_id: string
           vehicleid: string | null
         }
         Insert: {
@@ -194,6 +201,7 @@ export type Database = {
           notes?: string | null
           technician?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
         }
         Update: {
@@ -209,6 +217,7 @@ export type Database = {
           notes?: string | null
           technician?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
         }
         Relationships: [
@@ -249,6 +258,7 @@ export type Database = {
           status: string | null
           thumbnail: string | null
           type: string | null
+          user_id: string
           vehicleid: string | null
           year: number | null
         }
@@ -272,6 +282,7 @@ export type Database = {
           status?: string | null
           thumbnail?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
           year?: number | null
         }
@@ -295,6 +306,7 @@ export type Database = {
           status?: string | null
           thumbnail?: string | null
           type?: string | null
+          user_id?: string
           vehicleid?: string | null
           year?: number | null
         }
@@ -329,6 +341,7 @@ export type Database = {
           status: string | null
           tags: string | null
           thumbnail: string | null
+          user_id: string
           vehicletype: string | null
           vin: string | null
           year: number | null
@@ -361,6 +374,7 @@ export type Database = {
           status?: string | null
           tags?: string | null
           thumbnail?: string | null
+          user_id?: string
           vehicletype?: string | null
           vin?: string | null
           year?: number | null
@@ -393,6 +407,7 @@ export type Database = {
           status?: string | null
           tags?: string | null
           thumbnail?: string | null
+          user_id?: string
           vehicletype?: string | null
           vin?: string | null
           year?: number | null
