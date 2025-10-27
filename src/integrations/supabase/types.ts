@@ -171,6 +171,45 @@ export type Database = {
           },
         ]
       }
+      inventory_checks: {
+        Row: {
+          check_date: string
+          checked_by: string
+          created_at: string
+          id: string
+          items_data: Json
+          location: string | null
+          notes: string | null
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          check_date?: string
+          checked_by: string
+          created_at?: string
+          id?: string
+          items_data: Json
+          location?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_id: string
+        }
+        Update: {
+          check_date?: string
+          checked_by?: string
+          created_at?: string
+          id?: string
+          items_data?: Json
+          location?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: []
+      }
       service_records: {
         Row: {
           attachments: Json | null
