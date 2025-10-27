@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, 
   DialogFooter, DialogClose
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from '@/components/ui/button';
 import AddVehicleForm from '../components/AddVehicleForm';
 import VehicleDetailPanel from '../components/VehicleDetailPanel';
@@ -983,18 +984,20 @@ useEffect(() => {
 
         <div className="flex gap-3 lg:gap-5 min-w-0 overflow-hidden">
           <div className="w-full md:w-1/3 xl:w-1/4 min-w-0 flex-shrink-0">
-            {filteredVehicles.length > 0 ? (
-              <VehicleList
-                vehicles={filteredVehicles}
-                selectedVehicleId={selectedVehicleId}
-                onVehicleClick={handleVehicleClick}
-                onEdit={handleEditVehicle}
-                onDelete={handleDeleteVehicle}
-                onView={handleViewVehicle}
-              />
-            ) : (
-              <NoVehiclesFound />
-            )}
+            <ScrollArea className="h-[calc(100vh-280px)]">
+              {filteredVehicles.length > 0 ? (
+                <VehicleList
+                  vehicles={filteredVehicles}
+                  selectedVehicleId={selectedVehicleId}
+                  onVehicleClick={handleVehicleClick}
+                  onEdit={handleEditVehicle}
+                  onDelete={handleDeleteVehicle}
+                  onView={handleViewVehicle}
+                />
+              ) : (
+                <NoVehiclesFound />
+              )}
+            </ScrollArea>
           </div>
           <div className="w-full md:w-2/3 xl:w-3/4 min-w-0 flex-shrink">
             <VehicleDetailPanel

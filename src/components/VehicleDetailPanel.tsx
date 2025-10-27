@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Vehicle, Device, Equipment, ServiceRecord, VehicleEquipment } from '../utils/types';
 import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { mapSupabaseEquipmentToEquipment, mapSupabaseVehicleEquipmentToVehicleEquipment } from '@/utils/supabaseMappers';
 import VehicleDetailHeader from './VehicleDetailHeader';
@@ -155,55 +156,57 @@ const VehicleDetailPanel = ({
   const selectedVehicleEquipment = equipment.filter(e => e.vehicleId === selectedVehicleId);
   return (
     <>
-      <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            <VehicleDetailHeader 
-              vehicle={vehicle} 
-              showingServiceRecords={showingServiceRecords}
-              showingReports={showingReports}
-              onServiceClick={onServiceClick}
-              onReportClick={handleReportClick}
-            />
-            
-            <VehicleSummaryInfo vehicle={vehicle} />
-            
-            <div className="pt-4 border-t border-border/50">
-              {!showingServiceRecords && !showingReports ? (
-                <VehicleDeviceSection 
-                  devices={selectedVehicleDevices}
-                  equipment={selectedVehicleEquipment}
-                  vehicleEquipment={vehicleEquipment}
-                  allVehicles={vehicles}
-                  onAddDevice={onAddDevice}
-                  onAddVehicleEquipment={onAddVehicleEquipment}
-                  onEditDevice={onEditDevice}
-                  onDeleteDevice={onDeleteDevice}
-                  onViewDevice={onViewDevice}
-                  onEditVehicleEquipment={onEditVehicleEquipment}
-                  onDeleteVehicleEquipment={onDeleteVehicleEquipment}
-                  onViewVehicleEquipment={onViewVehicleEquipment}
-                  onMoveVehicleEquipment={onMoveVehicleEquipment}
-                  onOpenAttachment={handleAttachmentOpen}
-                  selectedVehicleId={selectedVehicleId}
-                  onMoveDevice={onMoveDevice}
-                  onConvertToEquipment={onConvertToEquipment}
-                />
-              ) : showingServiceRecords && !showingReports ? (
-                <VehicleServiceSection 
-                  services={selectedVehicleServices}
-                  devices={selectedVehicleDevices}
-                  onAddService={onAddService}
-                  onEditService={onEditService}
-                  onDeleteService={onDeleteService}
-                  onViewService={onViewService}
-                  onOpenAttachment={handleAttachmentOpen}
-                />
-              ) : null}
+      <ScrollArea className="h-[calc(100vh-280px)]">
+        <Card className="w-full border border-border/50 shadow-sm bg-white/80 backdrop-blur-sm animate-in fade-in-50 slide-in-from-right-5">
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <VehicleDetailHeader 
+                vehicle={vehicle} 
+                showingServiceRecords={showingServiceRecords}
+                showingReports={showingReports}
+                onServiceClick={onServiceClick}
+                onReportClick={handleReportClick}
+              />
+              
+              <VehicleSummaryInfo vehicle={vehicle} />
+              
+              <div className="pt-4 border-t border-border/50">
+                {!showingServiceRecords && !showingReports ? (
+                  <VehicleDeviceSection 
+                    devices={selectedVehicleDevices}
+                    equipment={selectedVehicleEquipment}
+                    vehicleEquipment={vehicleEquipment}
+                    allVehicles={vehicles}
+                    onAddDevice={onAddDevice}
+                    onAddVehicleEquipment={onAddVehicleEquipment}
+                    onEditDevice={onEditDevice}
+                    onDeleteDevice={onDeleteDevice}
+                    onViewDevice={onViewDevice}
+                    onEditVehicleEquipment={onEditVehicleEquipment}
+                    onDeleteVehicleEquipment={onDeleteVehicleEquipment}
+                    onViewVehicleEquipment={onViewVehicleEquipment}
+                    onMoveVehicleEquipment={onMoveVehicleEquipment}
+                    onOpenAttachment={handleAttachmentOpen}
+                    selectedVehicleId={selectedVehicleId}
+                    onMoveDevice={onMoveDevice}
+                    onConvertToEquipment={onConvertToEquipment}
+                  />
+                ) : showingServiceRecords && !showingReports ? (
+                  <VehicleServiceSection 
+                    services={selectedVehicleServices}
+                    devices={selectedVehicleDevices}
+                    onAddService={onAddService}
+                    onEditService={onEditService}
+                    onDeleteService={onDeleteService}
+                    onViewService={onViewService}
+                    onOpenAttachment={handleAttachmentOpen}
+                  />
+                ) : null}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </ScrollArea>
 
       {reportFormOpen && (
         <VehicleReportForm 
