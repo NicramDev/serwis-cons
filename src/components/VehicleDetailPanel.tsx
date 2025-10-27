@@ -79,18 +79,26 @@ const VehicleDetailPanel = ({
     }
 
     const fetchVehicleEquipment = async () => {
+      console.log('[VehicleDetailPanel] Fetching vehicle equipment for vehicle:', selectedVehicleId);
       const { data, error } = await supabase
         .from('vehicle_equipment')
         .select('*')
         .eq('vehicleid', selectedVehicleId);
       
+      console.log('[VehicleDetailPanel] Raw data from DB:', data, 'Error:', error);
+      
       if (error) {
         console.error('Error fetching vehicle equipment:', error);
         setSelectedVehicleEquipmentForReport([]);
       } else if (data) {
+        console.log('[VehicleDetailPanel] Data before mapping:', data.length, 'items');
         const mapped = data.map(mapSupabaseVehicleEquipmentToVehicleEquipment);
+        console.log('[VehicleDetailPanel] Data after mapping:', mapped.length, 'items', mapped);
         setSelectedVehicleEquipmentForReport(mapped);
         console.info('[VehicleDetailPanel] Vehicle equipment loaded for vehicle:', selectedVehicleId, mapped.length);
+      } else {
+        console.warn('[VehicleDetailPanel] No data returned for vehicle equipment');
+        setSelectedVehicleEquipmentForReport([]);
       }
     };
 
