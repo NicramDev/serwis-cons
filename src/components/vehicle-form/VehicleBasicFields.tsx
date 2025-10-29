@@ -138,7 +138,7 @@ const VehicleBasicFields = ({
           name="mdvrNumber"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nr MDVR</FormLabel>
+              <FormLabel>MDVR - nr urządzenia</FormLabel>
               <FormControl>
                 <Input placeholder="Wpisz numer MDVR" {...field} />
               </FormControl>
@@ -152,7 +152,7 @@ const VehicleBasicFields = ({
           name="simNumber"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nr SIM</FormLabel>
+              <FormLabel>MDVR - nr sim</FormLabel>
               <FormControl>
                 <Input placeholder="Wpisz numer SIM" {...field} />
               </FormControl>
@@ -167,7 +167,7 @@ const VehicleBasicFields = ({
         name="phoneNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nr Telefonu</FormLabel>
+            <FormLabel>MDVR - nr telefonu</FormLabel>
             <FormControl>
               <Input placeholder="Wpisz numer telefonu" {...field} />
             </FormControl>
