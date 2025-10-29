@@ -1,130 +1,122 @@
 import { useEffect, useState } from 'react';
 import DashboardCard from '../components/DashboardCard';
 import ServiceItem from '../components/ServiceItem';
-import { devices as initialDevices, getUpcomingServices, serviceRecords as initialServiceRecords, vehicles as initialVehicles } from '../utils/data';
 import { Car, Smartphone, Wrench, AlertTriangle } from 'lucide-react';
 import { Device, ServiceRecord, Vehicle } from '@/utils/types';
+import { supabase } from '@/integrations/supabase/client';
+import { mapSupabaseDeviceToDevice, mapSupabaseVehicleToVehicle } from '@/utils/supabaseMappers';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [upcomingServices, setUpcomingServices] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Load data from localStorage or use default data
-    const loadData = () => {
-      const savedVehicles = localStorage.getItem('vehicles');
-      const vehiclesData = savedVehicles ? JSON.parse(savedVehicles) : null;
-      
-      const savedDevices = localStorage.getItem('devices');
-      const devicesData = savedDevices ? JSON.parse(savedDevices) : null;
-      
-      const savedRecords = localStorage.getItem('serviceRecords');
-      const recordsData = savedRecords ? JSON.parse(savedRecords) : null;
-      
-      // If no vehicles in localStorage or empty array, use initialVehicles
-      const parsedVehicles = vehiclesData && Array.isArray(vehiclesData) && vehiclesData.length > 0 ? vehiclesData : initialVehicles;
-      const parsedDevices = devicesData && Array.isArray(devicesData) && devicesData.length > 0 ? devicesData : initialDevices;
-      
-      // Make sure we convert date strings to Date objects
-      const processedVehicles = parsedVehicles.map((vehicle: any) => ({
-        ...vehicle,
-        lastService: vehicle.lastService instanceof Date ? vehicle.lastService : new Date(vehicle.lastService),
-        nextService: vehicle.nextService instanceof Date ? vehicle.nextService : new Date(vehicle.nextService),
-        purchaseDate: vehicle.purchaseDate ? (vehicle.purchaseDate instanceof Date ? vehicle.purchaseDate : new Date(vehicle.purchaseDate)) : undefined,
-        inspectionExpiryDate: vehicle.inspectionExpiryDate ? (vehicle.inspectionExpiryDate instanceof Date ? vehicle.inspectionExpiryDate : new Date(vehicle.inspectionExpiryDate)) : undefined,
-        serviceExpiryDate: vehicle.serviceExpiryDate ? (vehicle.serviceExpiryDate instanceof Date ? vehicle.serviceExpiryDate : new Date(vehicle.serviceExpiryDate)) : undefined,
-        insuranceExpiryDate: vehicle.insuranceExpiryDate ? (vehicle.insuranceExpiryDate instanceof Date ? vehicle.insuranceExpiryDate : new Date(vehicle.insuranceExpiryDate)) : undefined
-      }));
-      
-      const processedDevices = parsedDevices.map((device: any) => ({
-        ...device,
-        lastService: device.lastService instanceof Date ? device.lastService : new Date(device.lastService),
-        nextService: device.nextService instanceof Date ? device.nextService : new Date(device.nextService),
-        purchaseDate: device.purchaseDate ? (device.purchaseDate instanceof Date ? device.purchaseDate : new Date(device.purchaseDate)) : undefined,
-        serviceExpiryDate: device.serviceExpiryDate ? (device.serviceExpiryDate instanceof Date ? device.serviceExpiryDate : new Date(device.serviceExpiryDate)) : undefined
-      }));
-      
-      // Set state with processed data
-      setVehicles(processedVehicles);
-      setDevices(processedDevices);
-      setServiceRecords(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : []);
-      
-      // Reset localStorage with the initial data to ensure it's always properly loaded
-      localStorage.setItem('vehicles', JSON.stringify(processedVehicles));
-      localStorage.setItem('devices', JSON.stringify(processedDevices));
-      localStorage.setItem('serviceRecords', JSON.stringify(recordsData && Array.isArray(recordsData) && recordsData.length > 0 ? recordsData : []));
-      
-      // Return data for use in calculateUpcomingServices
-      return {
-        vehicles: processedVehicles,
-        devices: processedDevices
-      };
-    };
-    
-    const data = loadData();
-    
-    // Manually calculate upcoming services
-    const calculateUpcomingServices = () => {
-      const now = new Date();
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(now.getDate() + 30);
-      
-      const vehicleServices = data.vehicles
-        .filter(v => {
-          const nextService = v.nextService instanceof Date ? 
-            v.nextService : new Date(v.nextService);
-          return nextService >= now && nextService <= thirtyDaysFromNow;
-        })
-        .map(v => ({
-          id: v.id,
-          name: v.name,
-          type: 'vehicle',
-          date: v.nextService,
-          model: v.model
-        }));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
         
-      const deviceServices = data.devices
-        .filter(d => {
-          const nextService = d.nextService instanceof Date ? 
-            d.nextService : new Date(d.nextService);
-          return nextService >= now && nextService <= thirtyDaysFromNow;
-        })
-        .map(d => ({
-          id: d.id,
-          name: d.name,
-          type: 'device',
-          date: d.nextService,
-          model: d.model
-        }));
+        // Fetch data from Supabase
+        const [vehiclesRes, devicesRes, servicesRes] = await Promise.all([
+          supabase.from('vehicles').select('*'),
+          supabase.from('devices').select('*'),
+          supabase.from('service_records').select('*'),
+        ]);
+
+        if (vehiclesRes.error) {
+          toast.error("Błąd pobierania pojazdów");
+          console.error(vehiclesRes.error);
+        } else {
+          const mappedVehicles = vehiclesRes.data.map(mapSupabaseVehicleToVehicle);
+          setVehicles(mappedVehicles);
+        }
+
+        if (devicesRes.error) {
+          toast.error("Błąd pobierania urządzeń");
+          console.error(devicesRes.error);
+        } else {
+          const mappedDevices = devicesRes.data.map(mapSupabaseDeviceToDevice);
+          setDevices(mappedDevices);
+        }
+
+        if (servicesRes.error) {
+          toast.error("Błąd pobierania historii serwisu");
+          console.error(servicesRes.error);
+        } else {
+          const mappedServices = (servicesRes.data || []).map((record: any) => ({
+            ...record,
+            date: new Date(record.date),
+          })) as ServiceRecord[];
+          setServiceRecords(mappedServices);
+        }
+
+        // Calculate upcoming services
+        const now = new Date();
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(now.getDate() + 30);
         
-      return [...vehicleServices, ...deviceServices].sort((a, b) => {
-        const dateA = a.date instanceof Date ? a.date : new Date(a.date);
-        const dateB = b.date instanceof Date ? b.date : new Date(b.date);
-        return dateA.getTime() - dateB.getTime();
-      });
+        const vehicleServices = (vehiclesRes.data || [])
+          .map(mapSupabaseVehicleToVehicle)
+          .filter(v => {
+            const nextService = v.nextService;
+            return nextService && nextService >= now && nextService <= thirtyDaysFromNow;
+          })
+          .map(v => ({
+            id: v.id,
+            name: v.name,
+            type: 'vehicle',
+            date: v.nextService,
+            model: v.model
+          }));
+          
+        const deviceServices = (devicesRes.data || [])
+          .map(mapSupabaseDeviceToDevice)
+          .filter(d => {
+            const nextService = d.nextService;
+            return nextService && nextService >= now && nextService <= thirtyDaysFromNow;
+          })
+          .map(d => ({
+            id: d.id,
+            name: d.name,
+            type: 'device',
+            date: d.nextService,
+            model: d.model
+          }));
+          
+        const allServices = [...vehicleServices, ...deviceServices].sort((a, b) => {
+          const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+          const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+          return dateA.getTime() - dateB.getTime();
+        });
+        
+        setUpcomingServices(allServices);
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        toast.error("Wystąpił błąd podczas pobierania danych");
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    try {
-      const services = calculateUpcomingServices();
-      console.log("Upcoming services calculated:", services.length);
-      setUpcomingServices(services);
-    } catch (error) {
-      console.error("Error calculating upcoming services:", error);
-    }
-    
+
+    fetchData();
   }, []);
-  
-  // Debug
-  console.log("Dashboard - Vehicles:", vehicles.length);
-  console.log("Dashboard - Devices:", devices.length);
-  console.log("Dashboard - Upcoming Services:", upcomingServices.length);
   
   const needsAttention = [
     ...vehicles.filter(v => v.status === 'needs-service'),
     ...devices.filter(d => d.status === 'needs-service' || d.status === 'error')
   ].length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse">Ładowanie danych...</div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">

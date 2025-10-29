@@ -711,17 +711,6 @@ useEffect(() => {
     }
   };
 
-  // --- Reset powiadomień i kosztów na wejściu (do nowych danych) ---
-  useEffect(() => {
-    localStorage.removeItem('notifications');
-    localStorage.removeItem('vehicles');
-    localStorage.removeItem('devices');
-    localStorage.removeItem('serviceRecords');
-    // Chwilowe zapisanie bieżących danych (vehicles/devices/services)
-    localStorage.setItem('vehicles', JSON.stringify(allVehicles));
-    localStorage.setItem('devices', JSON.stringify(devices));
-    localStorage.setItem('serviceRecords', JSON.stringify(services));
-  }, [allVehicles, devices, services]);
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">

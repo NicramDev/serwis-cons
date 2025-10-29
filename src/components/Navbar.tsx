@@ -21,6 +21,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import ControlDialog from './ControlDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { mapSupabaseVehicleToVehicle, mapSupabaseDeviceToDevice } from '@/utils/supabaseMappers';
+import { generateNotifications } from '@/services/notificationService';
 
 const Navbar = () => {
   const isMobile = useIsMobile();
@@ -57,38 +60,29 @@ const Navbar = () => {
   ];
   
   useEffect(() => {
-    const checkNotifications = () => {
-      const savedNotifications = localStorage.getItem('notifications');
-      const notifications = savedNotifications ? JSON.parse(savedNotifications) : [];
+    const checkNotifications = async () => {
+      try {
+        const { data: vehiclesData } = await supabase.from('vehicles').select('*');
+        const { data: devicesData } = await supabase.from('devices').select('*');
+        
+        if (!vehiclesData || !devicesData) return;
+        
+        const vehicles = vehiclesData.map(mapSupabaseVehicleToVehicle);
+        const devices = devicesData.map(mapSupabaseDeviceToDevice);
+        const notifications = generateNotifications(vehicles, devices);
+        
+        const urgentCount = notifications.filter(n => {
+          return n.expired || (n.daysLeft !== undefined && n.daysLeft <= 7);
+        }).length;
       
-      const urgentCount = notifications.filter(n => {
-        return n.expired || (n.daysLeft !== undefined && n.daysLeft <= 7);
-      }).length;
-      
-      setUrgentNotificationsCount(urgentCount);
-    };
-    
-    // Check notifications on mount
-    checkNotifications();
-    
-    // Set up interval to check for notifications regularly
-    const interval = setInterval(checkNotifications, 30000); // Check every 30 seconds
-    
-    // Listen for storage changes to update immediately when notifications change
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'notifications') {
-        checkNotifications();
+        setUrgentNotificationsCount(urgentCount);
+      } catch (error) {
+        console.error('Error checking notifications:', error);
       }
     };
     
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Clean up interval and event listener on unmount
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+    checkNotifications();
+  }, [location]);
 
   const NavItems = () => (
     <>

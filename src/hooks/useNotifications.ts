@@ -40,9 +40,6 @@ export const useNotifications = () => {
       const allNotifications = generateNotifications(vehicles, devices);
       setNotifications(allNotifications);
       
-      // Save to localStorage for navbar badge
-      localStorage.setItem('notifications', JSON.stringify(allNotifications));
-      
     } catch (error) {
       console.error('Error loading notifications:', error);
     } finally {
@@ -57,7 +54,6 @@ export const useNotifications = () => {
   const markAsRead = (id: string) => {
     const updatedNotifications = notifications.filter(n => n.id !== id);
     setNotifications(updatedNotifications);
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
   };
 
   const refreshNotifications = () => {
