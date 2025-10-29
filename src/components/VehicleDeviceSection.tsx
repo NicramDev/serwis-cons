@@ -153,7 +153,7 @@ const VehicleDeviceSection = ({
                       className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2"
                     >
                       <Box className="h-4 w-4" />
-                      Dodaj equipment
+                      Dodaj wyposażenie
                     </button>
                   )}
                 </div>
