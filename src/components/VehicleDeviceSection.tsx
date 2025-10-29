@@ -175,7 +175,7 @@ const VehicleDeviceSection = ({
       <div className="flex items-center justify-between mb-3 mt-6">
         <div className="flex items-center gap-2 text-sm font-medium text-primary">
           <Box className="h-4 w-4" />
-          <span>Equipment pojazdu ({filteredVehicleEquipment.length})</span>
+          <span>Wyposażenie pojazdu ({filteredVehicleEquipment.length})</span>
         </div>
       </div>
 
